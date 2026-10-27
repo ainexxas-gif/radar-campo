@@ -36,6 +36,7 @@
   color-scheme: dark; }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.45 var(--f); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 50; background: var(--hdr); }
 h1, h2, h3 { margin: 0; color: var(--ink); font-family: var(--f); text-wrap: balance; }
@@ -1640,6 +1641,7 @@ function renderMetodo() {
 
 /* =================== acesso: demonstração (navegador) ou Supabase =================== */
 const CONFIG = Object.assign({ SUPABASE_URL: "", SUPABASE_ANON_KEY: "" }, window.RC_CONFIG || {});
+CONFIG.SUPABASE_URL = String(CONFIG.SUPABASE_URL || "").trim().replace(/\/+$/, "");
 const PERFIS = { admin: "Admin", diretoria: "Diretoria", gerente: "Gerente" };
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
