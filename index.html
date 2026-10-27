@@ -128,7 +128,7 @@ button, select, input, textarea { font: inherit; color: var(--ink); }
 .note b { color: var(--ink); }
 .sec { margin-top: 4px !important; }
 .empty { color: var(--muted); font-size: .9rem; padding: 10px 0; }
-.lead { font-size: .95rem; color: var(--text); max-width: 75ch; }
+.lead { font-size: .95rem; color: var(--text); }
 .lead b { color: var(--ink); }
 
 /* KPIs */
@@ -213,6 +213,7 @@ td .sub { display: block; color: var(--muted); font-size: .78rem; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover td { background: var(--card); }
 tr.clk { cursor: pointer; }
+tr.sel td { background: var(--info-bg) !important; } tr.sel td:first-child { box-shadow: inset 4px 0 0 var(--brand); }
 .t-min td:first-child { min-width: 220px; }
 .t-min { min-width: 920px; }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .76rem; font-weight: 700; white-space: nowrap; }
@@ -347,6 +348,17 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 .atr tr.grp td { background: var(--card); font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); font-weight: 700; }
 .atr th.stk, .atr td.stk { position: sticky; left: 0; z-index: 2; background: var(--surface); }
 .atr thead th.stk { z-index: 3; background: var(--card); }
+
+/* anotações */
+.nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
+.nbtn { white-space: nowrap; }
+.m-corpo textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); resize: vertical; min-height: 96px; font: inherit; color: var(--ink); }
+.nhist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.nhist li { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--brand); border-radius: 6px; padding: 8px 10px; display: grid; gap: 4px; }
+.nhist li.empty { border-left-color: var(--line); }
+.nhist .h { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.nhist .h b { color: var(--ink); font-size: .9rem; }
+.nhist .txt { color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; font-size: .92rem; }
 
 /* importação */
 .imp { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
@@ -512,7 +524,7 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
           <div class="panel-head"><h2>Qualidade do registro</h2><span class="label">visitas realizadas</span></div>
           <p class="lead" id="qualLead"></p>
           <div id="qualBars" class="rank"></div>
-          <p class="note">Check-in e check-out com menos de 2 minutos de diferença indicam visita registrada depois, não acompanhada em tempo real. Sem GPS = latitude zerada no check-in.</p>
+          <p class="note">Sem GPS = latitude zerada no check-in. Realizada em outro dia = check-in em data diferente da planejada.</p>
         </section>
       </div>
       <section class="panel">
@@ -673,7 +685,7 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
     <div class="pane" id="pane-visitas" role="tabpanel" hidden>
       <section class="panel">
         <div class="panel-head"><h2>Visitas</h2><div class="tbar"><span class="label" id="visCount"></span><button class="btn" type="button" id="visXlsx">Baixar Excel</button><button class="btn" type="button" data-copy="tVis">Copiar página</button></div></div>
-        <div class="tbar"><select id="visStatus" aria-label="Status"><option value="">Todos os status</option></select><select id="visQual" aria-label="Qualidade"><option value="">Qualquer registro</option><option value="rel">Check-in relâmpago (&lt; 2 min)</option><option value="gps">Sem GPS</option><option value="ret">Registrada em outro dia</option><option value="quest">Com questionário</option><option value="semq">Sem questionário</option></select></div>
+        <div class="tbar"><select id="visStatus" aria-label="Status"><option value="">Todos os status</option></select><select id="visQual" aria-label="Qualidade"><option value="">Qualquer registro</option><option value="gps">Sem GPS</option><option value="ret">Registrada em outro dia</option><option value="quest">Com questionário</option><option value="semq">Sem questionário</option></select></div>
         <div class="tbl-wrap"><table class="t-min" id="tVis"></table></div>
         <div class="pager" id="visPager"></div>
         <p class="note">Segue os filtros lá de cima. Clique numa visita para abrir a linha do tempo do cliente. O Excel leva todas as linhas do recorte.</p>
@@ -758,6 +770,23 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
         <button class="btn" type="button" data-fechar>Cancelar</button>
         <button class="btn primary" type="submit" id="uSalvar">Salvar</button>
       </div>
+    </form>
+  </div>
+</div>
+<!-- modal: anotações do gestor -->
+<div class="modal" id="mNota" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="nTitulo">
+    <div class="panel-head"><div><h2 id="nTitulo">Anotações</h2><span class="label" id="nSub"></span></div><button class="hbtn ico" type="button" data-fechar aria-label="Fechar">✕</button></div>
+    <form id="nForm" class="m-corpo" novalidate>
+      <div class="m-kpis" id="nResumo"></div>
+      <div class="f"><span class="label">Assunto</span><div class="seg-claro" id="nTema" role="radiogroup" aria-label="Assunto"></div></div>
+      <div class="f"><label class="label" for="nVisita">Sobre uma visita específica (opcional)</label><select id="nVisita"></select></div>
+      <div class="f"><div class="m-pe"><label class="label" for="nTexto">Anotação</label><span style="flex:1"></span><span class="label" id="nConta">0/1000</span></div>
+        <textarea id="nTexto" rows="4" maxlength="1000" placeholder="Ex.: Conversei sobre as 12 visitas abertas de setembro. Combinamos fechar ou cancelar até sexta."></textarea></div>
+      <div class="err" id="nErr"></div>
+      <p class="note">Fica registrada com o seu nome e a data. Quem vê a regional deste consultor vê a anotação.</p>
+      <div class="m-pe"><span style="flex:1"></span><button class="btn" type="button" data-fechar>Fechar</button><button class="btn primary" type="submit" id="nSalvar">Salvar anotação</button></div>
+      <div class="f"><div class="m-pe"><h3 class="label">Histórico</h3><span style="flex:1"></span><span class="label" id="nHistLbl"></span></div><ol class="nhist" id="nHist"></ol></div>
     </form>
   </div>
 </div>
@@ -1156,7 +1185,7 @@ function tabela(id, cols, linhas, opts = {}) {
   const pag = opts.pag ? state.pag[opts.pag] || 1 : 1, por = opts.por || 100000;
   const vis = ord.slice((pag - 1) * por, pag * por);
   el.innerHTML = `<thead><tr>${cols.map((x) => `<th class="s ${x.n ? "n" : ""}" data-k="${x.k}" tabindex="0" ${x.k === o.k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${x.l} <span class="ord">${x.k === o.k ? (o.d > 0 ? "▲" : "▼") : ""}</span></th>`).join("")}</tr></thead>
-    <tbody>${vis.map((r) => `<tr class="${opts.clk ? "clk" : ""}" ${opts.clk ? opts.clk(r) : ""} ${opts.clk ? 'tabindex="0"' : ""}>${cols.map((x) => `<td class="${x.n ? "n" : ""} ${x.nw ? "nw" : ""}">${x.h ? x.h(r) : esc(r[x.k] ?? "—")}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${opts.vazio || "Nada neste recorte."}</td></tr>`}</tbody>`;
+    <tbody>${vis.map((r) => `<tr class="${opts.clk ? "clk" : ""} ${opts.cls ? opts.cls(r) : ""}" ${opts.clk ? opts.clk(r) : ""} ${opts.clk ? 'tabindex="0"' : ""}>${cols.map((x) => `<td class="${x.n ? "n" : ""} ${x.nw ? "nw" : ""}">${x.h ? x.h(r) : esc(r[x.k] ?? "—")}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${opts.vazio || "Nada neste recorte."}</td></tr>`}</tbody>`;
   el.querySelectorAll("th.s").forEach((th) => {
     const go = () => { const k = th.dataset.k; state.ord[id] = { k, d: o.k === k ? -o.d : (cols.find((x) => x.k === k).n ? -1 : 1) }; if (opts.pag) state.pag[opts.pag] = 1; opts.redo ? opts.redo() : tabela(id, cols, linhas, opts); };
     th.onclick = go; th.onkeydown = (e) => { if (e.key === "Enter") go(); };
@@ -1177,14 +1206,12 @@ function renderGeral() {
   const uteis = diasUteis(state.f.de, ref);
   const atr = base.filter((v) => v.st === "ab" && v.diaPlan < hoje);
   const comQ = ok.filter((v) => v.sv).length;
-  const rel = ok.filter((v) => v.dur != null && v.dur < 2).length;
   $("kpis").innerHTML =
     kpi("Visitas realizadas", fmtN(ok.length), `<b>${fmtN(ok.length / Math.max(1, ativos) / Math.max(1, uteis), 1)}</b> por consultor ativo por dia útil`) +
     kpi("Clientes visitados", fmtN(new Set(ok.map((v) => v.cid)).size), `de <b>${fmtN(cli.length)}</b> clientes com histórico`) +
     kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(cons.length)}</small>`, `<b>${fmtN(cons.length - ativos)}</b> sem visita realizada no período`, cons.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
     kpi("Abertas em atraso", fmtN(atr.length), `planejadas antes de ${fmtDia(hoje)} e não realizadas`, atr.length ? "alert clk" : "clk", 'data-go="agenda"') +
-    kpi("Com questionário", fmtP(ok.length ? comQ / ok.length : 0), `<b>${fmtN(comQ)}</b> visitas com respostas`) +
-    kpi("Check-in relâmpago", fmtP(ok.length ? rel / ok.length : 0), "check-out em menos de 2 min", rel / Math.max(1, ok.length) > .25 ? "warn" : "");
+    kpi("Com questionário", fmtP(ok.length ? comQ / ok.length : 0), `<b>${fmtN(comQ)}</b> visitas com respostas`);
   // sinais
   const parados = cons.filter((c) => c.sit === "parado" || c.sit === "sem").length, atencao = cons.filter((c) => c.sit === "atencao").length;
   const cli30 = cli.filter((c) => c.faixa === 3).length, cli15 = cli.filter((c) => c.faixa === 2).length;
@@ -1213,8 +1240,8 @@ function renderGeral() {
   // qualidade
   const gps = ok.filter((v) => !v.gps).length, retro = ok.filter((v) => v.dia > v.diaPlan).length, semAnexo = ok.filter((v) => !v.nanexo).length, semNota = ok.filter((v) => (v.notas || "").length < 15).length;
   const durs = ok.map((v) => v.dur).filter((x) => x != null && x >= 0);
-  $("qualLead").innerHTML = `Metade das visitas fica com check-in aberto por até <b>${fmtDur(mediana(durs))}</b>. O tempo entre check-in e check-out ainda não mede a duração real da visita.`;
-  const q = [["Check-in relâmpago (< 2 min)", rel], ["Realizada em dia diferente do planejado", retro], ["Sem localização (GPS zerado)", gps], ["Sem anexo (foto ou PDF)", semAnexo], ["Sem notas", semNota], ["Sem questionário", ok.length - comQ]];
+  $("qualLead").innerHTML = `O que falta nos registros das <b>${fmtN(ok.length)}</b> visitas realizadas. Quanto mais completo o registro, mais confiável a leitura do campo.`;
+  const q = [["Realizada em dia diferente do planejado", retro], ["Sem localização (GPS zerado)", gps], ["Sem anexo (foto ou PDF)", semAnexo], ["Sem notas", semNota], ["Sem questionário", ok.length - comQ]];
   $("qualBars").innerHTML = q.map(([l, n]) => `<li><span class="name">${l}</span><span class="count">${fmtP(n / Math.max(1, ok.length))} <small>${fmtN(n)}</small></span><span class="bar"><i style="width:${(100 * n / Math.max(1, ok.length)).toFixed(1)}%;background:var(--amb)"></i></span></li>`).join("");
   // regionais
   const regs = new Map();
@@ -1229,8 +1256,8 @@ function renderGeral() {
     { k: "porCons", l: "Visitas/consultor/dia útil", n: 1, h: (r) => fmtN(r.porCons, 1) },
     { k: "parados", l: "Parados", n: 1, h: (r) => (r.parados ? `<span class="chip ch-red">${r.parados}</span>` : "0") },
     { k: "atr", l: "Abertas em atraso", n: 1, h: (r) => (r.atr ? `<span class="chip ch-amb">${r.atr}</span>` : "0") },
-    { k: "pq", l: "Com questionário", n: 1, h: (r) => pctCel(r.pq) }, { k: "prel", l: "Check-in relâmpago", n: 1, h: (r) => pctCel(r.prel, .3) }, { k: "pgps", l: "Com GPS", n: 1, h: (r) => pctCel(r.pgps) },
-  ], lin, { ord: { k: "ok", d: -1 }, clk: (r) => `data-reg="${esc(r.regional)}"` });
+    { k: "pq", l: "Com questionário", n: 1, h: (r) => pctCel(r.pq) }, { k: "pgps", l: "Com GPS", n: 1, h: (r) => pctCel(r.pgps) },
+  ], lin, { ord: { k: "ok", d: -1 }, cls: (r) => (state.f.reg === r.regional ? "sel" : ""), clk: (r) => `data-reg="${esc(r.regional)}" title="${state.f.reg === r.regional ? "Clique de novo para ver todas" : "Filtrar esta regional"}"` });
 }
 function clienteEmRisco(s) {
   const m = [];
@@ -1259,6 +1286,7 @@ function renderEquipes() {
     { k: "ult", l: "Última visita", n: 1, h: (c) => fmtDiaAno(c.ult) },
     { k: "ok", l: "Realizadas no período", n: 1, h: (c) => fmtN(c.ok) },
     { k: "ab", l: "Abertas", n: 1, h: (c) => (c.atr ? `${fmtN(c.ab)} <span class="chip ch-red">${c.atr} em atraso</span>` : fmtN(c.ab)) },
+    colNota,
   ], parados, { ord: { k: "sit", d: 1 }, clk: (c) => `data-cons="${esc(c.nome)}"`, vazio: "Todos os consultores visitaram nos últimos 7 dias." });
   renderTabCons(cons);
   // territórios
@@ -1285,8 +1313,57 @@ function renderTabCons(cons) {
     { k: "dias", l: "Dias em campo", n: 1, h: (c) => fmtN(c.dias) }, { k: "porDia", l: "Visitas/dia em campo", n: 1, h: (c) => fmtN(c.porDia, 1) },
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "—" : fmtN(c.sem)) },
     { k: "atr", l: "Abertas em atraso", n: 1, h: (c) => (c.atr ? `<span class="chip ch-amb">${c.atr}</span>` : "0") },
-    { k: "quest", l: "Questionário", n: 1, h: (c) => pctCel(c.quest) }, { k: "rel", l: "Relâmpago", n: 1, h: (c) => pctCel(c.rel, .3) }, { k: "gps", l: "GPS", n: 1, h: (c) => pctCel(c.gps) },
+    { k: "quest", l: "Questionário", n: 1, h: (c) => pctCel(c.quest) }, { k: "gps", l: "GPS", n: 1, h: (c) => pctCel(c.gps) }, colNota,
   ], lin, { ord: { k: "ok", d: -1 }, clk: (c) => `data-cons="${esc(c.nome)}"`, redo: () => renderTabCons() });
+}
+
+/* =================== ANOTAÇÕES DO GESTOR =================== */
+const TEMAS = ["Visitas", "Agenda", "Registro no app", "Clientes", "Elogio", "Outro"];
+const notasDe = (nome) => (state.notas || []).filter((n) => n.consultor === nome && (!state.escopo || state.escopo.has(n.regional))).sort((a, b) => b.criado - a.criado);
+const colNota = { k: "notas", l: "Anotações", v: (c) => notasDe(c.nome).length, h: (c) => { const n = notasDe(c.nome).length; return `<button type="button" class="btn sm nbtn" data-nota="${esc(c.nome)}" title="Escrever ou ver anotações sobre ${esc(titulo(c.nome))}">${n ? `Ver <span class="nbadge">${n}</span>` : "Anotar"}</button>`; } };
+let notaAlvo = null;
+function abrirNotas(nome) {
+  notaAlvo = nome;
+  const cs = statsConsultores().find((c) => c.nome === nome);
+  const vis = state.db.visits.filter((v) => v.consultor === nome && visivel(v)).sort((a, b) => (b.ck ?? b.ini) - (a.ck ?? a.ini)).slice(0, 25);
+  $("nTitulo").textContent = titulo(nome);
+  $("nSub").textContent = cs ? `${cs.regional} · ${SIT[cs.sit][0]}` : "";
+  $("nResumo").innerHTML = cs ? `<div><b>${fmtN(cs.ok)}</b><span>visitas no período</span></div><div><b>${cs.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs.cli)}</b><span>clientes</span></div><div><b>${fmtN(cs.atr)}</b><span>abertas em atraso</span></div>` : "";
+  $("nTema").innerHTML = TEMAS.map((t, i) => `<button type="button" role="radio" data-v="${t}" aria-checked="${i === 0}">${t}</button>`).join("");
+  $("nVisita").innerHTML = `<option value="">Nenhuma (comentário geral)</option>` + vis.map((v) => `<option value="${v.id}">${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)} · ${esc(titulo(state.db.clientes.get(v.cid)?.nome))} · ${v.st === "ok" ? "realizada" : v.st === "cx" ? "cancelada" : "aberta"}</option>`).join("");
+  $("nTexto").value = ""; $("nConta").textContent = "0/1000"; $("nErr").textContent = "";
+  renderHistNotas();
+  abrirModal("mNota"); setTimeout(() => $("nTexto").focus(), 50);
+}
+function renderHistNotas() {
+  const ns = notasDe(notaAlvo);
+  $("nHistLbl").textContent = ns.length ? plural(ns.length, "anotação", "anotações") : "";
+  $("nHist").innerHTML = ns.length ? ns.map((n) => {
+    const v = n.vid ? state.db.visits.find((x) => String(x.id) === String(n.vid)) : null;
+    const pode = state.conta && (n.autor_id === state.conta.id || state.conta.perfil === "admin");
+    return `<li><div class="h"><span class="chip ch-info">${esc(n.tema || "Outro")}</span><b>${esc(n.autor_nome || "—")}</b><span class="note">${new Date(n.criado).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span><span style="flex:1"></span>${pode ? `<button type="button" class="linkbtn" data-nota-x="${esc(n.id)}">Excluir</button>` : ""}</div>
+      ${v ? `<span class="note">Sobre a visita de ${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)} em <a href="#" class="linkbtn" data-cli="${esc(v.cid)}">${esc(titulo(state.db.clientes.get(v.cid)?.nome))}</a></span>` : ""}
+      <p class="txt">${esc(n.texto)}</p></li>`;
+  }).join("") : `<li class="empty">Nenhuma anotação ainda. A primeira fica registrada com o seu nome e a data.</li>`;
+}
+async function salvarNota(e) {
+  e.preventDefault();
+  const texto = $("nTexto").value.trim(); if (!texto) { $("nErr").textContent = "Escreva a anotação antes de salvar."; return; }
+  const cs = statsConsultores().find((c) => c.nome === notaAlvo);
+  const tema = $("nTema").querySelector('[aria-checked="true"]')?.dataset.v || "Outro";
+  const b = $("nSalvar"); b.disabled = true;
+  try {
+    const n = await API.criarNota({ consultor: notaAlvo, regional: cs?.regional || "", tema, texto: texto.slice(0, 1000), vid: $("nVisita").value || null });
+    state.notas = (state.notas || []).concat(n);
+    $("nTexto").value = ""; $("nConta").textContent = "0/1000"; $("nVisita").value = "";
+    renderHistNotas(); toast("Anotação salva", `Registrada para ${titulo(notaAlvo)}.`);
+    if (state.pane === "equipes") renderEquipes();
+  } catch (err) { $("nErr").textContent = err.message; } finally { b.disabled = false; }
+}
+async function excluirNota(id, btn) {
+  if (btn.dataset.confirma !== "1") { btn.dataset.confirma = "1"; btn.textContent = "Confirmar exclusão?"; setTimeout(() => { btn.dataset.confirma = ""; btn.textContent = "Excluir"; }, 4000); return; }
+  try { await API.excluirNota(id); state.notas = state.notas.filter((n) => String(n.id) !== String(id)); renderHistNotas(); if (state.pane === "equipes") renderEquipes(); }
+  catch (e) { toast("Não consegui excluir", e.message); }
 }
 
 /* =================== MAPA =================== */
@@ -1540,7 +1617,7 @@ function barrasEmp(el, sems, vals, ref) {
 /* =================== VISITAS (lista) =================== */
 function linhasVisitas() {
   const { per } = recorte(), st = $("visStatus").value, ql = $("visQual").value;
-  return per.filter((v) => (!st || v.status === st) && (!ql || (ql === "rel" ? v.st === "ok" && v.dur != null && v.dur < 2 : ql === "gps" ? v.st === "ok" && !v.gps : ql === "ret" ? v.st === "ok" && v.dia !== v.diaPlan : ql === "quest" ? !!v.sv : !v.sv)));
+  return per.filter((v) => (!st || v.status === st) && (!ql || (ql === "gps" ? v.st === "ok" && !v.gps : ql === "ret" ? v.st === "ok" && v.dia !== v.diaPlan : ql === "quest" ? !!v.sv : !v.sv)));
 }
 function renderVisitas() {
   const sel = $("visStatus"); if (sel.options.length < 2) sel.innerHTML += [...new Set(state.db.visits.map((v) => v.status))].map((s) => `<option>${esc(s)}</option>`).join("");
@@ -1551,8 +1628,7 @@ function renderVisitas() {
     { k: "status", l: "Status", h: (v) => chipStatus(v) },
     { k: "cli", l: "Cliente", v: (v) => state.db.clientes.get(v.cid)?.nome, h: (v) => `<b>${esc(titulo(state.db.clientes.get(v.cid)?.nome))}</b><span class="sub">${esc(v.tipo)}${v.sv ? " · " + esc(v.sv.pesq) : ""}</span>` },
     { k: "consultor", l: "Consultor", h: (v) => `${esc(titulo(v.consultor))}<span class="sub">${esc(v.regional)} · ${esc(titulo(v.folha))}</span>` },
-    { k: "dur", l: "Check-in → out", n: 1, h: (v) => (v.st === "ok" ? fmtDur(v.dur) : "—") },
-    { k: "gps", l: "GPS", v: (v) => (v.gps ? 1 : 0), h: (v) => (v.st !== "ok" ? "—" : v.gps ? "Sim" : `<span class="chip ch-amb">Não</span>`) },
+        { k: "gps", l: "GPS", v: (v) => (v.gps ? 1 : 0), h: (v) => (v.st !== "ok" ? "—" : v.gps ? "Sim" : `<span class="chip ch-amb">Não</span>`) },
     { k: "nanexo", l: "Anexos", n: 1, h: (v) => fmtN(v.nanexo) },
     { k: "id", l: "ID", n: 1, h: (v) => `<span class="mono">${v.id}</span>` },
   ], lin, { ord: { k: "dia", d: -1 }, clk: (v) => `data-cli="${esc(v.cid)}"`, pag: "vis", pagEl: "visPager", por: 50, redo: renderVisitas });
@@ -1586,7 +1662,7 @@ function abrirCliente(cid) {
     const dest = [k.intencao && `Intenção ${k.intencao.toLowerCase()}`, k.previsao != null && `previsão ${fmtDia(k.previsao)}`, k.area && `${fmtN(k.area)} ha`, k.concAtiva === "Sim" && `concorrente: ${titulo(k.concorrente || "sim")}`, k.risco && `risco ${k.risco.toLowerCase()}`, k.satisf && `satisfação ${k.satisf.toLowerCase()}`].filter(Boolean).join(" · ");
     return `<li><span class="dt"><b>${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)}</b>${dDate(v.st === "ok" ? v.dia : v.diaPlan).getUTCFullYear()}</span><span class="rail"><i class="${v.st === "ok" ? "" : v.st}"></i></span>
       <div class="bx"><div class="h"><b>${esc(v.sv ? v.sv.pesq : v.tipo)}</b>${chipStatus(v, hoje)}</div>
-      <span class="m">${esc(titulo(v.consultor))} · ${esc(v.tipo)} · ${esc(titulo(v.folha))}${v.st === "ok" ? ` · check-in ${fmtHora(v.ck)}${v.dur != null ? `, ${fmtDur(v.dur)}` : ""}${v.gps ? "" : " · sem GPS"}${v.dia !== v.diaPlan ? ` · planejada ${fmtDia(v.diaPlan)}` : ""}` : ` · planejada ${fmtDia(v.diaPlan)} ${fmtHora(v.ini)}`}${v.nanexo ? ` · ${v.nanexo} anexo(s)` : ""}</span>
+      <span class="m">${esc(titulo(v.consultor))} · ${esc(v.tipo)} · ${esc(titulo(v.folha))}${v.st === "ok" ? ` · check-in ${fmtHora(v.ck)}${v.gps ? "" : " · sem GPS"}${v.dia !== v.diaPlan ? ` · planejada ${fmtDia(v.diaPlan)}` : ""}` : ` · planejada ${fmtDia(v.diaPlan)} ${fmtHora(v.ini)}`}${v.nanexo ? ` · ${v.nanexo} anexo(s)` : ""}</span>
       ${dest ? `<span class="m" style="color:var(--ink)">${esc(dest)}</span>` : ""}
       ${v.notas ? `<div class="nota">${esc(v.notas)}</div>` : ""}
       ${v.sv ? `<details class="qd"><summary>Respostas do questionário (${v.sv.qa.length})</summary><dl class="qa">${v.sv.qa.map(([p, , r]) => `<dt>${esc(p)}</dt><dd>${esc(r)}</dd>`).join("")}</dl></details>` : ""}</div></li>`;
@@ -1608,10 +1684,12 @@ function abrirConsultor(nome) {
   let cal = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => `<span class="dow">${d}</span>`).join("");
   for (let d = start; d <= state.f.ate || (d - start) % 7; d++) { const n = por.get(d) || 0, a = ab.get(d) || 0, w = dow(d); cal += `<div class="d ${d < state.f.de || d > state.f.ate ? "out" : ""} ${w === 0 || w === 6 ? "wk" : ""}" style="min-height:52px;cursor:default"><span class="dn">${dDate(d).getUTCDate()}</span>${n ? `<span class="pill ok"><span>feitas</span>${n}</span>` : ""}${a ? `<span class="pill ${d < HOJE() ? "at" : "ab"}"><span>abertas</span>${a}</span>` : ""}</div>`; }
   const clis = contar(ok, (v) => v.cid);
-  $("mConC").innerHTML = `<div class="m-kpis"><div><b>${fmtN(ok.length)}</b><span>visitas no período</span></div><div><b>${fmtN(cs?.cli || 0)}</b><span>clientes</span></div><div><b>${fmtN(cs?.dias || 0)}</b><span>dias em campo</span></div><div><b>${cs?.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs?.atr || 0)}</b><span>abertas em atraso</span></div><div><b>${fmtP(cs?.rel || 0)}</b><span>check-in relâmpago</span></div></div>
+  $("mConC").innerHTML = `<div class="m-kpis"><div><b>${fmtN(ok.length)}</b><span>visitas no período</span></div><div><b>${fmtN(cs?.cli || 0)}</b><span>clientes</span></div><div><b>${fmtN(cs?.dias || 0)}</b><span>dias em campo</span></div><div><b>${cs?.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs?.atr || 0)}</b><span>abertas em atraso</span></div><div><b>${fmtP(cs?.gps || 0)}</b><span>com GPS</span></div></div>
     <div><h3 class="label" style="margin-bottom:6px">Mês dia a dia</h3><div class="cal">${cal}</div></div>
     <div class="grid2" style="gap:16px"><div><h3 class="label">Clientes visitados</h3><ol class="rank" style="margin-top:8px">${rankHtml(clis.slice(0, 15).map(([cid, n]) => ({ l: titulo(state.db.clientes.get(cid)?.nome), n, attr: `data-cli="${esc(cid)}"` })))}</ol></div>
-    <div><h3 class="label">Tipos e territórios</h3><ol class="rank" style="margin-top:8px">${rankHtml(contar(ok, (v) => v.sv ? v.sv.pesq : v.tipo).slice(0, 6).map(([l, n]) => ({ l, n })))}</ol><p class="note" style="margin-top:10px">Territórios: ${esc((cs?.terrs || []).map(titulo).join(", "))}</p></div></div>`;
+    <div><h3 class="label">Tipos e territórios</h3><ol class="rank" style="margin-top:8px">${rankHtml(contar(ok, (v) => v.sv ? v.sv.pesq : v.tipo).slice(0, 6).map(([l, n]) => ({ l, n })))}</ol><p class="note" style="margin-top:10px">Territórios: ${esc((cs?.terrs || []).map(titulo).join(", "))}</p></div></div>
+    <div><div class="m-pe"><h3 class="label">Anotações do gestor</h3><span style="flex:1"></span><button type="button" class="btn sm" data-nota="${esc(nome)}">+ Nova anotação</button></div>
+    <ol class="nhist">${notasDe(nome).slice(0, 5).map((n) => `<li><div class="h"><span class="chip ch-info">${esc(n.tema)}</span><b>${esc(n.autor_nome)}</b><span class="note">${new Date(n.criado).toLocaleDateString("pt-BR")}</span></div><p class="txt">${esc(n.texto)}</p></li>`).join("") || `<li class="empty">Nenhuma anotação sobre este consultor.</li>`}</ol></div>`;
   abrirModal("mCon");
 }
 let modalAnterior = null;
@@ -1630,8 +1708,8 @@ function renderMetodo() {
     ["Situação do consultor", "Ativo = visitou nos últimos 6 dias; Atenção = 7 a 14 dias sem visita; Parado = 15 ou mais; Sem visita no período = nenhuma realizada entre De e Até. Só aparece quem tem pelo menos um registro na base carregada: para saber de quem nunca registrou nada, carregue meses seguidos ou o cadastro de equipe."],
     ["Regional / equipe", "derivada do código do território (V08, L39…), pela equipe de vendas mais frequente daquele código. Corrige os registros em que o C4C grava o nome do território no lugar da equipe."],
     ["Mapa", "a exportação traz só a latitude do check-in (as duas colunas são latitude). Cada visita é posicionada no município do seu território (base IBGE, kelvins/municipios-brasileiros); rotas e distritos usam o município mais próximo ou a sede da regional. Pedir ao time do C4C para incluir a longitude permite ligar o mapa ao ponto exato do check-in."],
-    ["Check-in relâmpago", "check-out a menos de 2 minutos do check-in. Mostra visita registrada depois do fato; a duração real não é medida."],
     ["Inteligência de campo", "perguntas-chave lidas pelo texto da pergunta (Intenção de compra, Previsão de compra, Área estimada, Concorrência, Risco, Satisfação, SAC, Fidelidade, Pendência). Para cada cliente vale a resposta mais recente. Área acima de 100 mil ha é descartada como erro de digitação."],
+    ["Anotações do gestor", "na aba Equipes, cada consultor tem um botão Anotar. A anotação guarda assunto, texto, autor e data, e pode citar uma visita. Quem vê a regional do consultor vê as anotações; só o autor ou um admin pode excluir."],
     ["Quem vê o quê", "Admin e Diretoria veem todas as regionais. Gerente vê só as regionais atribuídas a ele na Administração; clientes, mapa e agenda seguem a mesma trava. Na versão publicada a trava é feita no banco (Supabase, row level security), não só na tela."],
     ["Senhas", `usuário novo e senha resetada entram com a senha padrão e são obrigados a criar uma senha própria (8+ caracteres, letras e números) no primeiro acesso.`],
     ["Publicação", `esta página roda em modo demonstração sem servidor. Para a equipe usar, publique o <span class="mono">index.html</span> com o <span class="mono">config.js</span> do Supabase e rode o script <span class="mono">radar_campo.sql</span> (entregues junto). As planilhas mensais entram pela Administração.`],
@@ -1691,6 +1769,9 @@ const DemoAPI = {
     else this.usuarios.push({ id: "u" + Date.now(), nome: d.nome, email, perfil: d.perfil, ativo: d.ativo, regionais: d.regionais, trocar: true, h: await hash(SENHA_PADRAO), ultimo: null });
     this.salvarTodos(); return { criado: !d.id };
   },
+  async notas() { return store.get("rc_notas", []); },
+  async criarNota(n) { const a = store.get("rc_notas", []); const nova = { ...n, id: "n" + Date.now(), autor_id: state.conta.id, autor_nome: state.conta.nome, criado: Date.now() }; a.push(nova); store.set("rc_notas", a); return nova; },
+  async excluirNota(id) { store.set("rc_notas", store.get("rc_notas", []).filter((n) => n.id !== id)); },
   async resetar(id) { const u = this.usuarios.find((x) => x.id === id); u.h = await hash(SENHA_PADRAO); u.trocar = true; this.salvarTodos(); },
   async definirRegionais(mapa) { for (const [id, regs] of Object.entries(mapa)) { const u = this.usuarios.find((x) => x.id === id); if (u) u.regionais = regs; } this.salvarTodos(); },
   async dados() { if (!EMBUTIDO) throw new Error("Sem dados de demonstração nesta versão."); return decodificar(EMBUTIDO); },
@@ -1733,6 +1814,17 @@ const SupaAPI = {
   },
   async listar() { const { data, error } = await this.sb.rpc("admin_listar_usuarios"); if (error) throw new Error(error.message); return (data || []).map((u) => ({ id: u.user_id, nome: u.nome, email: u.email, perfil: u.perfil, ativo: u.ativo, trocar: u.trocar_senha, regionais: u.regionais || [], ultimo: u.ultimo_acesso ? Date.parse(u.ultimo_acesso) : null })); },
   async salvar(d) { const { data, error } = await this.sb.rpc("admin_salvar_usuario", { p_user: d.id || null, p_email: d.email, p_nome: d.nome, p_perfil: d.perfil, p_ativo: d.ativo, p_regionais: d.regionais }); if (error) throw new Error(error.message); return data || {}; },
+  async notas() {
+    const { data, error } = await this.sb.from("anotacoes").select("id,consultor,regional,tema,texto,vid,autor,autor_nome,criado_em").order("criado_em", { ascending: false }).limit(5000);
+    if (error) { console.warn("anotações:", error.message); return []; }
+    return data.map((n) => ({ id: n.id, consultor: n.consultor, regional: n.regional, tema: n.tema, texto: n.texto, vid: n.vid, autor_id: n.autor, autor_nome: n.autor_nome, criado: Date.parse(n.criado_em) }));
+  },
+  async criarNota(n) {
+    const { data, error } = await this.sb.from("anotacoes").insert({ consultor: n.consultor, regional: n.regional, tema: n.tema, texto: n.texto, vid: n.vid || null, autor_nome: state.conta.nome }).select().single();
+    if (error) throw new Error(/relation .* does not exist|could not find the table/i.test(error.message) ? "Falta rodar o anotacoes.sql no Supabase." : error.message);
+    return { ...n, id: data.id, autor_id: data.autor, autor_nome: data.autor_nome, criado: Date.parse(data.criado_em) };
+  },
+  async excluirNota(id) { const { error } = await this.sb.from("anotacoes").delete().eq("id", id); if (error) throw new Error(error.message); },
   async resetar(id) { const { error } = await this.sb.rpc("admin_resetar_senha", { p_user: id }); if (error) throw new Error(error.message); },
   async definirRegionais(mapa) { for (const [id, regs] of Object.entries(mapa)) { const { error } = await this.sb.rpc("admin_definir_regionais", { p_user: id, p_regionais: regs }); if (error) throw new Error(error.message); } },
   async todos(tabela, cols, ordem) {
@@ -1909,6 +2001,7 @@ async function entrou(conta) {
   $("quem").innerHTML = `<b>${esc(conta.nome)}</b> · ${PERFIS[conta.perfil]}`;
   $("tabAdmin").hidden = conta.perfil !== "admin";
   if (!state.raw) { $("ctx").textContent = "Carregando visitas…"; telas("app"); try { state.raw = await API.dados(); } catch (e) { telas("login"); $("lErr").textContent = "Não consegui carregar as visitas: " + e.message + (API === DemoAPI ? " Preencha o config.js com o Supabase." : ""); return; } }
+  try { state.notas = await API.notas(); } catch { state.notas = []; }
   carregarBase(state.raw);
   telas("app"); selPane(location.hash.slice(1) || "geral");
   if (conta.perfil === "gerente" && !conta.regionais.length) toast("Nenhuma regional liberada", "Peça ao administrador para atribuir as regionais da sua equipe.");
@@ -1991,14 +2084,16 @@ function ligarEventos() {
   // cliques que abrem detalhes / filtram
   document.addEventListener("click", (e) => {
     const go = e.target.closest("[data-go]"); if (go) { selPane(go.dataset.go); scrollTo({ top: 0 }); return; }
+    const nb = e.target.closest("[data-nota]"); if (nb) { e.preventDefault(); e.stopPropagation(); abrirNotas(nb.dataset.nota); return; }
+    const nx = e.target.closest("[data-nota-x]"); if (nx) { excluirNota(nx.dataset.notaX, nx); return; }
     const cli = e.target.closest("[data-cli]"); if (cli) { e.preventDefault(); abrirCliente(cli.dataset.cli); return; }
     const con = e.target.closest("[data-cons]"); if (con) { e.preventDefault(); abrirConsultor(con.dataset.cons); return; }
-    const reg = e.target.closest("tr[data-reg]"); if (reg) { aplicarFiltro("grupo", ""); aplicarFiltro("reg", reg.dataset.reg); return; }
-    const mun = e.target.closest("[data-mun]"); if (mun && $("pane-mapa").contains(mun)) { state.mapa.sel = mun.dataset.mun || null; desenharMapa(state.mapa.pts, state.mapa.lbl); detalheMapa(state.mapa.pts.find((g) => g.k === state.mapa.sel), state.mapa.lbl); return; }
+    const reg = e.target.closest("tr[data-reg]"); if (reg) { if (state.f.reg === reg.dataset.reg) aplicarFiltro("reg", ""); else { aplicarFiltro("grupo", ""); aplicarFiltro("reg", reg.dataset.reg); } return; }
+    const mun = e.target.closest("[data-mun]"); if (mun && $("pane-mapa").contains(mun)) { state.mapa.sel = mun.dataset.mun && mun.dataset.mun !== state.mapa.sel ? mun.dataset.mun : null; desenharMapa(state.mapa.pts, state.mapa.lbl); detalheMapa(state.mapa.pts.find((g) => g.k === state.mapa.sel), state.mapa.lbl); return; }
     const z = e.target.closest("[data-z]"); if (z) { zoomMapa(+z.dataset.z); return; }
     if (e.target.closest("[data-fechar]") || e.target.classList.contains("modal")) { e.target.closest(".modal").hidden = true; return; }
     const cp = e.target.closest("[data-copy]"); if (cp) { copiarTabela(cp.dataset.copy); return; }
-    const dia = e.target.closest("#cal [data-dia]"); if (dia) { state.calSel = +dia.dataset.dia; renderCal(); return; }
+    const dia = e.target.closest("#cal [data-dia]"); if (dia) { state.calSel = state.calSel === +dia.dataset.dia ? null : +dia.dataset.dia; renderCal(); return; }
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") fecharModais();
@@ -2030,6 +2125,9 @@ function ligarEventos() {
   $("fileV").addEventListener("change", (e) => lerArquivo("v", e.target.files[0])); $("fileQ").addEventListener("change", (e) => lerArquivo("q", e.target.files[0]));
   for (const [id, t] of [["dropV", "v"], ["dropQ", "q"]]) { const el = $(id); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerArquivo(t, e.dataTransfer.files[0]); }); }
   $("impAplicar").addEventListener("click", aplicarImportacao);
+  $("nForm").addEventListener("submit", salvarNota);
+  $("nTexto").addEventListener("input", () => { $("nConta").textContent = `${$("nTexto").value.length}/1000`; $("nErr").textContent = ""; });
+  $("nTema").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) $("nTema").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", String(x === b))); });
 }
 
 (async function boot() {
