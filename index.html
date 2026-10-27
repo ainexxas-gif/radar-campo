@@ -349,6 +349,51 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 .atr th.stk, .atr td.stk { position: sticky; left: 0; z-index: 2; background: var(--surface); }
 .atr thead th.stk { z-index: 3; background: var(--card); }
 
+/* oportunidades de venda */
+.opp { --e-quente: var(--red); --e-negoc: var(--amb); --e-tec: var(--brand-2); --e-reat: var(--q3); --e-fech: var(--ok); }
+.e-quente { --ec: var(--e-quente); } .e-negoc { --ec: var(--e-negoc); } .e-tec { --ec: var(--e-tec); } .e-reat { --ec: var(--e-reat); } .e-fech { --ec: var(--e-fech); }
+.op-etapas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.op-et { text-align: left; border: 1px solid var(--line); border-top: 4px solid var(--ec); background: var(--surface); border-radius: 8px; padding: 9px 12px; display: grid; gap: 1px; cursor: pointer; color: var(--text); }
+.op-et b { font-size: 1.7rem; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.op-et .d { font-size: .78rem; color: var(--muted); }
+.op-et:hover { border-color: var(--brand-2); border-top-color: var(--ec); }
+.op-et[aria-pressed="true"] { background: var(--info-bg); box-shadow: inset 0 0 0 2px var(--ec); }
+.op-filtros { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: flex-start; }
+.op-f { display: grid; gap: 4px; min-width: 0; }
+.op-ord { margin-left: auto; }
+.op-ord select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.op-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.opchip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: .82rem; }
+.opchip small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.opchip:hover { border-color: var(--brand-2); }
+.opchip[aria-pressed="true"] { background: var(--hdr); border-color: var(--hdr); color: #fff; }
+.opchip[aria-pressed="true"] small { color: var(--hdr-ctx); }
+.op-board { display: grid; grid-template-columns: repeat(5, minmax(240px, 1fr)); gap: 10px; overflow-x: auto; padding-bottom: 4px; align-items: start; }
+.op-board.uma { grid-template-columns: 1fr; }
+.op-board.uma .op-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 10px; }
+.op-col { background: var(--neutro-bg); border-radius: 8px; padding: 8px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.op-colh { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; border-bottom: 3px solid var(--ec); padding: 2px 2px 6px; }
+.op-colh b { color: var(--ink); } .op-colh span { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.op-cards { display: grid; gap: 8px; }
+.opc { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ec); border-radius: 7px; padding: 9px 10px; display: grid; gap: 5px; cursor: pointer; min-width: 0; }
+.opc:hover { border-color: var(--brand-2); border-left-color: var(--ec); box-shadow: var(--shadow); }
+.opc header { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.opc header b { color: var(--ink); font-size: .92rem; line-height: 1.25; overflow-wrap: anywhere; }
+.opc .sc { position: relative; flex: 0 0 auto; width: 46px; height: 20px; border-radius: 999px; background: var(--neutro-bg); overflow: hidden; display: grid; place-items: center; }
+.opc .sc i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ec); opacity: .35; }
+.opc .sc span { position: relative; font-size: .76rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.opc .who { font-size: .78rem; color: var(--muted); }
+.opc .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.opc .tags .chip { font-size: .7rem; padding: 1px 7px; }
+.opc .pv { font-size: .78rem; font-weight: 700; color: var(--brand); }
+.opc .pv.logo { color: var(--ok-ink); } .opc .pv.venc { color: var(--red); }
+.opc .rec { font-size: .76rem; color: var(--text); }
+.opc .fala { font-size: .8rem; color: var(--text); font-style: italic; border-left: 2px solid var(--line); padding-left: 7px; overflow-wrap: anywhere; }
+.opc footer { font-size: .74rem; color: var(--muted); }
+.op-mais { justify-self: center; }
+@media (max-width: 1100px) { .op-etapas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .op-etapas { grid-template-columns: 1fr 1fr; } .op-board { grid-template-columns: repeat(5, 82vw); } .op-board.uma { grid-template-columns: 1fr; } .op-ord { margin-left: 0; } }
+
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -405,6 +450,72 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
   .qa { grid-template-columns: 1fr; }
   .refdata { margin-left: 0; }
 }
+
+/* ===== cabeçalho e filtros compactos (v3) ===== */
+.hdr-in { grid-template-columns: auto minmax(0, 1fr) auto; padding-block: 6px; gap: 6px 18px; }
+.hdr .tit { border-left: 1px solid rgba(255,255,255,.25); padding-left: 12px; color: #fff; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.hdr .logo { height: 22px; }
+.tabs-bar { display: none; }
+.hdr .tabs { margin: 0; padding: 0; max-width: none; min-width: 0; }
+.tab { padding: 5px 11px; font-size: .88rem; }
+.hdr-r { flex-wrap: nowrap; gap: 6px; }
+.fpill { display: none; font-size: .82rem; padding: 4px 11px; }
+.fpill span:not(:empty) { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; margin-left: 5px; border-radius: 999px; background: var(--eyebrow); color: #fff; font-size: .7rem; font-weight: 700; }
+body.f-oculto .fpill { display: inline-flex; align-items: center; }
+.avatar { font-weight: 700; font-size: .78rem; letter-spacing: .02em; }
+.menu-u { position: relative; }
+.menu-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
+.menu-pop .quem { color: var(--muted); padding: 6px 8px 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; white-space: normal; max-width: none; display: block; font-size: .84rem; }
+.menu-pop .quem b { color: var(--ink); display: block; font-size: .92rem; }
+.menu-pop button { border: 0; background: none; text-align: left; padding: 8px; border-radius: 6px; cursor: pointer; color: var(--ink); font-size: .9rem; }
+.menu-pop button:hover { background: var(--card); }
+.filters { transition: transform .22s ease, box-shadow .2s; }
+body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: none; pointer-events: none; }
+.f-in { padding-block: 7px 5px; gap: 3px; }
+.f-grid { grid-template-columns: auto repeat(4, minmax(120px, 1fr)) minmax(170px, 1.3fr); gap: 8px; align-items: center; }
+.f-grid select, .f-grid input { padding: 5px 8px; font-size: .88rem; height: 32px; }
+.f-per { display: flex; align-items: center; gap: 6px; }
+.f-per input[type=date] { width: 132px; }
+.f-per .ate { color: var(--muted); font-size: .82rem; }
+.quick { padding: 2px; }
+.quick button { padding: 3px 9px; font-size: .78rem; }
+.f-row2 { min-height: 20px; font-size: .76rem; gap: 6px 12px; }
+.f-row2 .ctx { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.f-row2 .refdata { margin-left: auto; white-space: nowrap; }
+.fchip { font-size: .76rem; padding: 1px 3px 1px 9px; }
+.wrap { padding-block: 16px 32px; gap: 16px; }
+.pane { gap: 16px; }
+@media (max-width: 1280px) {
+  .hdr-in { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .hdr .tit span { display: none; }
+  .f-grid { grid-template-columns: auto repeat(2, minmax(0, 1fr)); }
+  .f-grid .busca { grid-column: span 1; }
+}
+@media (max-width: 900px) {
+  .hdr-in { grid-template-columns: minmax(0, 1fr) auto; }
+  .hdr .tabs { grid-column: 1 / -1; grid-row: 2; }
+  .hdr .tit span { display: inline; }
+}
+@media (max-width: 720px) {
+  .fpill { display: inline-flex; align-items: center; }
+  .f-grid { display: none; grid-template-columns: 1fr 1fr; }
+  .filters.open .f-grid { display: grid; }
+  .f-per { grid-column: 1 / -1; flex-wrap: wrap; }
+  .f-per input[type=date] { width: auto; flex: 1 1 120px; }
+  .f-grid .busca { grid-column: 1 / -1; }
+  .f-row2 .ctx, .f-row2 .refdata { display: none; }
+  body.f-oculto .filters { transform: none; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .filters { transition: none; } }
+@media (max-width: 900px) { .hdr-l { min-width: 0; } .hdr .tit { min-width: 0; overflow: hidden; } .hdr .tit span { overflow: hidden; text-overflow: ellipsis; } }
+@media (max-width: 720px) {
+  .filters:not(.open) .f-in { padding-block: 0; }
+  .f-row2 { min-height: 0; }
+  .filters:not(.open) .f-row2:has(.chips:empty) { display: none; }
+  .filters:not(.open) .chips:not(:empty) { padding-block: 6px; }
+  .filters:not(.open) { border-bottom-color: transparent; }
+}
+@media (max-width: 400px) { .hdr .logo { display: none; } .hdr .tit { border-left: 0; padding-left: 0; } }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -416,7 +527,7 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
       <input id="lSenha" type="password" autocomplete="current-password" required>
       <button class="btn primary" type="submit" id="lBtn">Entrar</button>
       <div class="err" id="lErr"></div>
-      <p class="note">Primeiro acesso? Entre com seu e-mail e a <b>senha padrão</b> que você recebeu. Em seguida você cria a sua.</p>
+      <p class="note">Primeiro acesso? Entre com seu e-mail e a <b>senha padrão</b> que você recebeu. Em seguida você cria a sua. A senha do Radar é só dele, separada da do Ruptura Zero e dos outros sistemas.</p>
       <div class="demo" id="lDemo" hidden>
         <span><b>Modo demonstração.</b> Usuários de exemplo, todos com a senha padrão <span class="mono">Araguaia159*</span>:</span>
         <span id="lDemoUsers"></span>
@@ -447,53 +558,48 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
     <div class="hdr-in gut">
       <div class="hdr-l">
         <svg class="logo" viewBox="0 0 103.7 28" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Araguaia"><defs></defs><g><path d="M101.6 19 101.3 19 101.3 17C101.5 17 101.6 17 101.9 17 102.2 17 102.4 17.1 102.5 17.2 102.6 17.3 102.7 17.4 102.7 17.6 102.7 17.9 102.5 18 102.3 18.1L102.3 18.1C102.5 18.1 102.6 18.3 102.6 18.6 102.6 18.9 102.7 19 102.7 19.1L102.4 19.1C102.4 19 102.3 18.9 102.3 18.6 102.3 18.3 102.1 18.2 101.9 18.2L101.7 18.2 101.7 19ZM101.6 17.9 101.8 17.9C102.1 17.9 102.3 17.8 102.3 17.6 102.3 17.4 102.2 17.2 101.8 17.2 101.7 17.2 101.6 17.2 101.6 17.2L101.6 17.9Z"/><path d="M17.1 23.7 17.1 27.3C17.1 27.7 16.8 28.1 16.3 28.1L14.7 28.1C14.3 28.1 13.9 27.7 13.9 27.3L13.9 16.9C13.9 16.5 14.2 16.1 14.7 16.1L21.6 16.1C24.1 16.1 25.9 17.5 25.9 19.9 25.9 21.7 24.5 22.6 22.8 22.9 23.5 23.2 24 23.8 24.7 24.8L26.2 27.2C26.5 27.6 26.4 28 25.9 28L23.9 28C23.5 28 22.9 27.7 22.6 27.2L21.2 25C20.8 24.3 20.2 23.6 19.1 23.6L17.1 23.6ZM17.1 18.5 17.1 21.4 20.6 21.4C21.6 21.4 22.8 21.1 22.8 20 22.8 18.9 21.6 18.6 20.6 18.6L17.1 18.6Z"/><path d="M49.3 23.7C48.9 23.7 48.5 23.3 48.5 22.9L48.5 22.3C48.5 21.9 48.9 21.5 49.3 21.5L53.5 21.5C53.9 21.5 54.3 21.9 54.3 22.3L54.3 23.2C54.3 26.3 52.5 28 48.8 28L46.9 28C43.3 28 41.2 26.1 41.2 22 41.2 17.9 43.3 16 47.4 16L49.3 16C51.6 16 54.1 17.2 54.1 19.1 54.1 19.9 53.5 20 53.2 20L52.2 20C51.7 20 51.4 19.8 51.1 19.2 50.8 18.6 50 18.3 49 18.3L47.5 18.3C45 18.3 44.4 19.2 44.4 22 44.4 24.8 45.1 25.7 47.1 25.7L48.8 25.7C50.7 25.7 51.3 24.9 51.3 23.7L49.3 23.7Z"/><path d="M62.4 25.7C63.9 25.7 64.6 24.9 64.6 23.3L64.6 16.9C64.6 16.5 65 16.1 65.4 16.1L67 16.1C67.4 16.1 67.8 16.4 67.8 16.9L67.8 23.3C67.8 26.3 66 28.1 62.6 28.1L61 28.1C57.5 28.1 55.8 26.3 55.8 23.3L55.8 16.9C55.8 16.5 56.2 16.1 56.6 16.1L58.2 16.1C58.6 16.1 59 16.4 59 16.9L59 23.3C59 24.9 59.7 25.7 61.2 25.7L62.4 25.7Z"/><path d="M83.8 16.9C83.8 16.5 84.2 16.1 84.6 16.1L86.1 16.1C86.5 16.1 86.9 16.4 86.9 16.9L86.9 27.2C86.9 27.6 86.5 28 86.1 28L84.6 28C84.2 28 83.8 27.7 83.8 27.2L83.8 16.9Z"/><path d="M40 27.3 38 19.4C37.6 17.8 36.5 16.9 35.1 16.5 34.3 16.2 33.2 16.2 32.2 16.6 31 17 30 17.8 29.6 19.4L27.5 27.3C27.3 27.7 27.6 28 28 28L29.6 28C30 28 30.5 27.7 30.6 27.2L31.2 25.1 36.3 25.1 36.9 27.2C37 27.6 37.4 28 37.9 28L39.5 28C39.9 28 40.2 27.7 40 27.3M34.6 22.8 32.9 22.8 31.8 22.8 32.5 20.1C32.8 18.8 34.6 18.8 34.9 20.1L35.6 22.8 34.6 22.8Z"/><path d="M12.6 27.3 10.5 19.4C10.1 17.8 9 16.9 7.6 16.5 6.8 16.2 5.7 16.2 4.7 16.6 3.5 17 2.5 17.9 2.1 19.4L0 27.3C-0.1 27.7 0.2 28 0.6 28L2.2 28C2.6 28 3.1 27.7 3.2 27.2L3.8 25.1 8.9 25.1 9.5 27.2C9.6 27.6 10 28 10.5 28L12 28C12.5 28 12.7 27.7 12.6 27.3M7.2 22.8 5.5 22.8 4.4 22.8 5.1 20.1C5.4 18.8 7.2 18.8 7.5 20.1L8.2 22.8 7.2 22.8Z"/><path d="M81.7 27.3 79.6 19.4C79.2 17.8 78.1 16.9 76.7 16.5 75.8 16.2 74.8 16.2 73.8 16.6 72.6 17 71.6 17.9 71.2 19.4L69.1 27.3C69 27.7 69.3 28 69.7 28L71.3 28C71.7 28 72.2 27.7 72.3 27.2L72.9 25.1 74.6 25.1 76.3 25.1 78 25.1 78.6 27.2C78.7 27.6 79.1 28 79.6 28L81.2 28C81.6 28 81.8 27.7 81.7 27.3M76.3 22.8 74.6 22.8 73.5 22.8 74.2 20.1C74.5 18.8 76.3 18.8 76.6 20.1L77.3 22.8 76.3 22.8Z"/><path d="M101.3 27.3 99.2 19.4C98.8 17.8 97.7 16.9 96.3 16.5 95.5 16.2 94.4 16.2 93.4 16.6 92.2 17 91.2 17.9 90.8 19.4L88.7 27.3C88.6 27.7 88.8 28.1 89.3 28.1L90.9 28.1C91.3 28.1 91.8 27.8 91.9 27.3L92.5 25.2 94.2 25.2 95.9 25.2 97.6 25.2 98.2 27.3C98.3 27.7 98.7 28.1 99.2 28.1L100.8 28.1C101.1 28 101.4 27.7 101.3 27.3M95.8 22.8 94.1 22.8 93 22.8 93.7 20.1C94 18.8 95.8 18.8 96.1 20.1L96.8 22.8 95.8 22.8Z"/><path d="M96.7 1.4C95.2 1.8 91.9 1.5 89 3 86.1 4.5 86 7.2 86.2 8.1 86.2 8.3 86.4 8.5 86.5 8.7 86.6 8.6 86.7 8.4 86.8 8.3 89.5 5.2 93.3 4.9 93.3 4.9 85.9 7.2 86.1 13.4 84.6 11.7 83.1 10 81.3 9.6 81.3 9.6 81.3 9.6 83.6 9.8 84.6 10.9 84.7 11 84.7 11 84.8 11.1 84.8 11.1 84.8 11.1 84.8 11.1 84.9 10.6 84.8 9.1 83.2 8.3 81.6 7.5 79.8 7.6 78.9 7.4 78 7 77.7 6.5 77.7 6.5 77.7 6.5 78.4 12.6 83 12.5 83.8 12.5 84.1 11.9 84.1 11.9 84.9 12.8 85 14.5 85 14.6 85 14.6 85 15.2 85.4 15.2 85.8 15.2 85.9 14.9 85.9 14.7 85.9 14.7 85.9 14.7 85.9 14.7 85.9 14.7 85.9 12 87.6 10 93.9 14.8 98.9 0 98.9 0 98.9 0 98.2 1 96.7 1.4"/><path d="M103.4 18C103.4 18.9 102.8 19.5 102 19.5 101.2 19.5 100.5 18.8 100.5 18 100.5 17.2 101.2 16.5 101.9 16.5L101.9 16.5C102.7 16.4 103.4 17.1 103.4 18M103.7 17.9C103.7 16.9 102.9 16.1 101.9 16.1L101.9 16.1C100.9 16.1 100.1 16.9 100.1 17.9 100.1 18.9 100.9 19.7 101.9 19.7 102.9 19.8 103.7 19 103.7 17.9"/></g></svg>
-        <div class="tit">
-          <span class="eyebrow">Araguaia · App do Consultor</span>
-          <h1><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle class="r1" cx="16" cy="16" r="13"/><circle class="r1" cx="16" cy="16" r="7.5"/><path class="sw" d="M16 16 L16 3 A13 13 0 0 1 27.3 9.5 Z"/><circle class="r2" cx="16" cy="16" r="13" fill="none" stroke-dasharray="0"/><circle class="pt" cx="21.5" cy="9.8" r="2.2"/><circle class="pt" cx="16" cy="16" r="1.6"/></svg><span>Radar de Campo</span><small>Cada visita vira decisão.</small></h1>
-          <span class="ctx" id="ctx">Carregando…</span>
-        </div>
+        <h1 class="tit"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle class="r1" cx="16" cy="16" r="13"/><circle class="r1" cx="16" cy="16" r="7.5"/><path class="sw" d="M16 16 L16 3 A13 13 0 0 1 27.3 9.5 Z"/><circle class="r2" cx="16" cy="16" r="13" fill="none" stroke-dasharray="0"/><circle class="pt" cx="21.5" cy="9.8" r="2.2"/><circle class="pt" cx="16" cy="16" r="1.6"/></svg><span>Radar de Campo</span></h1>
       </div>
-      <div class="hdr-r">
-        <button class="hbtn f-toggle" id="btnFiltros" type="button" aria-expanded="false" aria-controls="fGrid">Filtrar</button>
-        <button class="hbtn ico" id="btnTema" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema"></button>
-        <span class="quem" id="quem"></span>
-        <button class="hbtn" id="btnSenha" type="button">Minha senha</button>
-        <button class="hbtn" id="btnSair" type="button">Sair</button>
-      </div>
-    </div>
-    <div class="tabs-bar gut">
       <nav class="tabs" role="tablist" aria-label="Seções" id="tabs">
         <button class="tab" role="tab" type="button" data-pane="geral" aria-selected="true">Visão geral</button>
         <button class="tab" role="tab" type="button" data-pane="equipes">Equipes</button>
         <button class="tab" role="tab" type="button" data-pane="mapa">Mapa</button>
         <button class="tab" role="tab" type="button" data-pane="clientes">Clientes</button>
         <button class="tab" role="tab" type="button" data-pane="agenda">Agenda</button>
-        <button class="tab" role="tab" type="button" data-pane="intel">Inteligência de campo</button>
+        <button class="tab" role="tab" type="button" data-pane="intel">Oportunidades</button>
         <button class="tab" role="tab" type="button" data-pane="visitas">Visitas</button>
         <button class="tab" role="tab" type="button" data-pane="metodo">Metodologia</button>
         <button class="tab adm" role="tab" type="button" data-pane="admin" id="tabAdmin" hidden>Administração</button>
       </nav>
+      <div class="hdr-r">
+        <button class="hbtn fpill" id="btnFiltros" type="button" aria-expanded="false" aria-controls="filtros" title="Mostrar os filtros">Filtros<span id="fCount"></span></button>
+        <button class="hbtn ico" id="btnTema" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema"></button>
+        <div class="menu-u">
+          <button class="hbtn ico avatar" id="btnUser" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menuUser" title="Minha conta"></button>
+          <div class="menu-pop" id="menuUser" hidden>
+            <span class="quem" id="quem"></span>
+            <button type="button" id="btnSenha">Trocar minha senha</button>
+            <button type="button" id="btnSair">Sair</button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
   <section class="filters" id="filtros" aria-label="Filtros">
     <div class="f-in gut">
       <div class="f-grid" id="fGrid">
-        <div class="f"><label class="label" for="fDe">De</label><input id="fDe" type="date"></div>
-        <div class="f"><label class="label" for="fAte">Até</label><input id="fAte" type="date"></div>
-        <div class="f"><label class="label" for="fGrupo">Canal</label><select id="fGrupo"><option value="">Todos</option></select></div>
-        <div class="f"><label class="label" for="fReg">Regional / equipe</label><select id="fReg"><option value="">Todas</option></select></div>
-        <div class="f"><label class="label" for="fCons">Consultor</label><select id="fCons"><option value="">Todos</option></select></div>
-        <div class="f"><label class="label" for="fTipo">Tipo de visita</label><select id="fTipo"><option value="">Todos</option></select></div>
-        <div class="f busca"><label class="label" for="fBusca">Buscar cliente</label><input id="fBusca" type="search" placeholder="Nome ou código do cliente"></div>
-      </div>
-      <div class="f-row2">
-        <div class="quick" id="quick" role="group" aria-label="Atalhos de período">
-          <button type="button" data-q="7">Últimos 7 dias</button><button type="button" data-q="15">15 dias</button><button type="button" data-q="tudo" aria-pressed="true">Tudo carregado</button>
+        <div class="f-per">
+          <input id="fDe" type="date" aria-label="De" title="Início do período"><span class="ate">a</span><input id="fAte" type="date" aria-label="Até" title="Fim do período">
+          <div class="quick" id="quick" role="group" aria-label="Atalhos de período"><button type="button" data-q="7">7 dias</button><button type="button" data-q="15">15 dias</button><button type="button" data-q="tudo" aria-pressed="true">Tudo</button></div>
         </div>
-        <div class="chips" id="chips" aria-live="polite"></div>
-        <span class="refdata" id="refdata"></span>
+        <select id="fGrupo" aria-label="Canal"><option value="">Todos os canais</option></select>
+        <select id="fReg" aria-label="Regional ou equipe"><option value="">Todas as regionais</option></select>
+        <select id="fCons" aria-label="Consultor"><option value="">Todos os consultores</option></select>
+        <select id="fTipo" aria-label="Tipo de visita"><option value="">Todos os tipos de visita</option></select>
+        <input id="fBusca" class="busca" type="search" placeholder="Buscar cliente" aria-label="Buscar cliente">
       </div>
+      <div class="f-row2"><div class="chips" id="chips" aria-live="polite"></div><span class="ctx" id="ctx"></span><span class="refdata" id="refdata"></span></div>
     </div>
   </section>
 
@@ -630,21 +736,31 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 
     <!-- ===== INTELIGÊNCIA ===== -->
     <div class="pane" id="pane-intel" role="tabpanel" hidden>
-      <p class="lead" id="intelLead"></p>
-      <section class="kpis" id="inKpis"></section>
+      <section class="panel opp">
+        <div class="panel-head"><h2>Oportunidades de venda</h2><div class="tbar"><span class="label" id="opLbl"></span><button class="btn" type="button" id="opCopiar">Copiar lista</button></div></div>
+        <p class="lead" id="intelLead"></p>
+        <div class="op-etapas" id="inKpis" role="group" aria-label="Etapas"></div>
+        <div class="op-filtros">
+          <div class="op-f"><span class="label">Querem comprar</span><div class="op-chips" id="opProd"></div></div>
+          <div class="op-f"><span class="label">Previsão de compra</span><div class="op-chips" id="opPrev"></div></div>
+          <div class="op-f"><span class="label">Concorrente</span><div class="op-chips" id="opConc"></div></div>
+          <div class="op-f op-ord"><label class="label" for="opOrd">Ordenar por</label><select id="opOrd"><option value="score">Maior chance</option><option value="area">Maior área</option><option value="prev">Previsão mais próxima</option><option value="ult">Visita mais antiga</option></select></div>
+        </div>
+        <div class="op-board" id="opBoard"></div>
+        <p class="note">Chance (0 a 100) = intenção de compra + quão perto está a previsão + tamanho da área + sinais extras (oportunidade identificada, aumento de share, recomendação técnica). Clique num cartão para ler a conversa completa do cliente.</p>
+      </section>
       <div class="grid2">
         <section class="panel">
-          <div class="panel-head"><h2>Funil de intenção de compra</h2><span class="label">última leitura de cada cliente</span></div>
-          <div class="split" id="intSplit"></div>
-          <div class="legend" id="intLeg"></div>
-          <h3 class="label sec">Previsão de compra por semana (clientes)</h3>
-          <div class="chart" id="prevChart"></div>
-          <div class="legend"><span><i class="sw c1"></i>Alta</span><span><i class="sw c2"></i>Média</span><span><i class="sw c3"></i>Baixa</span></div>
+          <div class="panel-head"><h2>O que os clientes querem comprar</h2><span class="label">clientes com oportunidade · clique para filtrar</span></div>
+          <ol class="rank" id="opRankProd"></ol>
+          <h3 class="label sec">Produtos recomendados nas visitas técnicas</h3>
+          <ol class="rank" id="opRankRec"></ol>
         </section>
         <section class="panel">
-          <div class="panel-head"><h2>Oportunidades quentes</h2><span class="label">intenção alta · maior área primeiro</span></div>
-          <div class="tbl-wrap tall"><table id="tQuentes"></table></div>
-          <p class="note">Previsão vencida = a data informada pelo consultor já passou e não há visita de fechamento registrada depois.</p>
+          <div class="panel-head"><h2>Onde estão as oportunidades</h2><span class="label">hectares em quentes + negociação</span></div>
+          <ol class="rank" id="opRankReg"></ol>
+          <h3 class="label sec">Consultores com mais oportunidades abertas</h3>
+          <ol class="rank" id="opRankCons"></ol>
         </section>
       </div>
       <div class="grid2">
@@ -913,7 +1029,8 @@ const PQ = {
   novosNeg: ["Há intenção de fechar novos negócios?"], pendMotivo: ["Motivo da pendência"], pendValor: ["Qual valor em aberto?"], pendSit: ["Situação atual"],
   pendResolv: ["Pendência resolvida?"], campanha: ["Qual campanha está sendo apresentada?"], desc: ["Descrição", "Anotações", "Observações", "Diferença percebida"],
 };
-const PQ_MULTI = { grupos: ["Grupo de produtos", "Se sim, selecionar grupo de produtos", "Se sim, selecionar grupo de produto"], cultura: ["Cultura principal", "Cultura"] };
+const PQ_MULTI = { grupos: ["Grupo de produtos", "Se sim, selecionar grupo de produtos", "Se sim, selecionar grupo de produto"], cultura: ["Cultura principal", "Cultura"],
+  produtosRec: ["Recomendação (produto + qtde)", "Se sim, quais produtos?"] };
 function lerDataBR(s) { const m = String(s || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 86400000) : null; }
 function lerNum(s) { const x = Number(String(s ?? "").replace(/\./g, "").replace(",", ".")); return isFinite(x) ? x : null; }
 function chavesQuest(qa) {
@@ -1540,35 +1657,114 @@ function renderCalDia() {
 const chipStatus = (v, hoje = HOJE()) => v.st === "ok" ? `<span class="chip ch-info">Realizada</span>` : v.st === "cx" ? `<span class="chip ch-neu">Cancelada</span>` : v.diaPlan < hoje ? `<span class="chip ch-red">Aberta · atraso</span>` : `<span class="chip ch-amb">Aberta</span>`;
 
 /* =================== INTELIGÊNCIA DE CAMPO =================== */
+/* =================== OPORTUNIDADES DE VENDA =================== */
+const ETAPAS = [
+  { k: "quente", l: "Quentes", d: "intenção alta, compra em até 30 dias", c: "e-quente" },
+  { k: "negoc", l: "Em negociação", d: "intenção média ou alta mais adiante", c: "e-negoc" },
+  { k: "tecnica", l: "Recomendação técnica", d: "produto recomendado em visita técnica", c: "e-tec" },
+  { k: "reativ", l: "Reativação", d: "ex-cliente quer voltar a comprar", c: "e-reat" },
+  { k: "fechado", l: "Pedido fechado", d: "fechou na revisão de preço", c: "e-fech" },
+];
+const PREV = [["venc", "Vencida"], ["15", "Até 15 dias"], ["30", "16 a 30 dias"], ["60", "31 a 60 dias"], ["mais", "Mais de 60"], ["sem", "Sem data"]];
+if (!state.op) state.op = { etapa: null, prod: new Set(), prev: null, conc: null, ord: "score", mais: new Set() };
+function faixaPrev(p, ref) { if (p == null) return "sem"; const d = p - ref; return d < 0 ? "venc" : d <= 15 ? "15" : d <= 30 ? "30" : d <= 60 ? "60" : "mais"; }
+function oportunidades(cli) {
+  const ref = REF();
+  return cli.map((c) => {
+    const s = c.sinais; let etapa = null;
+    if (s.pedido === "Sim" && (s.intencao_dia == null || s.pedido_dia >= s.intencao_dia)) etapa = "fechado";
+    else if (s.intencao === "Alta" && (s.previsao == null || s.previsao <= ref + 30)) etapa = "quente";
+    else if (s.intencao === "Alta" || s.intencao === "Média" || s.oport === "Sim" || s.share === "Sim" || s.novosNeg === "Sim") etapa = "negoc";
+    else if ((s.produtosRec || []).length) etapa = "tecnica";
+    else if (s.retorno === "Sim") etapa = "reativ";
+    if (!etapa) return null;
+    const area = s.area || 0, prev = s.previsao ?? null, fx = faixaPrev(prev, ref);
+    let sc = { Alta: 35, Média: 20, Baixa: 6 }[s.intencao] || 10;
+    sc += { "15": 25, "30": 18, venc: prev != null && ref - prev <= 30 ? 20 : 8, "60": 10, mais: 5, sem: 6 }[fx];
+    sc += area ? Math.min(20, Math.round(4 * Math.log10(area + 1))) : 0;
+    sc += Math.min(15, 5 * ["oport", "share", "novosNeg", "retorno"].filter((k) => s[k] === "Sim").length + ((s.produtosRec || []).length ? 5 : 0));
+    if (etapa === "fechado") sc = 100;
+    const prods = [...new Set((s.grupos || []).map((g) => g.trim()))];
+    return { ...c, etapa, score: Math.min(100, sc), area, prev, fx, prods, rec: s.produtosRec || [], conc: s.concAtiva === "Sim" ? titulo(s.concorrente || "Concorrente") : null,
+      fala: s.desc || s.sacDesc || "", campanha: s.campanha || "", cultura: (s.cultura || []).join(", "), riscoPerda: s.riscoPerda === "Alto" };
+  }).filter(Boolean);
+}
+function filtrarOp(ops, sem = {}) {
+  const o = state.op;
+  return ops.filter((x) => (sem.etapa || !o.etapa || x.etapa === o.etapa) && (sem.prod || !o.prod.size || x.prods.some((p) => o.prod.has(p))) &&
+    (sem.prev || !o.prev || x.fx === o.prev) && (sem.conc || !o.conc || (o.conc === "sim" ? !!x.conc : !x.conc)));
+}
+function ordenarOp(a) {
+  const k = state.op.ord;
+  return [...a].sort((x, y) => k === "area" ? y.area - x.area : k === "prev" ? (x.prev ?? 1e9) - (y.prev ?? 1e9) : k === "ult" ? (x.ult?.dia ?? 0) - (y.ult?.dia ?? 0) : y.score - x.score || y.area - x.area);
+}
+const chipsOp = (el, itens, ativo) => { $(el).innerHTML = itens.map(([v, l, n]) => `<button type="button" class="opchip" data-v="${esc(v)}" aria-pressed="${ativo(v)}">${esc(l)}${n != null ? ` <small>${fmtN(n)}</small>` : ""}</button>`).join(""); };
+function cartaoOp(x, ref) {
+  const prevTxt = x.prev == null || x.etapa === "fechado" ? "" : x.fx === "venc" ? `<span class="pv venc">Previsão ${fmtDia(x.prev)} · vencida há ${ref - x.prev} d</span>` : `<span class="pv ${x.fx === "15" ? "logo" : ""}">Compra prevista ${fmtDia(x.prev)} · ${x.prev === ref ? "hoje" : `em ${x.prev - ref} d`}</span>`;
+  const dias = x.sem == null ? "" : x.sem === 0 ? "hoje" : `há ${x.sem} d`;
+  return `<article class="opc ${ETAPAS.find((e) => e.k === x.etapa).c}" data-cli="${esc(x.cid)}" tabindex="0" role="button" aria-label="Abrir ${esc(titulo(x.nome))}">
+    <header><b>${esc(titulo(x.nome))}</b><span class="sc" title="Chance de conversão (0 a 100)"><i style="width:${x.score}%"></i><span>${x.score}</span></span></header>
+    <span class="who">${esc(titulo(x.consultor))} · ${esc(x.regional)}</span>
+    <div class="tags">${x.prods.slice(0, 3).map((p) => `<span class="chip ch-info">${esc(p)}</span>`).join("")}${x.area ? `<span class="chip ch-neu">${fmtN(x.area)} ha</span>` : ""}${x.conc ? `<span class="chip ch-amb" title="Concorrente atuando">${esc(x.conc)}</span>` : ""}${x.riscoPerda ? `<span class="chip ch-red">risco de perda</span>` : ""}</div>
+    ${prevTxt}
+    ${x.campanha ? `<span class="rec">Campanha: ${esc(x.campanha)}</span>` : ""}
+    ${x.rec.length ? `<span class="rec">Recomendado: ${esc(x.rec.slice(0, 2).join(" · "))}${x.rec.length > 2 ? "…" : ""}</span>` : ""}
+    ${x.fala ? `<p class="fala">“${esc(x.fala.length > 150 ? x.fala.slice(0, 148) + "…" : x.fala)}”</p>` : ""}
+    <footer>${x.ult ? `Última visita ${fmtDia(x.ult.dia)} · ${dias}` : "Sem visita realizada"}${x.proxima != null ? ` · próxima ${fmtDia(x.proxima)}` : ""}</footer></article>`;
+}
+function renderOportunidades(cli) {
+  const ref = REF(), o = state.op;
+  const todas = oportunidades(cli || statsClientes());
+  const vis = filtrarOp(todas);
+  state.op.ultimas = vis;
+  // etapas (cartões-resumo que filtram)
+  const base = filtrarOp(todas, { etapa: 1 });
+  $("inKpis").innerHTML = ETAPAS.map((e) => { const g = base.filter((x) => x.etapa === e.k); return `<button type="button" class="op-et ${e.c}" data-etapa="${e.k}" aria-pressed="${o.etapa === e.k}"><span class="label">${e.l}</span><b>${fmtN(g.length)}</b><span class="d">${fmtN(g.reduce((s, x) => s + x.area, 0))} ha · ${e.d}</span></button>`; }).join("");
+  const abertas = vis.filter((x) => x.etapa !== "fechado");
+  $("opLbl").textContent = `${plural(abertas.length, "cliente")} · ${fmtN(abertas.reduce((s, x) => s + x.area, 0))} ha em jogo`;
+  // filtros
+  const pr = contar(filtrarOp(todas, { prod: 1 }).flatMap((x) => x.prods), (p) => p);
+  chipsOp("opProd", pr.slice(0, 9).map(([p, n]) => [p, p, n]), (v) => o.prod.has(v));
+  const pv = filtrarOp(todas, { prev: 1 });
+  chipsOp("opPrev", PREV.map(([k, l]) => [k, l, pv.filter((x) => x.fx === k).length]).filter((x) => x[2] || o.prev === x[0]), (v) => o.prev === v);
+  const pc = filtrarOp(todas, { conc: 1 });
+  chipsOp("opConc", [["sim", "Com concorrente", pc.filter((x) => x.conc).length], ["nao", "Sem concorrente", pc.filter((x) => !x.conc).length]], (v) => o.conc === v);
+  $("opOrd").value = o.ord;
+  // quadro
+  const cols = o.etapa ? ETAPAS.filter((e) => e.k === o.etapa) : ETAPAS;
+  $("opBoard").classList.toggle("uma", !!o.etapa);
+  $("opBoard").innerHTML = cols.map((e) => {
+    const g = ordenarOp(vis.filter((x) => x.etapa === e.k)), lim = o.etapa || o.mais.has(e.k) ? 60 : 6;
+    return `<div class="op-col ${e.c}"><div class="op-colh"><b>${e.l}</b><span>${fmtN(g.length)} · ${fmtN(g.reduce((s, x) => s + x.area, 0))} ha</span></div>
+      <div class="op-cards">${g.slice(0, lim).map((x) => cartaoOp(x, ref)).join("") || `<p class="empty">Nenhum cliente nesta etapa com os filtros atuais.</p>`}</div>
+      ${g.length > lim ? `<button type="button" class="btn sm op-mais" data-mais="${e.k}">Ver mais ${fmtN(g.length - lim)}</button>` : ""}</div>`;
+  }).join("");
+  // o que querem / onde estão
+  const ab = vis.filter((x) => x.etapa === "quente" || x.etapa === "negoc");
+  const porProd = new Map(); for (const x of vis.filter((x) => x.etapa !== "fechado")) for (const p of x.prods) { const g = porProd.get(p) || { n: 0, ha: 0, q: 0 }; g.n++; g.ha += x.area; if (x.etapa === "quente") g.q++; porProd.set(p, g); }
+  $("opRankProd").innerHTML = rankHtml([...porProd.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, 8).map(([p, g]) => ({ l: p, n: g.n, extra: "clientes", sub: `${fmtN(g.ha)} ha · ${fmtN(g.q)} quentes`, attr: `data-opprod="${esc(p)}"` })), { vazio: "Nenhum produto citado neste recorte." });
+  $("opRankRec").innerHTML = rankHtml(contar(vis.flatMap((x) => x.rec.map((r) => r.split(" — ")[0])), (r) => r).slice(0, 6).map(([l, n]) => ({ l: titulo(l), n, extra: "clientes" })), { vazio: "Nenhuma recomendação técnica neste recorte." });
+  const porReg = new Map(); for (const x of ab) { const g = porReg.get(x.regional) || { n: 0, ha: 0 }; g.n++; g.ha += x.area; porReg.set(x.regional, g); }
+  $("opRankReg").innerHTML = rankHtml([...porReg.entries()].sort((a, b) => b[1].ha - a[1].ha || b[1].n - a[1].n).slice(0, 8).map(([r, g]) => ({ l: r, n: g.ha, fmt: `${fmtN(g.ha)} ha`, extra: `${g.n} clientes`, attr: `data-opreg="${esc(r)}"` })), { vazio: "Sem oportunidades abertas neste recorte." });
+  $("opRankCons").innerHTML = rankHtml(contar(ab, (x) => x.consultor).slice(0, 8).map(([n, k]) => ({ l: titulo(n), n: k, extra: "clientes", sub: `${fmtN(ab.filter((x) => x.consultor === n).reduce((s, x) => s + x.area, 0))} ha · ${fmtN(ab.filter((x) => x.consultor === n && x.fx === "venc").length)} com previsão vencida`, attr: `data-cons="${esc(n)}"` })));
+}
+async function copiarOp() {
+  const ref = REF(), lin = ordenarOp(state.op.ultimas || []);
+  const cab = ["Cliente", "Código", "Etapa", "Chance", "Consultor", "Regional", "Produtos", "Área (ha)", "Previsão de compra", "Concorrente", "Última visita", "O que o cliente disse"];
+  const txt = [cab.join("\t")].concat(lin.map((x) => [titulo(x.nome), x.cid, ETAPAS.find((e) => e.k === x.etapa).l, x.score, titulo(x.consultor), x.regional, x.prods.join(", "), x.area || "", x.prev != null ? fmtDiaAno(x.prev) : "", x.conc || "", x.ult ? fmtDiaAno(x.ult.dia) : "", (x.fala || "").replace(/\s+/g, " ")].join("\t"))).join("\n");
+  try { await navigator.clipboard.writeText(txt); toast("Lista copiada", `${fmtN(lin.length)} clientes. Cole no Excel ou mande para a equipe.`); }
+  catch { toast("Não consegui copiar", "Este navegador bloqueou a área de transferência."); }
+}
+
 function renderIntel() {
   const { ok } = recorte(), ref = REF();
   const comQ = ok.filter((v) => v.sv);
   const cli = statsClientes().filter((c) => c.ult || c.nOk);
   const leit = cli.filter((c) => Object.keys(c.sinais).length);
-  $("intelLead").innerHTML = `Leitura dos <b>${fmtN(comQ.length)}</b> questionários respondidos no período, casados com as visitas pelo ID. Para cada cliente vale a resposta mais recente de cada pergunta. Clique em qualquer cliente para ver a conversa completa.`;
-  const it = { Alta: [], Média: [], Baixa: [] }; leit.forEach((c) => it[c.sinais.intencao] && it[c.sinais.intencao].push(c));
-  const areaAlta = it.Alta.reduce((s, c) => s + (c.sinais.area || 0), 0);
+  $("intelLead").innerHTML = `Clientes que, nos questionários, falaram em comprar: intenção de compra, previsão, área, produto, oportunidade identificada ou recomendação técnica. Vale a resposta mais recente de cada cliente, de <b>${fmtN(comQ.length)}</b> questionários lidos no período.`;
   const conc = comQ.filter((v) => v.sv.k.concAtiva), concSim = conc.filter((v) => v.sv.k.concAtiva === "Sim");
   const acao = leit.filter((c) => clienteEmRisco(c.sinais).length);
-  const sac = leit.filter((c) => c.sinais.sac === "Sim").length;
-  $("inKpis").innerHTML = kpi("Clientes com intenção alta", fmtN(it.Alta.length), `<b>${fmtN(areaAlta)}</b> ha estimados`) +
-    kpi("Previsão de compra vencida", fmtN(it.Alta.filter((c) => c.sinais.previsao != null && c.sinais.previsao < ref).length), "entre os de intenção alta", "warn") +
-    kpi("Concorrência atuante", fmtP(conc.length ? concSim.length / conc.length : 0), `em ${fmtN(conc.length)} visitas que perguntaram`) +
-    kpi("Clientes que pedem ação", fmtN(acao.length), `${fmtN(sac)} pediram SAC`, acao.length ? "alert" : "");
-  splitBar($("intSplit"), $("intLeg"), [{ l: "Alta", n: it.Alta.length, c: "c1" }, { l: "Média", n: it.Média.length, c: "c2" }, { l: "Baixa", n: it.Baixa.length, c: "c3" }]);
-  // previsão por semana
-  const semana = (d) => d - ((dow(d) + 6) % 7);
-  const ps = leit.filter((c) => c.sinais.previsao != null && c.sinais.intencao && c.sinais.previsao >= ref - 56 && c.sinais.previsao <= ref + 120);
-  const sems = [...new Set(ps.map((c) => semana(c.sinais.previsao)))].sort((a, b) => a - b);
-  barrasEmp($("prevChart"), sems, sems.map((s) => ["Alta", "Média", "Baixa"].map((k) => ps.filter((c) => semana(c.sinais.previsao) === s && c.sinais.intencao === k).length)), ref);
-  // quentes
-  const q = it.Alta.map((c) => ({ ...c, area: c.sinais.area || 0, prev: c.sinais.previsao }));
-  tabela("tQuentes", [
-    { k: "nome", l: "Cliente", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(titulo(c.consultor))} · ${esc(c.regional)}</span>` },
-    { k: "area", l: "Área (ha)", n: 1, h: (c) => (c.area ? fmtN(c.area) : "—") },
-    { k: "prev", l: "Previsão", n: 1, h: (c) => (c.prev == null ? "—" : `${fmtDiaAno(c.prev)}${c.prev < ref ? `<span class="sub" style="color:var(--red)">vencida</span>` : ""}`) },
-    { k: "grp", l: "Produtos", v: (c) => (c.sinais.grupos || []).join(), h: (c) => esc((c.sinais.grupos || []).slice(0, 3).join(", ") || "—") },
-  ], q, { ord: { k: "area", d: -1 }, clk: (c) => `data-cli="${esc(c.cid)}"`, vazio: "Nenhum cliente com intenção alta neste recorte." });
+  renderOportunidades(cli);
   // concorrência
   $("concLbl").textContent = `${fmtN(concSim.length)} visitas com concorrente`;
   const porConc = new Map(); for (const c of leit) if (c.sinais.concorrente) { const k = titulo(c.sinais.concorrente); porConc.set(k, (porConc.get(k) || []).concat(c)); }
@@ -1711,7 +1907,7 @@ function renderMetodo() {
     ["Inteligência de campo", "perguntas-chave lidas pelo texto da pergunta (Intenção de compra, Previsão de compra, Área estimada, Concorrência, Risco, Satisfação, SAC, Fidelidade, Pendência). Para cada cliente vale a resposta mais recente. Área acima de 100 mil ha é descartada como erro de digitação."],
     ["Anotações do gestor", "na aba Equipes, cada consultor tem um botão Anotar. A anotação guarda assunto, texto, autor e data, e pode citar uma visita. Quem vê a regional do consultor vê as anotações; só o autor ou um admin pode excluir."],
     ["Quem vê o quê", "Admin e Diretoria veem todas as regionais. Gerente vê só as regionais atribuídas a ele na Administração; clientes, mapa e agenda seguem a mesma trava. Na versão publicada a trava é feita no banco (Supabase, row level security), não só na tela."],
-    ["Senhas", `usuário novo e senha resetada entram com a senha padrão e são obrigados a criar uma senha própria (8+ caracteres, letras e números) no primeiro acesso.`],
+    ["Senhas", `o Radar tem login próprio, separado do Ruptura Zero e dos outros sistemas do projeto de Melhoria Contínua. Usuário novo e senha resetada entram com a senha padrão e são obrigados a criar uma senha própria (8+ caracteres, letras e números). Cinco tentativas erradas bloqueiam o login por 10 minutos.`],
     ["Publicação", `esta página roda em modo demonstração sem servidor. Para a equipe usar, publique o <span class="mono">index.html</span> com o <span class="mono">config.js</span> do Supabase e rode o script <span class="mono">radar_campo.sql</span> (entregues junto). As planilhas mensais entram pela Administração.`],
   ];
   $("metodoLista").innerHTML = itens.map(([t, d]) => `<li><b>${t}:</b> ${d}</li>`).join("");
@@ -1788,31 +1984,34 @@ const DemoAPI = {
 };
 
 const SupaAPI = {
-  sb: null,
-  init() { this.sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { db: { schema: "radar_campo" } }); },
+  sb: null, token: null,
+  /* login próprio do Radar: o token da sessão vai no cabeçalho x-radar-token e o banco confere em cada leitura */
+  cliente() {
+    this.sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+      db: { schema: "radar_campo" }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: { headers: this.token ? { "x-radar-token": this.token } : {} } });
+  },
+  init() { this.token = store.get("rc_token", null); this.cliente(); },
+  erro(e) { const m = String(e?.message || e || ""); return new Error(/fetch|network/i.test(m) ? "Não consegui falar com o servidor. Confira a internet e o config.js." : /schema must be one of|not find the function/i.test(m) ? "O banco ainda não está pronto: rode o radar_campo.sql e inclua radar_campo em Exposed schemas." : m); },
+  conta(d) { return { id: d.user_id, nome: d.nome, email: d.email, perfil: d.perfil, trocar: d.trocar_senha, regionais: d.regionais || [], ativo: d.ativo, ultimo: d.ultimo_acesso ? Date.parse(d.ultimo_acesso) : null }; },
   async perfil() {
     const { data, error } = await this.sb.rpc("meu_perfil");
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error("Seu login existe, mas não tem acesso ao Radar de Campo. Peça ao administrador para liberar.");
-    if (!data.ativo) throw new Error("Seu acesso está desativado. Fale com o administrador do painel.");
-    return { id: data.user_id, nome: data.nome, email: data.email, perfil: data.perfil, trocar: data.trocar_senha, regionais: data.regionais || [] };
+    if (error) throw this.erro(error);
+    if (!data) throw new Error("Sua sessão expirou. Entre de novo.");
+    return this.conta(data);
   },
-  async sessao() { const { data } = await this.sb.auth.getSession(); if (!data.session) return null; try { return await this.perfil(); } catch { return null; } },
+  async sessao() { if (!this.token) return null; try { return await this.perfil(); } catch { this.limpar(); return null; } },
+  limpar() { this.token = null; store.del("rc_token"); this.cliente(); },
   async entrar(email, senha) {
-    const { error } = await this.sb.auth.signInWithPassword({ email: email.trim(), password: senha });
-    if (error) {
-      const m = String(error.message || "");
-      throw new Error(/invalid login credentials/i.test(m) ? "E-mail ou senha incorretos." : /fetch|network/i.test(m) ? "Não consegui falar com o servidor. Confira a internet e a SUPABASE_URL do config.js." : "Não foi possível entrar: " + m);
-    }
-    try { return await this.perfil(); } catch (e) { await this.sb.auth.signOut(); throw e; }
+    const { data, error } = await this.sb.rpc("entrar", { p_email: email.trim().toLowerCase(), p_senha: senha });
+    if (error) throw this.erro(error);
+    if (data?.erro) throw new Error(data.erro);
+    this.token = data.token; store.set("rc_token", data.token); this.cliente();
+    return this.conta(data.perfil);
   },
-  async sair() { await this.sb.auth.signOut(); },
-  async trocarSenha(nova) {
-    const { error } = await this.sb.auth.updateUser({ password: nova });
-    if (error) { const m = String(error.message || ""); throw new Error(/different from the old|same/i.test(m) ? "A nova senha precisa ser diferente da atual." : /weak|at least/i.test(m) ? "Senha fraca. Use pelo menos 8 caracteres, com letras e números." : "Não foi possível trocar a senha: " + m); }
-    const { error: e2 } = await this.sb.rpc("confirmar_troca_senha"); if (e2) throw new Error(e2.message);
-  },
-  async listar() { const { data, error } = await this.sb.rpc("admin_listar_usuarios"); if (error) throw new Error(error.message); return (data || []).map((u) => ({ id: u.user_id, nome: u.nome, email: u.email, perfil: u.perfil, ativo: u.ativo, trocar: u.trocar_senha, regionais: u.regionais || [], ultimo: u.ultimo_acesso ? Date.parse(u.ultimo_acesso) : null })); },
+  async sair() { try { await this.sb.rpc("sair"); } catch {} this.limpar(); },
+  async trocarSenha(nova) { const { error } = await this.sb.rpc("trocar_senha", { p_nova: nova }); if (error) throw this.erro(error); },
+  async listar() { const { data, error } = await this.sb.rpc("admin_listar_usuarios"); if (error) throw this.erro(error); return (data || []).map((u) => this.conta(u)); },
   async salvar(d) { const { data, error } = await this.sb.rpc("admin_salvar_usuario", { p_user: d.id || null, p_email: d.email, p_nome: d.nome, p_perfil: d.perfil, p_ativo: d.ativo, p_regionais: d.regionais }); if (error) throw new Error(error.message); return data || {}; },
   async notas() {
     const { data, error } = await this.sb.from("anotacoes").select("id,consultor,regional,tema,texto,vid,autor,autor_nome,criado_em").order("criado_em", { ascending: false }).limit(5000);
@@ -1998,7 +2197,8 @@ async function entrou(conta) {
   state.conta = conta;
   if (conta.trocar) { telas("troca"); $("trocaOla").textContent = `Olá, ${conta.nome.split(" ")[0]}! Para sua segurança, troque a senha padrão por uma só sua.`; $("tVoltar").textContent = "Sair"; $("tSenha").focus(); return; }
   state.escopo = conta.perfil === "gerente" ? new Set(conta.regionais) : null;
-  $("quem").innerHTML = `<b>${esc(conta.nome)}</b> · ${PERFIS[conta.perfil]}`;
+  $("quem").innerHTML = `<b>${esc(conta.nome)}</b>${PERFIS[conta.perfil]} · ${esc(conta.email)}`;
+  $("btnUser").textContent = conta.nome.replace(/[^\p{L}\s]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join("").toUpperCase();
   $("tabAdmin").hidden = conta.perfil !== "admin";
   if (!state.raw) { $("ctx").textContent = "Carregando visitas…"; telas("app"); try { state.raw = await API.dados(); } catch (e) { telas("login"); $("lErr").textContent = "Não consegui carregar as visitas: " + e.message + (API === DemoAPI ? " Preencha o config.js com o Supabase." : ""); return; } }
   try { state.notas = await API.notas(); } catch { state.notas = []; }
@@ -2015,10 +2215,10 @@ function preencherFiltros() {
   const vis = state.db.visits.filter(visivel);
   const opt = (el, arr, todos) => { const atual = el.value; el.innerHTML = `<option value="">${todos}</option>` + arr.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(""); el.value = arr.some(([v]) => v === atual) ? atual : ""; };
   const f = state.f;
-  opt($("fGrupo"), ORDEM_GRUPO.filter((g) => vis.some((v) => v.grupo === g)).map((g) => [g, g]), "Todos");
-  opt($("fReg"), [...new Set(vis.filter((v) => !f.grupo || v.grupo === f.grupo).map((v) => v.regional))].sort().map((r) => [r, r]), "Todas");
-  opt($("fCons"), [...new Set(vis.filter((v) => (!f.grupo || v.grupo === f.grupo) && (!f.reg || v.regional === f.reg)).map((v) => v.consultor))].sort().map((c) => [c, titulo(c)]), "Todos");
-  opt($("fTipo"), [...new Set(vis.map((v) => v.tipo))].sort().map((t) => [t, t]), "Todos");
+  opt($("fGrupo"), ORDEM_GRUPO.filter((g) => vis.some((v) => v.grupo === g)).map((g) => [g, g]), "Todos os canais");
+  opt($("fReg"), [...new Set(vis.filter((v) => !f.grupo || v.grupo === f.grupo).map((v) => v.regional))].sort().map((r) => [r, r]), "Todas as regionais");
+  opt($("fCons"), [...new Set(vis.filter((v) => (!f.grupo || v.grupo === f.grupo) && (!f.reg || v.regional === f.reg)).map((v) => v.consultor))].sort().map((c) => [c, titulo(c)]), "Todos os consultores");
+  opt($("fTipo"), [...new Set(vis.map((v) => v.tipo))].sort().map((t) => [t, t]), "Todos os tipos de visita");
   f.grupo = $("fGrupo").value; f.reg = $("fReg").value; f.cons = $("fCons").value; f.tipo = $("fTipo").value;
   const [a, b] = periodoTotal(); $("fDe").min = $("fAte").min = isoDia(a - 120); $("fDe").max = $("fAte").max = isoDia(b + 60);
   $("fDe").value = isoDia(f.de); $("fAte").value = isoDia(f.ate);
@@ -2027,6 +2227,7 @@ function marcarQuick(q) { $("quick").querySelectorAll("button").forEach((b) => b
 function renderChips() {
   const f = state.f, c = [];
   if (f.grupo) c.push(["grupo", "Canal", f.grupo]); if (f.reg) c.push(["reg", "Regional", f.reg]); if (f.cons) c.push(["cons", "Consultor", titulo(f.cons)]); if (f.tipo) c.push(["tipo", "Tipo", f.tipo]); if (f.q) c.push(["q", "Cliente", f.q]);
+  $("fCount").textContent = c.length || "";
   $("chips").innerHTML = c.map(([k, l, v]) => `<button type="button" class="fchip" data-limpa="${k}">${l}: <span>${esc(v)}</span><i aria-hidden="true">✕</i></button>`).join("") + (c.length > 1 ? `<button type="button" class="linkbtn" data-limpa="tudo">Limpar filtros</button>` : "");
 }
 function aplicarFiltro(k, v) {
@@ -2068,7 +2269,14 @@ function ligarEventos() {
   $("btnSenha").addEventListener("click", () => { $("trocaOla").textContent = "Crie uma nova senha para o seu acesso."; $("tVoltar").textContent = "Cancelar"; telas("troca"); conferirRegras(); $("tSenha").focus(); });
   $("btnSair").addEventListener("click", async () => { await API.sair(); state.conta = null; telas("login"); });
   $("btnTema").addEventListener("click", () => { const at = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); const n = at === "dark" ? "light" : "dark"; store.set("rc_tema", n); aplicarTema(n); });
-  $("btnFiltros").addEventListener("click", () => { const o = $("filtros").classList.toggle("open"); $("btnFiltros").setAttribute("aria-expanded", String(o)); });
+  const mobile = () => matchMedia("(max-width: 720px)").matches;
+  $("btnFiltros").addEventListener("click", () => {
+    if (mobile()) { const o = $("filtros").classList.toggle("open"); $("btnFiltros").setAttribute("aria-expanded", String(o)); return; }
+    document.body.classList.remove("f-oculto"); ultY = scrollY; $("fDe").focus({ preventScroll: true });
+  });
+  $("btnUser").addEventListener("click", (e) => { e.stopPropagation(); const m = $("menuUser"); m.hidden = !m.hidden; $("btnUser").setAttribute("aria-expanded", String(!m.hidden)); });
+  document.addEventListener("click", (e) => { if (!$("menuUser").hidden && !e.target.closest(".menu-u")) { $("menuUser").hidden = true; $("btnUser").setAttribute("aria-expanded", "false"); } });
+  ["btnSenha", "btnSair"].forEach((id) => $(id).addEventListener("click", () => { $("menuUser").hidden = true; }));
   $("tabs").addEventListener("click", (e) => { const t = e.target.closest(".tab"); if (t) selPane(t.dataset.pane); });
   window.addEventListener("hashchange", () => { const p = location.hash.slice(1); if (p && p !== state.pane && state.conta) selPane(p); });
   // filtros
@@ -2079,7 +2287,15 @@ function ligarEventos() {
   $("fDe").addEventListener("change", datas); $("fAte").addEventListener("change", datas);
   $("quick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; const [a, z] = periodoTotal(); const q = b.dataset.q; state.f.ate = z; state.f.de = q === "tudo" ? a : Math.max(a, z - +q + 1); $("fDe").value = isoDia(state.f.de); $("fAte").value = isoDia(state.f.ate); marcarQuick(q); state.cal = null; render(); });
   $("chips").addEventListener("click", (e) => { const b = e.target.closest("[data-limpa]"); if (!b) return; const k = b.dataset.limpa; if (k === "tudo") { Object.assign(state.f, { grupo: "", reg: "", cons: "", tipo: "", q: "" }); $("fBusca").value = ""; preencherFiltros(); render(); } else { if (k === "q") $("fBusca").value = ""; aplicarFiltro(k, ""); } });
-  const sticky = () => { const h = $("hdr").getBoundingClientRect().height; $("filtros").style.top = `calc(env(safe-area-inset-top, 0px) + ${h}px)`; $("filtros").classList.toggle("stuck", scrollY > 10); };
+  /* filtros: somem ao rolar para baixo e voltam ao rolar para cima (ou pelo botão Filtros) */
+  let ultY = 0;
+  const sticky = () => {
+    const h = $("hdr").getBoundingClientRect().height; $("filtros").style.top = `calc(env(safe-area-inset-top, 0px) + ${h}px)`;
+    $("filtros").classList.toggle("stuck", scrollY > 10);
+    const y = scrollY, d = y - ultY;
+    if (y < 120 || $("filtros").contains(document.activeElement)) { document.body.classList.remove("f-oculto"); ultY = y; return; }
+    if (d > 40) { document.body.classList.add("f-oculto"); ultY = y; } else if (d < -40) { document.body.classList.remove("f-oculto"); ultY = y; }
+  };
   addEventListener("scroll", sticky, { passive: true }); addEventListener("resize", sticky); setTimeout(sticky, 0);
   // cliques que abrem detalhes / filtram
   document.addEventListener("click", (e) => {
@@ -2125,6 +2341,17 @@ function ligarEventos() {
   $("fileV").addEventListener("change", (e) => lerArquivo("v", e.target.files[0])); $("fileQ").addEventListener("change", (e) => lerArquivo("q", e.target.files[0]));
   for (const [id, t] of [["dropV", "v"], ["dropQ", "q"]]) { const el = $(id); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerArquivo(t, e.dataTransfer.files[0]); }); }
   $("impAplicar").addEventListener("click", aplicarImportacao);
+  // oportunidades
+  const reOp = () => renderOportunidades();
+  $("inKpis").addEventListener("click", (e) => { const b = e.target.closest("[data-etapa]"); if (!b) return; state.op.etapa = state.op.etapa === b.dataset.etapa ? null : b.dataset.etapa; reOp(); });
+  $("opProd").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (!b) return; const s = state.op.prod; s.has(b.dataset.v) ? s.delete(b.dataset.v) : s.add(b.dataset.v); reOp(); });
+  $("opPrev").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (!b) return; state.op.prev = state.op.prev === b.dataset.v ? null : b.dataset.v; reOp(); });
+  $("opConc").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (!b) return; state.op.conc = state.op.conc === b.dataset.v ? null : b.dataset.v; reOp(); });
+  $("opOrd").addEventListener("change", (e) => { state.op.ord = e.target.value; reOp(); });
+  $("opBoard").addEventListener("click", (e) => { const b = e.target.closest("[data-mais]"); if (!b) return; state.op.mais.add(b.dataset.mais); reOp(); });
+  $("opRankProd").addEventListener("click", (e) => { const li = e.target.closest("[data-opprod]"); if (!li) return; const s = state.op.prod, p = li.dataset.opprod; s.has(p) ? s.delete(p) : s.add(p); reOp(); $("opBoard").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  $("opRankReg").addEventListener("click", (e) => { const li = e.target.closest("[data-opreg]"); if (!li) return; aplicarFiltro("reg", state.f.reg === li.dataset.opreg ? "" : li.dataset.opreg); });
+  $("opCopiar").addEventListener("click", copiarOp);
   $("nForm").addEventListener("submit", salvarNota);
   $("nTexto").addEventListener("input", () => { $("nConta").textContent = `${$("nTexto").value.length}/1000`; $("nErr").textContent = ""; });
   $("nTema").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) $("nTema").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", String(x === b))); });
