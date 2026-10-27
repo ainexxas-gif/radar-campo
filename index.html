@@ -2026,15 +2026,21 @@ const SupaAPI = {
   async excluirNota(id) { const { error } = await this.sb.from("anotacoes").delete().eq("id", id); if (error) throw new Error(error.message); },
   async resetar(id) { const { error } = await this.sb.rpc("admin_resetar_senha", { p_user: id }); if (error) throw new Error(error.message); },
   async definirRegionais(mapa) { for (const [id, regs] of Object.entries(mapa)) { const { error } = await this.sb.rpc("admin_definir_regionais", { p_user: id, p_regionais: regs }); if (error) throw new Error(error.message); } },
+  /* lê a tabela inteira em páginas de 1.000, 4 páginas por vez, em ordem estável */
   async todos(tabela, cols, ordem) {
-    const out = []; const N = 1000;
-    for (let i = 0; ; i += N) { const { data, error } = await this.sb.from(tabela).select(cols).order(ordem).range(i, i + N - 1); if (error) throw new Error(error.message); out.push(...data); if (data.length < N) break; }
+    const out = []; const N = 1000, P = 4; const ords = ordem.split(",");
+    for (let i = 0; ; i += N * P) {
+      const pags = await Promise.all([...Array(P)].map((_, k) => { let q = this.sb.from(tabela).select(cols); for (const o of ords) q = q.order(o); return q.range(i + k * N, i + (k + 1) * N - 1); }));
+      let fim = false;
+      for (const { data, error } of pags) { if (error) throw this.erro(error); out.push(...data); if (data.length < N) { fim = true; break; } }
+      if (fim) break;
+    }
     return out;
   },
   async dados() {
     const [rawV, rawA, cargas] = await Promise.all([
       this.todos("visitas", "id,tipo,status,safra,canal,cid,cliente,resp,terr,equipe,regional,ini,fim,ck,co,lat,nanexo,notas,criado,alterado", "id"),
-      this.todos("respostas", "vid,cid,cliente,vend,pesq,concl,perg,tipo,resp", "vid"),
+      this.todos("respostas", "vid,cid,cliente,vend,pesq,concl,perg,tipo,resp", "vid,ordem"),
       this.sb.from("cargas").select("extraido,periodo_ini,periodo_fim,arquivo_visitas,arquivo_quest").order("criado_em").then((r) => r.data || []),
     ]);
     const meta = cargas.length ? { extraido: Math.max(...cargas.map((c) => c.extraido)), periodos: cargas.map((c) => [c.periodo_ini, c.periodo_fim]), fontes: cargas.flatMap((c) => [c.arquivo_visitas, c.arquivo_quest]).filter(Boolean) }
@@ -2048,7 +2054,8 @@ const SupaAPI = {
     for (let i = 0; i < linhas.length; i += 500) { const { error } = await this.sb.from("visitas").upsert(linhas.slice(i, i + 500), { onConflict: "id" }); if (error) throw new Error("Visitas: " + error.message); }
     const vids = [...new Set(rawA.map((a) => a.vid))];
     for (let i = 0; i < vids.length; i += 300) { const { error } = await this.sb.from("respostas").delete().in("vid", vids.slice(i, i + 300)); if (error) throw new Error("Respostas: " + error.message); }
-    const ord = new Map(); const rows = rawA.map((a) => { const o = (ord.get(a.vid) || 0) + 1; ord.set(a.vid, o); return { ...a, ordem: o }; });
+    const regDe = new Map(state.raw.rawV.map((v) => [v.id, v.regional || regionalDe(v.terr, codMap)])); for (const v of linhas) regDe.set(v.id, v.regional);
+    const ord = new Map(); const rows = rawA.map((a) => { const o = (ord.get(a.vid) || 0) + 1; ord.set(a.vid, o); return { ...a, ordem: o, regional: regDe.get(a.vid) || "" }; });
     for (let i = 0; i < rows.length; i += 1000) { const { error } = await this.sb.from("respostas").insert(rows.slice(i, i + 1000)); if (error) throw new Error("Respostas: " + error.message); }
     await this.sb.from("cargas").insert({ extraido: meta.extraido, periodo_ini: meta.periodo[0], periodo_fim: meta.periodo[1], arquivo_visitas: meta.fontes[0], arquivo_quest: meta.fontes[1], visitas: rawV.length, respostas: rawA.length });
     state.raw = await this.dados();
