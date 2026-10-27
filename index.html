@@ -396,6 +396,16 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 
 #vTour { width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; background: #000; display: block; max-width: 100%; }
 #mVideo .modal-card { width: min(1100px, 100%); }
+/* log de acesso */
+.acadm { color: #fff; font-size: .84rem; }
+.acadm .tg { background: rgba(255,255,255,.3); }
+.aclog { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-height: 300px; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.aclog li { display: grid; grid-template-columns: 110px minmax(0, 220px) minmax(0, 1fr); gap: 10px; padding: 6px 10px; border-bottom: 1px solid var(--line); font-size: .86rem; }
+.aclog li:last-child { border-bottom: 0; }
+.aclog .q { color: var(--muted); font-variant-numeric: tabular-nums; }
+.aclog b { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aclog li.f span:last-child { color: var(--red); }
+@media (max-width: 720px) { .aclog li { grid-template-columns: 1fr; gap: 0; } }
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -821,6 +831,17 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 
     <!-- ===== ADMINISTRAÇÃO ===== -->
     <div class="pane" id="pane-admin" role="tabpanel" hidden>
+      <section class="panel">
+        <div class="panel-head"><h2>Quem está usando o painel</h2>
+          <div class="tbar"><div class="seg2" id="acPer" role="group" aria-label="Período"><button type="button" data-d="7">7 dias</button><button type="button" data-d="30" aria-pressed="true">30 dias</button><button type="button" data-d="90">90 dias</button></div>
+          <label class="tgl acadm"><input type="checkbox" id="acAdm"><i class="tg"></i><span>Incluir admins</span></label></div></div>
+        <p class="banner info" id="acNota" hidden>Na demonstração, o histórico de acessos é de exemplo e fica só neste navegador. Na versão publicada, cada login, abertura do painel e aba visitada fica gravada no banco.</p>
+        <section class="kpis" id="acKpis"></section>
+        <div><h3 class="label" style="margin-bottom:4px">Usuários que acessaram, por dia</h3><div class="chart" id="acChart"></div></div>
+        <div class="tbl-wrap tall"><table class="t-min" id="tAc"></table></div>
+        <div><h3 class="label" style="margin-bottom:6px">Últimos acessos</h3><ol class="aclog" id="acLog"></ol></div>
+        <p class="note">Tempo de uso é estimado: o painel avisa o servidor a cada 5 minutos enquanto a tela está aberta e visível. Uma visita rápida conta como 1 minuto.</p>
+      </section>
       <section class="panel">
         <div class="panel-head"><h2>Usuários do painel</h2><div class="tbar"><span class="label" id="uCount"></span><button class="btn" id="btnNovoUsr" type="button">+ Novo usuário</button></div></div>
         <div class="tbar"><input id="uBusca" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuário"><select id="uFiltro" aria-label="Filtrar usuários"><option value="">Todos</option><option value="admin">Admins</option><option value="diretoria">Diretoria</option><option value="gerente">Gerentes</option><option value="aguardando">Aguardando 1º acesso</option><option value="inativo">Desativados</option></select></div>
@@ -1280,7 +1301,7 @@ function barrasDia(el, dias, valores, opts = {}) {
   ligarTip(el, (i) => `<b>${fmtDiaSem(dias[+i])}</b> · ${plural(valores[+i], opts.un || "visita")}`);
 }
 function barPath(x, y, w, h) { const r = Math.min(4, w / 2, h); if (h <= 0) return ""; return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`; }
-function niceStep(max) { const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+function niceStep(max) { const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return Math.max(1, (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p); }
 function ligarTip(el, html) {
   const tip = el.querySelector(".tip");
   el.onmousemove = (e) => {
@@ -1957,15 +1978,33 @@ const DemoAPI = {
     this.usuarios = u;
   },
   salvarTodos() { store.set("rc_usuarios", this.usuarios); },
-  async sessao() { await this.seed(); const id = store.get("rc_sessao", null); const u = this.usuarios.find((x) => x.id === id && x.ativo); return u ? this.conta(u) : null; },
+  async sessao() { await this.seed(); const id = store.get("rc_sessao", null); const u = this.usuarios.find((x) => x.id === id && x.ativo); if (u) this.log(u.id, "abertura"); return u ? this.conta(u) : null; },
   conta(u) { return { id: u.id, nome: u.nome, email: u.email, perfil: u.perfil, trocar: u.trocar, regionais: u.regionais || [] }; },
   async entrar(email, senha) {
     await this.seed();
     const u = this.usuarios.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+    if (u && u.h !== (await hash(senha))) this.log(u.id, "falha");
     if (!u || u.h !== (await hash(senha))) throw new Error("E-mail ou senha incorretos.");
     if (!u.ativo) throw new Error("Seu acesso está desativado. Fale com o administrador do painel.");
-    u.ultimo = Date.now(); this.salvarTodos(); store.set("rc_sessao", u.id); return this.conta(u);
+    u.ultimo = Date.now(); this.salvarTodos(); store.set("rc_sessao", u.id); this.log(u.id, "login"); return this.conta(u);
   },
+  log(u, t, a = null) { const l = this.logs(); l.push({ u, t, a, d: Date.now() }); store.set("rc_acessos", l.slice(-5000)); },
+  logs() {
+    let l = store.get("rc_acessos", null);
+    if (!l) {   // histórico de exemplo para a tela não abrir vazia na demonstração
+      l = []; const agora = Date.now(), D0 = 86400000, abas = ["geral", "equipes", "intel", "clientes", "mapa", "agenda"];
+      const plano = { u1: [0, 1, 2, 3, 6, 7, 8, 9, 13, 14, 16, 20], u2: [1, 4, 8, 15], u3: [0, 2, 3, 5, 9, 10, 12, 17, 19] };
+      for (const [u, dias] of Object.entries(plano)) for (const d of dias) {
+        const t0 = agora - d * D0 - (8 + (d * 7 % 9)) * 3600000; l.push({ u, t: d % 3 ? "abertura" : "login", a: null, d: t0, ex: 1 });
+        for (let k = 0; k < 2 + (d % 4); k++) { l.push({ u, t: "aba", a: abas[(d + k * 2) % abas.length], d: t0 + k * 90000, ex: 1 }); l.push({ u, t: "ativo", a: null, d: t0 + (k + 1) * 300000, ex: 1 }); }
+      }
+      l.push({ u: "u2", t: "falha", a: null, d: agora - 2 * D0, ex: 1 });
+      store.set("rc_acessos", l);
+    }
+    return l;
+  },
+  async registrar(t, a) { if (state.conta) this.log(state.conta.id, t, a); },
+  async acessos(dias) { const ini = Date.now() - dias * 86400000; return this.logs().filter((x) => x.d >= ini); },
   async sair() { store.del("rc_sessao"); },
   async trocarSenha(nova) { const u = this.usuarios.find((x) => x.id === state.conta.id); if (u.h === (await hash(nova))) throw new Error("A nova senha precisa ser diferente da atual."); u.h = await hash(nova); u.trocar = false; this.salvarTodos(); },
   async listar() { await this.seed(); return this.usuarios.map((u) => ({ ...this.conta(u), ativo: u.ativo, ultimo: u.ultimo })); },
@@ -2021,6 +2060,8 @@ const SupaAPI = {
     return this.conta(data.perfil);
   },
   async sair() { try { await this.sb.rpc("sair"); } catch {} this.limpar(); },
+  async registrar(t, a) { try { await this.sb.rpc("registrar_acesso", { p_tipo: t, p_aba: a || null }); } catch {} },
+  async acessos(dias) { const { data, error } = await this.sb.rpc("admin_acessos", { p_dias: dias }); if (error) throw new Error(/not find the function/i.test(error.message) ? "Falta rodar o acessos.sql no Supabase." : error.message); return (data || []).map((x) => ({ u: x.u, t: x.t, a: x.a, d: Date.parse(x.d) })); },
   async trocarSenha(nova) { const { error } = await this.sb.rpc("trocar_senha", { p_nova: nova }); if (error) throw this.erro(error); },
   async listar() { const { data, error } = await this.sb.rpc("admin_listar_usuarios"); if (error) throw this.erro(error); return (data || []).map((u) => this.conta(u)); },
   async salvar(d) { const { data, error } = await this.sb.rpc("admin_salvar_usuario", { p_user: d.id || null, p_email: d.email, p_nome: d.nome, p_perfil: d.perfil, p_ativo: d.ativo, p_regionais: d.regionais }); if (error) throw new Error(error.message); return data || {}; },
@@ -2083,7 +2124,50 @@ function listaRegionais() {
 }
 async function renderAdmin() {
   try { adm.usuarios = await API.listar(); } catch (e) { toast("Não consegui carregar os usuários", e.message); return; }
-  renderUsuarios(); renderAtribuicao(); renderImportacao();
+  renderUsuarios(); renderAtribuicao(); renderImportacao(); renderAcessos();
+}
+const ABA_NOME = { geral: "Visão geral", equipes: "Equipes", mapa: "Mapa", clientes: "Clientes", agenda: "Agenda", intel: "Oportunidades", visitas: "Visitas", metodo: "Metodologia", admin: "Administração" };
+const acs = { dias: 30, admins: false };
+async function renderAcessos() {
+  let ev;
+  try { ev = await API.acessos(acs.dias); } catch (e) { $("acKpis").innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+  const users = adm.usuarios.filter((u) => u.ativo && (acs.admins || u.perfil !== "admin"));
+  const ids = new Set(users.map((u) => u.id)), evs = ev.filter((x) => ids.has(x.u));
+  const DIA = 86400000, agora = Date.now();
+  const sp = (ms) => Math.floor((ms - 3 * 3600000) / DIA);   // dia no relógio de São Paulo
+  const por = users.map((u) => {
+    const e = evs.filter((x) => x.u === u.id), ok = e.filter((x) => x.t !== "falha");
+    const sess = e.filter((x) => x.t === "login" || x.t === "abertura").length, ativo = e.filter((x) => x.t === "ativo").length;
+    const ult = ok.length ? Math.max(...ok.map((x) => x.d)) : (u.ultimo || null);
+    const abas = contar(e.filter((x) => x.t === "aba"), (x) => x.a).slice(0, 3).map(([a]) => ABA_NOME[a] || a);
+    const sit = !ult ? ["Nunca acessou", "ch-red", 0] : agora - ult > 7 * DIA ? [`Sem acesso há ${Math.floor((agora - ult) / DIA)} dias`, "ch-amb", 1] : ["Usando", "ch-ok", 2];
+    return { ...u, sess, dias: new Set(ok.map((x) => sp(x.d))).size, min: ativo * 5 + sess, ult, abas, falhas: e.filter((x) => x.t === "falha").length, sit };
+  });
+  const usaram = por.filter((x) => x.dias > 0).length, nunca = por.filter((x) => x.sit[2] === 0).length;
+  const topAba = contar(evs.filter((x) => x.t === "aba"), (x) => x.a)[0];
+  $("acKpis").innerHTML = kpi("Usuários que acessaram", `${fmtN(usaram)}<small> / ${fmtN(por.length)}</small>`, `nos últimos ${acs.dias} dias`, usaram < por.length ? "warn" : "") +
+    kpi("Acessos", fmtN(por.reduce((s, x) => s + x.sess, 0)), "entradas no painel (login ou reabertura)") +
+    kpi("Tempo de uso", fmtDur(por.reduce((s, x) => s + x.min, 0)), "estimado pelo tempo com a tela aberta") +
+    kpi("Aba mais vista", topAba ? esc(ABA_NOME[topAba[0]] || topAba[0]) : "—", topAba ? `${fmtN(topAba[1])} visitas à aba` : "sem registro") +
+    kpi("Nunca acessaram", fmtN(nunca), "cadastrados e ainda sem nenhum acesso", nunca ? "alert" : "");
+  // usuários distintos por dia
+  const d0 = sp(agora) - acs.dias + 1, dias = [], vals = [];
+  for (let d = d0; d <= sp(agora); d++) { dias.push(d); vals.push(new Set(evs.filter((x) => x.t !== "falha" && sp(x.d) === d).map((x) => x.u)).size); }
+  barrasDia($("acChart"), dias, vals, { label: "Usuários por dia", un: "usuário", h: 170 });
+  tabela("tAc", [
+    { k: "nome", l: "Usuário", h: (u) => `<b>${esc(u.nome)}</b><span class="sub">${PERFIS[u.perfil]}${u.perfil === "gerente" ? " · " + esc(u.regionais.slice(0, 2).join(", ")) + (u.regionais.length > 2 ? "…" : "") : ""}</span>` },
+    { k: "sit", l: "Situação", v: (u) => u.sit[2], h: (u) => `<span class="chip ${u.sit[1]}">${u.sit[0]}</span>` },
+    { k: "ult", l: "Último acesso", n: 1, h: (u) => (u.ult ? new Date(u.ult).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—") },
+    { k: "sess", l: "Acessos", n: 1, h: (u) => fmtN(u.sess) }, { k: "dias", l: "Dias com acesso", n: 1, h: (u) => fmtN(u.dias) },
+    { k: "min", l: "Tempo de uso", n: 1, h: (u) => (u.min ? fmtDur(u.min) : "—") },
+    { k: "abas", l: "O que mais olha", v: (u) => u.abas.join(), h: (u) => esc(u.abas.join(" · ") || "—") },
+    { k: "falhas", l: "Senha errada", n: 1, h: (u) => (u.falhas ? `<span class="chip ch-amb">${u.falhas}</span>` : "0") },
+  ], por, { ord: { k: "sit", d: 1 } });
+  const nome = new Map(adm.usuarios.map((u) => [u.id, u.nome]));
+  const rec = [...evs].filter((x) => x.t !== "ativo").sort((a, b) => b.d - a.d).slice(0, 40);
+  const oQue = (x) => x.t === "login" ? "entrou com e-mail e senha" : x.t === "abertura" ? "abriu o painel (já estava logado)" : x.t === "falha" ? "errou a senha" : x.t === "aba" ? `abriu a aba ${ABA_NOME[x.a] || x.a}` : "saiu";
+  $("acLog").innerHTML = rec.map((x) => `<li class="${x.t === "falha" ? "f" : ""}"><span class="q">${new Date(x.d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span><b>${esc(nome.get(x.u) || "—")}</b><span>${oQue(x)}</span></li>`).join("") || `<li class="empty">Nenhum acesso registrado no período.</li>`;
+  $("acNota").hidden = !(API === DemoAPI);
 }
 function situacaoUsr(u) { return !u.ativo ? ["Desativado", "ch-neu"] : u.trocar ? ["Aguardando 1º acesso", "ch-amb"] : ["Ativo", "ch-ok"]; }
 function renderUsuarios() {
@@ -2275,9 +2359,12 @@ function aplicarFiltro(k, v) {
   const map = { grupo: "fGrupo", reg: "fReg", cons: "fCons", tipo: "fTipo", q: "fBusca" }; if (map[k]) $(map[k]).value = v;
   preencherFiltros(); $(map[k]) && ($(map[k]).value = v); state.f[k] = v; state.pag = { cli: 1, vis: 1 }; state.mapa.sel = null; render();
 }
+const registro = {};
+setInterval(() => { if (state.conta && !state.conta.trocar && document.visibilityState === "visible" && !$("app").hidden) API.registrar("ativo"); }, 300000);
 function selPane(p) {
   if (!$("pane-" + p) || (p === "admin" && state.conta?.perfil !== "admin")) p = "geral";
   state.pane = p;
+  if (state.conta && !state.conta.trocar) { const k = "aba:" + p, t = Date.now(); if (!registro[k] || t - registro[k] > 600000) { registro[k] = t; API.registrar("aba", p); } }
   document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.pane === p)));
   document.querySelectorAll(".pane").forEach((x) => (x.hidden = x.id !== "pane-" + p));
   $("filtros").hidden = p === "admin" || p === "metodo";
@@ -2381,7 +2468,9 @@ function ligarEventos() {
   $("fileV").addEventListener("change", (e) => lerArquivo("v", e.target.files[0])); $("fileQ").addEventListener("change", (e) => lerArquivo("q", e.target.files[0]));
   for (const [id, t] of [["dropV", "v"], ["dropQ", "q"]]) { const el = $(id); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerArquivo(t, e.dataTransfer.files[0]); }); }
   $("impAplicar").addEventListener("click", aplicarImportacao);
-  $("btnAjuda").addEventListener("click", () => { abrirModal("mVideo"); const v = $("vTour"); v.play?.().catch(() => {}); });
+  $("acPer").addEventListener("click", (e) => { const b = e.target.closest("[data-d]"); if (!b) return; acs.dias = +b.dataset.d; $("acPer").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderAcessos(); });
+  $("acAdm").addEventListener("change", (e) => { acs.admins = e.target.checked; renderAcessos(); });
+  $("btnAjuda").addEventListener("click", () => { abrirModal("mVideo"); const v = $("vTour"); v.volume = 0.5; v.play?.().catch(() => {}); });
   $("vTour").addEventListener("error", () => { $("vErr").hidden = false; }, true);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("vTour").pause(); });
   $("mVideo").addEventListener("click", (e) => { if (e.target.closest("[data-fechar]") || e.target === $("mVideo")) $("vTour").pause(); });
