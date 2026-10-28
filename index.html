@@ -406,6 +406,9 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 .aclog b { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aclog li.f span:last-child { color: var(--red); }
 @media (max-width: 720px) { .aclog li { grid-template-columns: 1fr; gap: 0; } }
+td .linkbtn[data-isentar], td .linkbtn[data-isentar-x] { font-size: .76rem; font-weight: 700; color: var(--muted); padding: 0 2px; }
+td .linkbtn[data-isentar]:hover, td .linkbtn[data-isentar-x]:hover { color: var(--brand); }
+#excBusca { flex: 1 1 280px; }
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -661,7 +664,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Consultores</h2><div class="tbar"><span class="label" id="consCount"></span><button class="btn" type="button" data-copy="tCons">Copiar tabela</button></div></div>
-        <div class="tbar"><input type="search" id="consBusca" placeholder="Buscar consultor ou território" aria-label="Buscar consultor"><select id="consSit" aria-label="Situação"><option value="">Todas as situações</option><option value="ativo">Ativos</option><option value="atencao">Atenção (7–14 dias sem visita)</option><option value="parado">Parados (15+ dias)</option><option value="sem">Sem visita no período</option></select></div>
+        <div class="tbar"><input type="search" id="consBusca" placeholder="Buscar consultor ou território" aria-label="Buscar consultor"><select id="consSit" aria-label="Situação"><option value="">Todas as situações</option><option value="ativo">Ativos</option><option value="atencao">Atenção (7–14 dias sem visita)</option><option value="parado">Parados (15+ dias)</option><option value="sem">Sem visita no período</option><option value="isento">Fora da cobrança (gestores, internos)</option></select></div>
         <div class="tbl-wrap tall"><table class="t-min" id="tCons"></table></div>
         <p class="note">Clique num consultor para ver o mês dele dia a dia, os clientes e os territórios. Dias sem visita contam até a data de referência.</p>
       </section>
@@ -849,6 +852,12 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <p class="note">Usuário novo entra com o e-mail e a <b>senha padrão</b> e cria a própria senha no primeiro acesso. "Resetar senha" volta para a senha padrão.</p>
       </section>
       <section class="panel">
+        <div class="panel-head"><h2>Fora da cobrança de visitas</h2><span class="label" id="excLbl"></span></div>
+        <p class="lead">Gestores, coordenadores e pessoas internas que aparecem nas planilhas do C4C mas não têm meta de visita. Elas não entram em "Quem não está visitando" nem na contagem de consultores ativos. Para incluir alguém, use <b>não cobrar</b> na aba Equipes ou busque abaixo.</p>
+        <div class="tbar"><input type="search" id="excBusca" list="excOpcoes" placeholder="Nome de quem não deve ser cobrado" aria-label="Nome da pessoa"><datalist id="excOpcoes"></datalist><button class="btn" type="button" id="excAdd">Tirar da cobrança</button></div>
+        <div class="tbl-wrap"><table id="tExc"></table></div>
+      </section>
+      <section class="panel">
         <div class="panel-head"><h2>Regiões de cada gerente</h2><div class="tbar"><span class="label" id="atrLbl"></span><button class="btn primary" type="button" id="atrSalvar" disabled>Salvar alterações</button></div></div>
         <p class="lead">Marque as regionais que cada gerente enxerga. É a equipe dele: o painel inteiro (números, mapa, clientes, agenda) passa a mostrar só essas regionais para ele. Admin e diretoria veem tudo.</p>
         <div class="tbl-wrap tall"><table class="atr" id="tAtr"></table></div>
@@ -919,6 +928,18 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
     <div class="panel-head"><div><h2 id="vTit">Como funciona o Radar de Campo</h2><span class="label">tour de 3 minutos, com legendas</span></div><button class="hbtn ico" type="button" data-fechar aria-label="Fechar">✕</button></div>
     <div class="m-corpo"><video id="vTour" controls playsinline preload="none" poster="tour.jpg"><source src="tour.mp4" type="video/mp4"></video>
       <p class="note" id="vErr" hidden>O vídeo não está disponível neste endereço. Na versão publicada, o arquivo tour.mp4 fica junto do index.html.</p></div>
+  </div>
+</div>
+<!-- modal: tirar da cobrança de visitas -->
+<div class="modal" id="mExc" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="eTit">
+    <div class="panel-head"><div><h2 id="eTit">Tirar da cobrança de visitas</h2><span class="label" id="eSub"></span></div><button class="hbtn ico" type="button" data-fechar aria-label="Fechar">✕</button></div>
+    <form id="eForm" class="m-corpo" novalidate>
+      <p class="lead">A pessoa sai de "Quem não está visitando", dos consultores parados e da contagem de consultores ativos. As visitas que ela fizer continuam contando normalmente.</p>
+      <div class="f"><span class="label">Motivo</span><div class="seg-claro" id="eMot" role="radiogroup" aria-label="Motivo"></div></div>
+      <div class="err" id="eErr"></div>
+      <div class="m-pe"><span style="flex:1"></span><button class="btn" type="button" data-fechar>Cancelar</button><button class="btn primary" type="submit" id="eSalvar">Tirar da cobrança</button></div>
+    </form>
   </div>
 </div>
 <!-- modal: anotações do gestor -->
@@ -1220,16 +1241,25 @@ function statsConsultores() {
     const dias = new Set(ok.map((v) => v.dia));
     const durs = ok.map((v) => v.dur).filter((x) => x != null && x >= 0);
     const sem = ult == null ? null : ref - ult;
-    const sit = !ok.length ? "sem" : sem >= 15 ? "parado" : sem >= 7 ? "atencao" : "ativo";
+    const isento = state.excecoes?.get(c.nome) || null;
+    const sit = isento ? "isento" : !ok.length ? "sem" : sem >= 15 ? "parado" : sem >= 7 ? "atencao" : "ativo";
     return { nome: c.nome, regional: moda(c.regs), terrs: [...new Set(c.terrs)], ok: ok.length, ab: c.vis.filter((v) => v.st === "ab").length,
       atr: c.todas.filter((v) => v.st === "ab" && v.diaPlan < hoje).length, cx: c.vis.filter((v) => v.st === "cx").length,
       cli: new Set(ok.map((v) => v.cid)).size, dias: dias.size, porDia: dias.size ? ok.length / dias.size : 0, porUtil: uteis ? ok.length / uteis : 0,
       quest: ok.length ? ok.filter((v) => v.sv).length / ok.length : 0, gps: ok.length ? ok.filter((v) => v.gps).length / ok.length : 0,
-      rel: ok.length ? ok.filter((v) => v.dur != null && v.dur < 2).length / ok.length : 0, durMed: mediana(durs), ult, sem, sit };
+      rel: ok.length ? ok.filter((v) => v.dur != null && v.dur < 2).length / ok.length : 0, durMed: mediana(durs), ult, sem, sit, isento };
   });
 }
 function diasUteis(de, ate) { let n = 0; for (let d = de; d <= ate; d++) { const w = dow(d); if (w > 0 && w < 6) n++; } return n; }
-const SIT = { ativo: ["Ativo", "ch-ok"], atencao: ["Atenção", "ch-amb"], parado: ["Parado", "ch-red"], sem: ["Sem visita no período", "ch-red"] };
+const SIT = { ativo: ["Ativo", "ch-ok"], atencao: ["Atenção", "ch-amb"], parado: ["Parado", "ch-red"], sem: ["Sem visita no período", "ch-red"], isento: ["Fora da cobrança", "ch-info"] };
+const sitTxt = (c) => (c.sit === "isento" ? c.isento : SIT[c.sit][0]);
+const sitChip = (c) => `<span class="chip ${SIT[c.sit][1]}" ${c.sit === "isento" ? 'title="Fora da cobrança de visitas"' : ""}>${esc(sitTxt(c))}</span>`;
+const ORD_SIT = { sem: 0, parado: 1, atencao: 2, ativo: 3, isento: 4 };
+const cobrados = (cons) => cons.filter((c) => c.sit !== "isento");
+const EXC_MOTIVOS = ["Gestor", "Coordenação", "Backoffice / interno", "TI / teste", "Afastado", "Desligado"];
+const btnIsentar = (c) => state.conta?.perfil !== "admin" ? "" : c.sit === "isento"
+  ? `<button type="button" class="linkbtn" data-isentar-x="${esc(c.nome)}" title="Voltar a cobrar visitas de ${esc(titulo(c.nome))}">voltar a cobrar</button>`
+  : `<button type="button" class="linkbtn" data-isentar="${esc(c.nome)}" title="Tirar ${esc(titulo(c.nome))} da cobrança de visitas (gestor, interno…)">não cobrar</button>`;
 
 /* ---------- clientes ---------- */
 function statsClientes() {
@@ -1351,14 +1381,14 @@ function tabela(id, cols, linhas, opts = {}) {
 function renderGeral() {
   const { per, ok, base } = recorte(), ref = REF(), hoje = HOJE();
   const cons = statsConsultores(), cli = statsClientes();
-  const ativos = cons.filter((c) => c.ok > 0).length;
+  const consC = cobrados(cons), ativos = consC.filter((c) => c.ok > 0).length;
   const uteis = diasUteis(state.f.de, ref);
   const atr = base.filter((v) => v.st === "ab" && v.diaPlan < hoje);
   const comQ = ok.filter((v) => v.sv).length;
   $("kpis").innerHTML =
     kpi("Visitas realizadas", fmtN(ok.length), `<b>${fmtN(ok.length / Math.max(1, ativos) / Math.max(1, uteis), 1)}</b> por consultor ativo por dia útil`) +
     kpi("Clientes visitados", fmtN(new Set(ok.map((v) => v.cid)).size), `de <b>${fmtN(cli.length)}</b> clientes com histórico`) +
-    kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(cons.length)}</small>`, `<b>${fmtN(cons.length - ativos)}</b> sem visita realizada no período`, cons.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
+    kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(consC.length)}</small>`, `<b>${fmtN(consC.length - ativos)}</b> sem visita realizada no período${cons.length > consC.length ? ` · ${fmtN(cons.length - consC.length)} fora da cobrança` : ""}`, consC.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
     kpi("Abertas em atraso", fmtN(atr.length), `planejadas antes de ${fmtDia(hoje)} e não realizadas`, atr.length ? "alert clk" : "clk", 'data-go="agenda"') +
     kpi("Com questionário", fmtP(ok.length ? comQ / ok.length : 0), `<b>${fmtN(comQ)}</b> visitas com respostas`);
   // sinais
@@ -1394,7 +1424,7 @@ function renderGeral() {
   $("qualBars").innerHTML = q.map(([l, n]) => `<li><span class="name">${l}</span><span class="count">${fmtP(n / Math.max(1, ok.length))} <small>${fmtN(n)}</small></span><span class="bar"><i style="width:${(100 * n / Math.max(1, ok.length)).toFixed(1)}%;background:var(--amb)"></i></span></li>`).join("");
   // regionais
   const regs = new Map();
-  for (const c of cons) { const r = regs.get(c.regional) || { regional: c.regional, cons: 0, ativos: 0, ok: 0, cli: new Set(), atr: 0, q: 0, rel: 0, gps: 0, parados: 0 }; r.cons++; if (c.ok) r.ativos++; if (c.sit === "parado" || c.sit === "sem") r.parados++; regs.set(c.regional, r); }
+  for (const c of cons) { const r = regs.get(c.regional) || { regional: c.regional, cons: 0, ativos: 0, ok: 0, cli: new Set(), atr: 0, q: 0, rel: 0, gps: 0, parados: 0 }; if (c.sit !== "isento") { r.cons++; if (c.ok) r.ativos++; } if (c.sit === "parado" || c.sit === "sem") r.parados++; regs.set(c.regional, r); }
   for (const v of ok) { const r = regs.get(v.regional) || (regs.set(v.regional, { regional: v.regional, cons: 0, ativos: 0, ok: 0, cli: new Set(), atr: 0, q: 0, rel: 0, gps: 0, parados: 0 }), regs.get(v.regional)); r.ok++; r.cli.add(v.cid); if (v.sv) r.q++; if (v.dur != null && v.dur < 2) r.rel++; if (v.gps) r.gps++; }
   for (const v of atr) { const r = regs.get(v.regional); if (r) r.atr++; }
   const lin = [...regs.values()].map((r) => ({ ...r, grupo: state.db.regs.get(r.regional) || "", nCli: r.cli.size, porCons: r.ativos ? r.ok / r.ativos / Math.max(1, uteis) : 0, pq: r.ok ? r.q / r.ok : 0, prel: r.ok ? r.rel / r.ok : 0, pgps: r.ok ? r.gps / r.ok : 0 }));
@@ -1424,13 +1454,14 @@ function clienteEmRisco(s) {
 /* =================== EQUIPES =================== */
 function renderEquipes() {
   const cons = statsConsultores(), ref = REF();
-  const parados = cons.filter((c) => c.sit !== "ativo").sort((a, b) => ({ sem: 0, parado: 1, atencao: 2 }[a.sit] - { sem: 0, parado: 1, atencao: 2 }[b.sit]) || (b.sem ?? 999) - (a.sem ?? 999));
+  const parados = cons.filter((c) => c.sit !== "ativo" && c.sit !== "isento").sort((a, b) => ORD_SIT[a.sit] - ORD_SIT[b.sit] || (b.sem ?? 999) - (a.sem ?? 999));
+  const nIsentos = cons.filter((c) => c.sit === "isento").length;
   const nSem = cons.filter((c) => c.sit === "sem").length, nPar = cons.filter((c) => c.sit === "parado").length, nAt = cons.filter((c) => c.sit === "atencao").length;
   $("paradosLbl").textContent = `até ${fmtDiaAno(ref)}`;
-  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita). A lista considera quem tem pelo menos um registro na base carregada.`;
+  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita).${nIsentos ? ` <b>${fmtN(nIsentos)}</b> pessoa(s) fora da cobrança (gestores, internos) não entram nesta lista.` : ""}${state.conta?.perfil === "admin" ? " Gestor ou pessoa que não faz visita? Clique em <b>não cobrar</b> na linha dela." : ""}`;
   tabela("tParados", [
     { k: "nome", l: "Consultor", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(c.regional)}</span>` },
-    { k: "sit", l: "Situação", v: (c) => ({ sem: 0, parado: 1, atencao: 2 }[c.sit]), h: (c) => `<span class="chip ${SIT[c.sit][1]}">${SIT[c.sit][0]}</span>` },
+    { k: "sit", l: "Situação", v: (c) => ORD_SIT[c.sit], h: (c) => `${sitChip(c)} ${btnIsentar(c)}` },
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "nunca" : fmtN(c.sem)) },
     { k: "ult", l: "Última visita", n: 1, h: (c) => fmtDiaAno(c.ult) },
     { k: "ok", l: "Realizadas no período", n: 1, h: (c) => fmtN(c.ok) },
@@ -1457,7 +1488,7 @@ function renderTabCons(cons) {
   $("consCount").textContent = plural(lin.length, "consultor", "consultores");
   tabela("tCons", [
     { k: "nome", l: "Consultor", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(c.regional)} · ${esc(c.terrs.slice(0, 2).map(titulo).join(", "))}${c.terrs.length > 2 ? "…" : ""}</span>` },
-    { k: "sit", l: "Situação", v: (c) => ({ sem: 0, parado: 1, atencao: 2, ativo: 3 }[c.sit]), h: (c) => `<span class="chip ${SIT[c.sit][1]}">${SIT[c.sit][0]}</span>` },
+    { k: "sit", l: "Situação", v: (c) => ORD_SIT[c.sit], h: (c) => `${sitChip(c)}${c.sit === "isento" ? " " + btnIsentar(c) : ""}` },
     { k: "ok", l: "Visitas", n: 1, h: (c) => fmtN(c.ok) }, { k: "cli", l: "Clientes", n: 1, h: (c) => fmtN(c.cli) },
     { k: "dias", l: "Dias em campo", n: 1, h: (c) => fmtN(c.dias) }, { k: "porDia", l: "Visitas/dia em campo", n: 1, h: (c) => fmtN(c.porDia, 1) },
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "—" : fmtN(c.sem)) },
@@ -1476,7 +1507,7 @@ function abrirNotas(nome) {
   const cs = statsConsultores().find((c) => c.nome === nome);
   const vis = state.db.visits.filter((v) => v.consultor === nome && visivel(v)).sort((a, b) => (b.ck ?? b.ini) - (a.ck ?? a.ini)).slice(0, 25);
   $("nTitulo").textContent = titulo(nome);
-  $("nSub").textContent = cs ? `${cs.regional} · ${SIT[cs.sit][0]}` : "";
+  $("nSub").textContent = cs ? `${cs.regional} · ${sitTxt(cs)}` : "";
   $("nResumo").innerHTML = cs ? `<div><b>${fmtN(cs.ok)}</b><span>visitas no período</span></div><div><b>${cs.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs.cli)}</b><span>clientes</span></div><div><b>${fmtN(cs.atr)}</b><span>abertas em atraso</span></div>` : "";
   $("nTema").innerHTML = TEMAS.map((t, i) => `<button type="button" role="radio" data-v="${t}" aria-checked="${i === 0}">${t}</button>`).join("");
   $("nVisita").innerHTML = `<option value="">Nenhuma (comentário geral)</option>` + vis.map((v) => `<option value="${v.id}">${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)} · ${esc(titulo(state.db.clientes.get(v.cid)?.nome))} · ${v.st === "ok" ? "realizada" : v.st === "cx" ? "cancelada" : "aberta"}</option>`).join("");
@@ -1905,7 +1936,7 @@ function abrirConsultor(nome) {
   const todas = state.db.visits.filter((v) => v.consultor === nome && visivel(v));
   const per = todas.filter(noPeriodo), ok = per.filter((v) => v.st === "ok");
   $("mConT").textContent = titulo(nome);
-  $("mConS").textContent = `${cs?.regional || ""} · ${cs ? SIT[cs.sit][0] : ""}`;
+  $("mConS").textContent = `${cs?.regional || ""} · ${cs ? sitTxt(cs) : ""}`;
   const por = new Map(); ok.forEach((v) => por.set(v.dia, (por.get(v.dia) || 0) + 1));
   const ab = new Map(); per.filter((v) => v.st === "ab").forEach((v) => ab.set(v.diaPlan, (ab.get(v.diaPlan) || 0) + 1));
   const start = state.f.de - ((dow(state.f.de) + 6) % 7);
@@ -2016,6 +2047,9 @@ const DemoAPI = {
     this.salvarTodos(); return { criado: !d.id };
   },
   async notas() { return store.get("rc_notas", []); },
+  async excecoes() { return store.get("rc_excecoes", []); },
+  async isentar(nome, motivo) { const a = store.get("rc_excecoes", []).filter((x) => x.nome !== nome); a.push({ nome, motivo, por: state.conta.nome, criado: Date.now() }); store.set("rc_excecoes", a); },
+  async desisentar(nome) { store.set("rc_excecoes", store.get("rc_excecoes", []).filter((x) => x.nome !== nome)); },
   async criarNota(n) { const a = store.get("rc_notas", []); const nova = { ...n, id: "n" + Date.now(), autor_id: state.conta.id, autor_nome: state.conta.nome, criado: Date.now() }; a.push(nova); store.set("rc_notas", a); return nova; },
   async excluirNota(id) { store.set("rc_notas", store.get("rc_notas", []).filter((n) => n.id !== id)); },
   async resetar(id) { const u = this.usuarios.find((x) => x.id === id); u.h = await hash(SENHA_PADRAO); u.trocar = true; this.salvarTodos(); },
@@ -2065,6 +2099,16 @@ const SupaAPI = {
   async trocarSenha(nova) { const { error } = await this.sb.rpc("trocar_senha", { p_nova: nova }); if (error) throw this.erro(error); },
   async listar() { const { data, error } = await this.sb.rpc("admin_listar_usuarios"); if (error) throw this.erro(error); return (data || []).map((u) => this.conta(u)); },
   async salvar(d) { const { data, error } = await this.sb.rpc("admin_salvar_usuario", { p_user: d.id || null, p_email: d.email, p_nome: d.nome, p_perfil: d.perfil, p_ativo: d.ativo, p_regionais: d.regionais }); if (error) throw new Error(error.message); return data || {}; },
+  async excecoes() {
+    const { data, error } = await this.sb.from("excecoes").select("nome,motivo,por_nome,criado_em");
+    if (error) { console.warn("exceções:", error.message); return []; }
+    return data.map((x) => ({ nome: x.nome, motivo: x.motivo, por: x.por_nome, criado: Date.parse(x.criado_em) }));
+  },
+  async isentar(nome, motivo) {
+    const { error } = await this.sb.from("excecoes").upsert({ nome, motivo, por_nome: state.conta.nome }, { onConflict: "nome" });
+    if (error) throw new Error(/does not exist|could not find the table/i.test(error.message) ? "Falta rodar o excecoes.sql no Supabase." : error.message);
+  },
+  async desisentar(nome) { const { error } = await this.sb.from("excecoes").delete().eq("nome", nome); if (error) throw new Error(error.message); },
   async notas() {
     const { data, error } = await this.sb.from("anotacoes").select("id,consultor,regional,tema,texto,vid,autor,autor_nome,criado_em").order("criado_em", { ascending: false }).limit(5000);
     if (error) { console.warn("anotações:", error.message); return []; }
@@ -2124,7 +2168,37 @@ function listaRegionais() {
 }
 async function renderAdmin() {
   try { adm.usuarios = await API.listar(); } catch (e) { toast("Não consegui carregar os usuários", e.message); return; }
-  renderUsuarios(); renderAtribuicao(); renderImportacao(); renderAcessos();
+  renderUsuarios(); renderExcecoes(); renderAtribuicao(); renderImportacao(); renderAcessos();
+}
+/* ---------- fora da cobrança de visitas ---------- */
+async function carregarExcecoes() {
+  let l = []; try { l = await API.excecoes(); } catch {}
+  state.excecoesLista = l; state.excecoes = new Map(l.map((x) => [x.nome, x.motivo]));
+}
+let excAlvo = null;
+function abrirIsentar(nome) {
+  excAlvo = nome;
+  const cs = statsConsultores().find((c) => c.nome === nome);
+  $("eSub").textContent = `${titulo(nome)}${cs ? " · " + cs.regional : ""}`;
+  $("eMot").innerHTML = EXC_MOTIVOS.map((m, i) => `<button type="button" role="radio" data-v="${esc(m)}" aria-checked="${i === 0}">${esc(m)}</button>`).join("");
+  $("eErr").textContent = ""; abrirModal("mExc");
+}
+async function salvarIsentar(e) {
+  e.preventDefault();
+  const motivo = $("eMot").querySelector('[aria-checked="true"]')?.dataset.v || "Gestor", b = $("eSalvar"); b.disabled = true;
+  try { await API.isentar(excAlvo, motivo); await carregarExcecoes(); $("mExc").hidden = true; toast("Fora da cobrança", `${titulo(excAlvo)} (${motivo}) não entra mais em "Quem não está visitando".`); render(); }
+  catch (err) { $("eErr").textContent = err.message; } finally { b.disabled = false; }
+}
+async function desisentar(nome) {
+  try { await API.desisentar(nome); await carregarExcecoes(); toast("Volta a ser cobrado", `${titulo(nome)} voltou para a lista de consultores.`); render(); }
+  catch (e) { toast("Não consegui alterar", e.message); }
+}
+function renderExcecoes() {
+  const l = [...(state.excecoesLista || [])].sort((a, b) => a.nome.localeCompare(b.nome));
+  const regDe = new Map(statsConsultores().map((c) => [c.nome, c.regional]));
+  $("excLbl").textContent = plural(l.length, "pessoa");
+  $("excOpcoes").innerHTML = [...new Set(state.db.visits.map((v) => v.consultor))].filter((n) => !state.excecoes.has(n)).sort().map((n) => `<option value="${esc(n)}"></option>`).join("");
+  $("tExc").innerHTML = `<thead><tr><th>Pessoa</th><th>Motivo</th><th>Incluída por</th><th></th></tr></thead><tbody>${l.map((x) => `<tr><td><b>${esc(titulo(x.nome))}</b><span class="sub">${esc(regDe.get(x.nome) || "")}</span></td><td><span class="chip ch-info">${esc(x.motivo)}</span></td><td>${esc(x.por || "—")}<span class="sub">${x.criado ? new Date(x.criado).toLocaleDateString("pt-BR") : ""}</span></td><td class="n"><button type="button" class="btn sm" data-isentar-x="${esc(x.nome)}">Voltar a cobrar</button></td></tr>`).join("") || `<tr><td colspan="4" class="empty">Ninguém fora da cobrança ainda.</td></tr>`}</tbody>`;
 }
 const ABA_NOME = { geral: "Visão geral", equipes: "Equipes", mapa: "Mapa", clientes: "Clientes", agenda: "Agenda", intel: "Oportunidades", visitas: "Visitas", metodo: "Metodologia", admin: "Administração" };
 const acs = { dias: 30, admins: false };
@@ -2304,6 +2378,7 @@ async function entrou(conta) {
   $("tabAdmin").hidden = conta.perfil !== "admin";
   if (!state.raw) { $("ctx").textContent = "Carregando visitas…"; telas("app"); try { state.raw = await API.dados(); } catch (e) { telas("login"); $("lErr").textContent = "Não consegui carregar as visitas: " + e.message + (API === DemoAPI ? " Preencha o config.js com o Supabase." : ""); return; } }
   try { state.notas = await API.notas(); } catch { state.notas = []; }
+  await carregarExcecoes();
   carregarBase(state.raw);
   telas("app"); selPane(location.hash.slice(1) || "geral");
   if (conta.perfil === "gerente" && !conta.regionais.length) toast("Nenhuma regional liberada", "Peça ao administrador para atribuir as regionais da sua equipe.");
@@ -2427,6 +2502,8 @@ function ligarEventos() {
   // cliques que abrem detalhes / filtram
   document.addEventListener("click", (e) => {
     const go = e.target.closest("[data-go]"); if (go) { selPane(go.dataset.go); scrollTo({ top: 0 }); return; }
+    const ie = e.target.closest("[data-isentar]"); if (ie) { e.preventDefault(); e.stopPropagation(); abrirIsentar(ie.dataset.isentar); return; }
+    const ix = e.target.closest("[data-isentar-x]"); if (ix) { e.preventDefault(); e.stopPropagation(); desisentar(ix.dataset.isentarX); return; }
     const nb = e.target.closest("[data-nota]"); if (nb) { e.preventDefault(); e.stopPropagation(); abrirNotas(nb.dataset.nota); return; }
     const nx = e.target.closest("[data-nota-x]"); if (nx) { excluirNota(nx.dataset.notaX, nx); return; }
     const cli = e.target.closest("[data-cli]"); if (cli) { e.preventDefault(); abrirCliente(cli.dataset.cli); return; }
@@ -2468,6 +2545,9 @@ function ligarEventos() {
   $("fileV").addEventListener("change", (e) => lerArquivo("v", e.target.files[0])); $("fileQ").addEventListener("change", (e) => lerArquivo("q", e.target.files[0]));
   for (const [id, t] of [["dropV", "v"], ["dropQ", "q"]]) { const el = $(id); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerArquivo(t, e.dataTransfer.files[0]); }); }
   $("impAplicar").addEventListener("click", aplicarImportacao);
+  $("eForm").addEventListener("submit", salvarIsentar);
+  $("eMot").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) $("eMot").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", String(x === b))); });
+  $("excAdd").addEventListener("click", () => { const n = $("excBusca").value.trim(); const ok = [...new Set(state.db.visits.map((v) => v.consultor))].find((x) => norm(x) === norm(n)); if (!ok) { toast("Nome não encontrado", "Escolha um nome da lista que aparece ao digitar."); return; } $("excBusca").value = ""; abrirIsentar(ok); });
   $("acPer").addEventListener("click", (e) => { const b = e.target.closest("[data-d]"); if (!b) return; acs.dias = +b.dataset.d; $("acPer").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderAcessos(); });
   $("acAdm").addEventListener("change", (e) => { acs.admins = e.target.checked; renderAcessos(); });
   $("btnAjuda").addEventListener("click", () => { abrirModal("mVideo"); const v = $("vTour"); v.volume = 0.5; v.play?.().catch(() => {}); });
