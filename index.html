@@ -494,45 +494,70 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 @media (max-width: 1100px) { .sinais { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .sinais { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 400px) { .sinais { grid-template-columns: 1fr; } }
-/* relatório: carteira do consultor */
-.rel { display: grid; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px 16px; }
-.rel-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
-.rel-sel { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.rel-sel select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 700; color: var(--ink); min-width: min(320px, 70vw); }
-.rel-sel .btn { width: 36px; padding: 6px 0; font-size: 1.1rem; }
-.rel-cab { display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--hdr); color: #fff; border-radius: 8px; padding: 12px 18px; }
-.rel-cab h2 { color: #fff; font-size: 1.5rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.rel-cab .note { color: var(--hdr-ctx); }
-.rel-anel { width: 84px; height: 84px; flex: 0 0 auto; }
-.rel-anel circle { fill: none; stroke-width: 9; }
-.rel-anel .t { stroke: rgba(255,255,255,.2); } .rel-anel .v { stroke: #fff; stroke-linecap: round; }
-.rel-anel .v.ok { stroke: var(--ok); } .rel-anel .v.amb { stroke: var(--amb); } .rel-anel .v.red { stroke: #FF6B60; }
-.rel-anel text { fill: #fff; font: 700 17px var(--f); }
-.rel-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-.rk { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 7px; padding: 8px 11px; display: grid; gap: 1px; }
-.rk b { font-size: 1.55rem; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
-.rk span:last-child { font-size: .78rem; color: var(--muted); }
-.rk.ok { border-top-color: var(--ok); } .rk.red { border-top-color: var(--red); } .rk.red b { color: var(--red); } .rk.amb { border-top-color: var(--amb); }
-.rel-fx { display: grid; gap: 6px; }
-.rel-tbl { max-height: none; }
-.rel-tbl table { min-width: 760px; }
-.rel-tbl th, .rel-tbl td { padding: 4px 10px; }
-.rel-tbl td { white-space: nowrap; }
-.rel-tbl .subi { margin-left: 8px; font-size: .76rem; color: var(--muted); }
-.rel-tbl .chip { padding: 1px 7px; font-size: .72rem; }
-.rel-tbl td.n, .rel-tbl th.n { text-align: center; }
-.rel-tbl td.rel-i { color: var(--muted); font-size: .78rem; width: 36px; }
-.rel-tbl tr.nao td:first-child { box-shadow: inset 3px 0 0 var(--red); }
-.rel-tbl tr.vis td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+/* aba Carteira: formato BI */
+.bi-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bi-trilha { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .95rem; }
+.bi-trilha button { border: 0; background: none; color: var(--brand); font-weight: 700; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+.bi-trilha button:hover { background: var(--info-bg); }
+.bi-trilha button.on { color: var(--ink); font-size: 1.15rem; }
+.bi-trilha .sep { color: var(--muted); }
+.bi-trilha .note { margin-left: 8px; }
+.bi { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.bi-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-content: start; }
+.bk { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 8px; padding: 9px 11px; display: grid; gap: 2px; align-content: start; min-height: 104px; }
+.bk .label { font-size: .64rem; line-height: 1.25; min-height: 2.5em; }
+.bk b { font-size: 1.6rem; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bk b small { font-size: .9rem; color: var(--muted); }
+.bk .s { font-size: .74rem; color: var(--muted); line-height: 1.3; }
+.bk .s .up { color: var(--ok-ink); font-weight: 700; } .bk .s .down { color: var(--red); font-weight: 700; }
+.bk.ok { border-top-color: var(--ok); } .bk.red { border-top-color: var(--red); } .bk.red b { color: var(--red); } .bk.amb { border-top-color: var(--amb); }
+.bi-eq { min-width: 0; }
+.bi-eq .tbl-wrap { height: 100%; max-height: 236px; overflow: auto; }
+.bi-eq-t th, .bi-eq-t td { padding: 5px 8px; font-size: .84rem; }
+.bi-eq-t th { text-align: center; } .bi-eq-t th:first-child { text-align: left; }
+.bi-eq-t td.n { text-align: center; }
+.bi-eq-t tr[data-bisel] { cursor: pointer; }
+.bi-eq-t tr.bi-r td { background: var(--card); }
+.bi-eq-t tr.bi-c td:first-child { padding-left: 34px; }
+.bi-eq-t tr.sel td { background: var(--info-bg) !important; box-shadow: inset 0 1px 0 var(--brand-2), inset 0 -1px 0 var(--brand-2); }
+.bi-eq-t tr[data-bisel]:hover td { background: var(--info-bg); }
+.bi-eq-t tfoot td { position: sticky; bottom: 0; background: var(--hdr); color: #fff; font-weight: 700; border: 0; }
+.bi-eq-t tfoot td b, .bi-eq-t tfoot .hn { color: #fff; }
+.bi-eq-t tfoot tr.sel td { background: var(--brand-2) !important; box-shadow: none; }
+.bx { border: 0; background: none; color: var(--brand); cursor: pointer; font-size: .95rem; width: 22px; padding: 0; margin-right: 4px; line-height: 1; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-left: 3px; background: var(--neutro); }
+.dot.ok { background: var(--ok); } .dot.amb { background: var(--amb); } .dot.red { background: var(--red); }
+.bi-det .tbar input[type=search] { flex: 0 1 320px; }
+.bi-det-w { max-height: 70vh; overflow: auto; }
+.bi-det-t { min-width: 980px; }
+.bi-det-t th { position: sticky; top: 0; z-index: 2; text-align: center; white-space: normal; line-height: 1.2; vertical-align: middle; }
+.bi-det-t th:first-child { text-align: left; }
+.bi-det-t td { padding: 4px 8px; font-size: .86rem; white-space: nowrap; }
+.bi-det-t td.n { text-align: center; }
+.bi-det-t tr.bi-g td { background: var(--neutro-bg); font-size: .9rem; position: sticky; top: 30px; z-index: 1; }
+.bi-cli:nth-child(even) td { background: color-mix(in srgb, var(--card) 55%, var(--surface)); }
+.bi-nome { color: var(--ink); font-weight: 700; text-decoration: none; }
+.bi-nome:hover { color: var(--brand-2); text-decoration: underline; }
+.bi-det-t .subi { margin-left: 8px; font-size: .74rem; color: var(--muted); }
+.ck { font-weight: 700; font-size: 1rem; } .ck.ok { color: var(--ok-ink); } .ck.no { color: var(--red); }
+.bi-det-t td.d-ok { background: var(--ok-bg) !important; color: var(--ok-ink); font-weight: 700; }
+.bi-det-t td.d-amb { background: var(--amb-bg) !important; color: var(--amb-ink); font-weight: 700; }
+.bi-det-t td.d-red { background: var(--red-bg) !important; color: var(--red); font-weight: 700; }
+.bi-det-t tr.bi-cli.nao td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+.bi-det-t tr.bi-cli.vis td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+.bi-det-t tr.bi-cli.fora td:first-child { box-shadow: inset 3px 0 0 var(--neutro); }
+.bi-exp td { background: var(--surface) !important; white-space: normal !important; padding: 8px 12px 12px 40px !important; }
+.bi-v { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 0 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.bi-v .q { color: var(--muted); font-variant-numeric: tabular-nums; grid-row: span 3; }
+.bi-v b { color: var(--ink); } .bi-v .txt { grid-column: 2; font-size: .84rem; color: var(--text); white-space: pre-wrap; max-width: 110ch; }
 .vinc { font-size: .72rem; font-weight: 700; color: var(--brand); background: var(--info-bg); border-radius: 999px; padding: 0 6px; margin-left: 4px; white-space: nowrap; }
-.rel-fora .tags { margin-top: 6px; } .rel-fora .chip { border: 0; cursor: pointer; }
-.rel-nota { font-size: .8rem; }
+@media (max-width: 1100px) { .bi { grid-template-columns: 1fr; } .bi-eq .tbl-wrap { max-height: 320px; } }
+@media (max-width: 720px) { .bi-kpis { grid-template-columns: 1fr 1fr; } }
 @media print {
-  body.imprimindo .hdr, body.imprimindo .filters, body.imprimindo .rodape, body.imprimindo .banner, body.imprimindo .toast, body.imprimindo .rel-top, body.imprimindo .coach { display: none !important; }
+  body.imprimindo .hdr, body.imprimindo .filters, body.imprimindo .rodape, body.imprimindo .banner, body.imprimindo .toast, body.imprimindo .bi-top .tbar, body.imprimindo .coach, body.imprimindo .bi-det .tbar { display: none !important; }
   body.imprimindo .wrap > .pane:not(#pane-carteira) { display: none !important; }
-  body.imprimindo .rel { border: 0; padding: 0; background: #fff; }
-  body.imprimindo .rel-tbl { overflow: visible; border: 0; }
-  @page { size: A4 portrait; margin: 10mm; }
+  body.imprimindo .bi-det-w, body.imprimindo .bi-eq .tbl-wrap { max-height: none; overflow: visible; }
+  @page { size: A4 landscape; margin: 8mm; }
 }
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
@@ -785,20 +810,23 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       </div>
     </div>
 
-    <!-- ===== CARTEIRA DO CONSULTOR (relatório de uma tela) ===== -->
+    <!-- ===== CARTEIRA: números + equipe em cima, detalhamento de clientes embaixo ===== -->
     <div class="pane" id="pane-carteira" role="tabpanel" hidden>
-      <section class="rel" id="rel">
-        <div class="rel-top">
-          <div class="rel-sel">
-            <button class="btn" type="button" id="relAnt" aria-label="Consultor anterior">‹</button>
-            <select id="relCons" aria-label="Consultor"></select>
-            <button class="btn" type="button" id="relProx" aria-label="Próximo consultor">›</button>
-            <span class="note" id="relPos"></span>
-          </div>
-          <div class="tbar"><div class="seg2" id="relMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Só não visitadas</button><button type="button" data-m="vis">Só visitadas</button></div>
-            <button class="btn" type="button" id="relXlsx">Baixar Excel</button><button class="btn" type="button" id="relPrint" hidden>Imprimir / PDF</button></div>
-        </div>
-        <div id="relCorpo"></div>
+      <div class="bi-top">
+        <nav class="bi-trilha" id="biTrilha" aria-label="Seleção"></nav>
+        <div class="tbar"><button class="btn sm" type="button" id="biAnt" aria-label="Consultor anterior" title="Consultor anterior (←)">‹</button><button class="btn sm" type="button" id="biProx" aria-label="Próximo consultor" title="Próximo consultor (→)">›</button>
+          <button class="btn" type="button" id="biXlsx">Baixar Excel</button><button class="btn" type="button" id="biPrint" hidden>Imprimir / PDF</button></div>
+      </div>
+      <div class="bi">
+        <section class="bi-kpis" id="biKpis" aria-label="Resumo"></section>
+        <section class="bi-eq"><div class="tbl-wrap"><table class="bi-eq-t" id="biEquipe"></table></div></section>
+      </div>
+      <section class="panel bi-det">
+        <div class="panel-head"><h2>Detalhamento de clientes</h2><div class="tbar"><span class="label" id="biDetLbl"></span>
+          <div class="seg2" id="biMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Não visitadas</button><button type="button" data-m="vis">Visitadas</button></div></div></div>
+        <div class="tbar"><input type="search" id="biBusca" placeholder="Buscar conta, cliente ou município" aria-label="Buscar no detalhamento"><span class="legend"><span><i class="sw cg"></i>até 7 dias</span><span><i class="sw ca"></i>8 a 30</span><span><i class="sw cr"></i>mais de 30 ou nunca</span></span></div>
+        <div class="tbl-wrap bi-det-w"><table class="bi-det-t" id="biDet"></table></div>
+        <p class="note">Uma linha por conta crédito (vínculos juntos). ⊞ abre as últimas visitas com o texto do consultor; clicar no nome abre o histórico completo. Questionário = pelo menos uma visita do período com questionário respondido. Intenção e área vêm do último questionário da conta.</p>
       </section>
     </div>
 
@@ -1684,7 +1712,7 @@ function hierarquia() {
   for (const v of state.db.visits) {
     if (!visivel(v)) continue; const k = ck(v.cid);
     if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k); if (!u || v.dia > u.dia) ultCli.set(k, { dia: v.dia, por: v.consultor, n: (u?.n || 0) + 1 }); else u.n++; }
-    if (v.st === "ok" && noPeriodo(v) && casa(v, { grupo: 1, reg: 1, cons: 1, q: 1 })) { const p = perCli.get(k) || { n: 0, por: new Set() }; p.n++; p.por.add(v.consultor); perCli.set(k, p); }
+    if (v.st === "ok" && noPeriodo(v) && casa(v, { grupo: 1, reg: 1, cons: 1, q: 1 })) { const p = perCli.get(k) || { n: 0, por: new Set(), q: false }; p.n++; p.por.add(v.consultor); if (v.sv) p.q = true; perCli.set(k, p); }
     if (v.st === "ab") { const a = abCli.get(k); if (a == null || v.diaPlan < a) abCli.set(k, v.diaPlan); }
   }
   const cartRows = cart ? [...cart.map.values()].filter(casaCart) : [];
@@ -1698,7 +1726,7 @@ function hierarquia() {
     if (!dono || dono.vend !== v.consultor) { const f = n.foraM.get(k) || { k, cid: dono ? dono.cid : v.cid, nome: dono ? dono.nome : state.db.clientes.get(v.cid)?.nome || v.cid, dono: dono ? dono.vend : null, conta: dono?.conta, nVinc: dono?.nVinc || 1, nomes: dono?.nomes || [], n: 0 }; f.n++; n.foraM.set(k, f); }
   }
   for (const c of stats.values()) node(c.nome);
-  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
+  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, quest: p ? p.q : false, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
   const cons = [...nodes.values()].map((n) => {
     const st = stats.get(n.nome) || null, cl = n.cart.map(cli), vis = cl.filter((c) => c.nPer > 0), nao = cl.filter((c) => !c.nPer);
     const fora = [...n.foraM.values()].map((f) => ({ ...f, ...cli({ k: f.k }), nome: f.nome, cid: f.cid, dono: f.dono }));
@@ -1789,81 +1817,114 @@ function renderHier() {
   if (!regs.length) html += `<tr><td colspan="${ncol}" class="empty">Nada encontrado com esses filtros.</td></tr>`;
   $("tHier").innerHTML = html + "</tbody>";
 }
-/* =================== CARTEIRA DO CONSULTOR: relatório de uma tela, consultor por consultor =================== */
-if (!state.rel) state.rel = { cons: null, mostra: "todas", ord: { k: "nome", d: 1 } };
-function consultoresCarteira() {
-  const f = state.f, cart = state.db.cart;
-  const ok = (r) => (!state.escopo || state.escopo.has(r)) && (!f.reg || r === f.reg);
-  const nomes = cart ? [...cart.map.values()].filter((c) => ok(c.regional) && (!f.grupo || c.grupo === f.grupo)).map((c) => c.vend)
-    : state.db.visits.filter((v) => visivel(v) && ok(v.regional) && (!f.grupo || v.grupo === f.grupo)).map((v) => v.consultor);
-  return [...new Set(nomes)].sort((a, b) => a.localeCompare(b, "pt-BR"));
+/* =================== CARTEIRA: painel no formato BI (números + equipe + detalhamento) =================== */
+if (!state.bi) state.bi = { sel: { t: "all", n: null }, abertos: new Set(), cliAbertos: new Set(), grpFechados: new Set(), mostra: "todas", ord: { k: "nome", d: 1 }, lim: { cart: 200, fora: 100 }, busca: "" };
+function semFiltroCons(fn) { const s = state.f.cons; state.f.cons = ""; invalidar(); try { return fn(); } finally { state.f.cons = s; invalidar(); } }
+function biSelecao(H) {
+  const s = state.bi.sel;
+  if (s.t === "cons") { for (const r of H.regs) { const c = r.cons.find((x) => x.nome === s.n); if (c) return { node: c, cons: [c], reg: r }; } }
+  if (s.t === "reg") { const r = H.regs.find((x) => x.nome === s.n); if (r) return { node: r, cons: r.cons, reg: r }; }
+  state.bi.sel = { t: "all", n: null }; return { node: H.total, cons: H.regs.flatMap((r) => r.cons), reg: null };
 }
+const biConsOrdem = (H) => H.regs.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).flatMap((r) => r.cons.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).map((c) => c.nome));
+const sinaisMemo = new Map();
+function sinaisConta(x) { const k = x.k + "|" + state.f.ate; if (!sinaisMemo.has(k)) { const cids = x.cids || [x.cid]; sinaisMemo.set(k, ultimosSinais(cids.flatMap((c) => state.db.clientes.get(c)?.vis || []).filter(visivel))); } return sinaisMemo.get(k); }
 function renderCarteira() {
-  const lista = consultoresCarteira(), r = state.rel;
-  if (state.f.cons && lista.includes(state.f.cons)) r.cons = state.f.cons;
-  if (!r.cons || !lista.includes(r.cons)) r.cons = lista[0] || null;
-  $("relCons").innerHTML = lista.map((n) => `<option value="${esc(n)}" ${n === r.cons ? "selected" : ""}>${esc(titulo(n))}</option>`).join("") || `<option>Nenhum consultor neste recorte</option>`;
-  const i = lista.indexOf(r.cons); $("relPos").textContent = lista.length ? `${i + 1} de ${lista.length}` : "";
-  $("relAnt").disabled = i <= 0; $("relProx").disabled = i < 0 || i >= lista.length - 1;
-  $("relPrint").hidden = API !== SupaAPI;
-  $("relMostra").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === r.mostra)));
-  if (!r.cons) { $("relCorpo").innerHTML = `<p class="empty">Nenhum consultor com carteira neste recorte.</p>`; return; }
-  // dados do consultor (a hierarquia já calcula tudo; aqui só lemos o nó dele, sem o filtro de consultor do topo)
-  const salvo = state.f.cons; state.f.cons = ""; invalidar();
-  const H = hierarquia(); state.f.cons = salvo; invalidar();
-  const c = H.regs.flatMap((x) => x.cons).find((x) => x.nome === r.cons);
-  if (!c) { $("relCorpo").innerHTML = `<p class="empty">Sem dados para este consultor no período.</p>`; return; }
-  const temCart = !!state.db.cart, contas = [...c.clientes.vis.map((x) => ({ ...x, st: "vis" })), ...c.clientes.nao.map((x) => ({ ...x, st: "nao" }))];
-  const fx = [0, 0, 0, 0, 0]; for (const x of contas) fx[x.dias == null ? 4 : x.dias <= 7 ? 0 : x.dias <= 15 ? 1 : x.dias <= 30 ? 2 : 3]++;
-  const cob = c.cob ?? 0, R0 = 34, P = 2 * Math.PI * R0;
-  const anel = `<svg viewBox="0 0 84 84" class="rel-anel" role="img" aria-label="Cobertura ${fmtP(cob)}"><circle cx="42" cy="42" r="${R0}" class="t"/><circle cx="42" cy="42" r="${R0}" class="v ${corCob(cob)}" stroke-dasharray="${(P * cob).toFixed(1)} ${P.toFixed(1)}" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle">${fmtP(cob)}</text></svg>`;
-  const kp = (l, v, s, cls = "") => `<div class="rk ${cls}"><span class="label">${l}</span><b>${v}</b>${s ? `<span>${s}</span>` : ""}</div>`;
-  const ref = REF(), periodo = `${fmtDia(state.f.de)} a ${fmtDia(state.f.ate)}`;
-  const regTxt = `${esc(c.regional)}${c.gerente ? ` · Gerente: ${esc(titulo(c.gerente))}` : ""}`;
-  let lin = r.mostra === "todas" ? contas : contas.filter((x) => x.st === r.mostra);
-  const o = r.ord, val = (x) => o.k === "nome" ? norm(x.nome) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ult ?? -1) : o.k === "st" ? (x.st === "nao" ? 0 : 1) : (x[o.k] ?? -1);
-  lin = [...lin].sort((a, b) => { const p = val(a), q = val(b); return (typeof p === "string" ? p.localeCompare(q, "pt-BR") : p - q) * o.d; });
-  const th = (k, l, cls = "") => `<th class="s ${cls}" data-rk="${k}" tabindex="0" ${o.k === k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${o.k === k ? ` <span class="ord">${o.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
-  const diasChip = (x) => x.dias == null ? `<span class="chip ch-red">nunca</span>` : `<span class="chip ${x.dias > 30 ? "ch-red" : x.dias > 15 ? "ch-amb" : x.dias > 7 ? "ch-info" : "ch-ok"}">${fmtN(x.dias)} d</span>`;
-  const linhas = lin.map((x, i) => `<tr class="clk ${x.st}" data-cli="${esc(x.cid)}" tabindex="0">
-      <td class="n rel-i">${i + 1}</td>
-      <td><b>${esc(titulo(x.nome))}</b>${x.nVinc > 1 ? ` <span class="vinc" title="${esc(x.nomes.map(titulo).join("\n"))}">+${x.nVinc - 1} vínculo${x.nVinc > 2 ? "s" : ""}</span>` : ""}<span class="subi">${x.conta ? esc(x.conta) : esc(x.cid)}${x.local ? " · " + esc(x.local) + (x.uf ? "/" + esc(x.uf) : "") : ""}</span></td>
-      <td class="n">${x.nPer ? `<b>${fmtN(x.nPer)}</b>` : `<span class="hn">0</span>`}</td>
-      <td class="n">${fmtN(x.nTot)}</td>
-      <td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}${x.ultPor && x.ultPor !== c.nome ? ` <span class="subi" title="Visitada por ${esc(titulo(x.ultPor))}">por ${esc(titulo(x.ultPor).split(" ")[0])}</span>` : ""}</td>
-      <td class="n">${diasChip(x)}</td>
-      <td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
-      <td class="n"><span class="chip ${x.st === "vis" ? "ch-ok" : "ch-red"}">${x.st === "vis" ? "Visitada" : "Não visitada"}</span></td></tr>`).join("");
-  const fora = [...c.clientes.fora].sort((a, b) => norm(a.nome).localeCompare(norm(b.nome), "pt-BR"));
-  $("relCorpo").innerHTML = `
-    <header class="rel-cab">
-      <div><span class="eyebrow">Carteira do consultor · ${periodo}</span><h2>${esc(titulo(c.nome))} ${sitChip(c)}</h2><p class="note">${regTxt}</p></div>
-      ${temCart ? anel : ""}
-    </header>
-    <div class="rel-kpis">
-      ${temCart ? kp("Contas na carteira", fmtN(c.carteira), "") + kp("Visitadas", fmtN(c.vis), "no período", "ok") + kp("Não visitadas", fmtN(c.nao), `${fmtN(fx[4])} nunca visitadas`, c.nao ? "red" : "") : ""}
-      ${kp("Visitas realizadas", fmtN(c.visitas), `${fmtN(c.porCons, 1)} por dia útil`)}
-      ${kp("Última visita", c.ult != null ? fmtDia(c.ult) : "—", c.dias == null ? "nenhuma realizada" : `há ${fmtN(c.dias)} dia${c.dias === 1 ? "" : "s"}`, (c.dias ?? 99) >= 15 ? "red" : (c.dias ?? 0) >= 7 ? "amb" : "")}
-      ${kp("Fora da carteira", fmtN(c.fora), "contas visitadas de outros")}
-      ${kp("Visitas em atraso", fmtN(c.atr), "planejadas e não feitas", c.atr ? "amb" : "")}
-    </div>
-    ${temCart ? `<div class="rel-fx"><span class="label">Contas por tempo sem visita</span><div class="split">${[["Até 7 dias", "c1"], ["8 a 15", "c2"], ["16 a 30", "ca"], ["Mais de 30", "cr"], ["Nunca", "cnv"]].map(([l, k], j) => fx[j] ? `<i class="${k}" style="flex:${fx[j]}" title="${l}: ${fx[j]}"></i>` : "").join("")}</div>
-      <div class="legend">${[["Até 7 dias", "c1"], ["8 a 15 dias", "c2"], ["16 a 30 dias", "ca"], ["Mais de 30 dias", "cr"], ["Nunca visitadas", "cnv"]].map(([l, k], j) => `<span><i class="sw ${k}"></i>${l} <b>${fmtN(fx[j])}</b></span>`).join("")}</div></div>` : ""}
-    ${temCart ? `<div class="tbl-wrap rel-tbl"><table><thead><tr><th class="n">#</th>${th("nome", "Conta crédito / cliente")}${th("nPer", "Visitas no período", "n")}${th("nTot", "Visitas no total", "n")}${th("ult", "Última visita", "n")}${th("dias", "Dias sem visita", "n")}${th("prox", "Próxima planejada", "n")}${th("st", "Situação", "n")}</tr></thead>
-      <tbody>${linhas || `<tr><td colspan="8" class="empty">Nenhuma conta nesta lista.</td></tr>`}</tbody></table></div>`
-      : `<p class="banner">Carregue a carteira de clientes em Administração para ver as contas deste consultor.</p>`}
-    ${fora.length ? `<div class="rel-fora"><span class="label">Visitou fora da carteira (${fmtN(fora.length)})</span><div class="tags">${fora.map((x) => `<button type="button" class="chip ch-neu" data-cli="${esc(x.cid)}" title="${x.dono ? "Carteira de " + esc(titulo(x.dono)) : "Sem carteira"}">${esc(titulo(x.nome))} · ${fmtN(x.n)}</button>`).join("")}</div></div>` : ""}
-    <p class="note rel-nota">Uma linha por conta crédito, em ordem alfabética (os vínculos contam como uma conta). Visitas no período = de ${periodo}; no total = todas as visitas realizadas nas planilhas carregadas. Clique numa conta para ver o histórico e o texto das visitas.</p>`;
+  const b = state.bi;
+  if (state.f.cons) b.sel = { t: "cons", n: state.f.cons }; else if (state.f.reg && b.sel.t === "all") b.sel = { t: "reg", n: state.f.reg };
+  const H = semFiltroCons(hierarquia), S = biSelecao(H), N = S.node, temCart = !!state.db.cart, ref = REF();
+  // período anterior de mesmo tamanho, para comparar a taxa de visitadas
+  let ant = null;
+  const lenP = state.f.ate - state.f.de + 1, temAnt = state.db.meta.periodos.some((p) => p[1] >= state.f.de - lenP && p[0] <= state.f.de - 1);
+  if (temCart && temAnt) {
+    const de = state.f.de, ate = state.f.ate, len = ate - de + 1;
+    state.f.de = de - len; state.f.ate = de - 1;
+    try { const H2 = semFiltroCons(hierarquia), s2 = state.bi.sel; ant = s2.t === "cons" ? H2.regs.flatMap((r) => r.cons).find((c) => c.nome === s2.n) : s2.t === "reg" ? H2.regs.find((r) => r.nome === s2.n) : H2.total; }
+    finally { state.f.de = de; state.f.ate = ate; invalidar(); }
+  }
+  // trilha
+  const t = b.sel, trilha = [`<button type="button" class="${t.t === "all" ? "on" : ""}" data-bisel="all">${state.escopo ? "Sua equipe" : "Todas as regionais"}</button>`];
+  if (S.reg) trilha.push(`<button type="button" class="${t.t === "reg" ? "on" : ""}" data-bisel="reg" data-n="${esc(S.reg.nome)}">${esc(S.reg.nome)}</button>`);
+  if (t.t === "cons") trilha.push(`<button type="button" class="on" data-bisel="cons" data-n="${esc(N.nome)}">${esc(titulo(N.nome))}</button> ${sitChip(N)}`);
+  const ordem = biConsOrdem(H), pos = t.t === "cons" ? ordem.indexOf(N.nome) : -1;
+  $("biTrilha").innerHTML = trilha.join(`<span class="sep">›</span>`) + `<span class="note">${fmtDia(state.f.de)} a ${fmtDia(state.f.ate)}${pos >= 0 ? ` · consultor ${pos + 1} de ${ordem.length}` : ""}</span>`;
+  $("biAnt").disabled = pos <= 0 && t.t === "cons"; $("biProx").disabled = t.t === "cons" && pos >= ordem.length - 1; $("biPrint").hidden = API !== SupaAPI;
+  // contas da seleção
+  const doCons = (c) => [...c.clientes.vis.map((x) => ({ ...x, st: "vis", consultor: c.nome })), ...c.clientes.nao.map((x) => ({ ...x, st: "nao", consultor: c.nome }))];
+  const contas = S.cons.flatMap(doCons), fora = S.cons.flatMap((c) => c.clientes.fora.map((x) => ({ ...x, st: "fora", consultor: c.nome })));
+  const quentes = contas.concat(fora).filter((x) => sinaisConta(x).intencao === "Alta");
+  const areaOp = contas.concat(fora).filter((x) => /Alta|Média/.test(sinaisConta(x).intencao || "")).reduce((s, x) => s + (sinaisConta(x).area || 0), 0);
+  const delta = ant && ant.carteira && ant.cob != null && N.cob != null ? N.cob - ant.cob : null;
+  const tile = (l, v, s = "", cls = "") => `<div class="bk ${cls}"><span class="label">${l}</span><b>${v}</b>${s ? `<span class="s">${s}</span>` : ""}</div>`;
+  $("biKpis").innerHTML =
+    tile("Total de visitas", fmtN(N.visitas), `${fmtN(N.porCons, 1)} por consultor por dia útil`) +
+    (temCart ? tile("Contas da carteira visitadas", fmtN(N.vis), `de ${fmtN(N.carteira)} contas na carteira`, "ok") +
+      tile("Contas pendentes", fmtN(N.nao), `${fmtN(N.nunca)} nunca visitadas`, N.nao ? "red" : "") +
+      tile("Taxa de contas visitadas", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
+      : tile("Contas da carteira", "—", "carteira não carregada")) +
+    tile("Visitas fora da carteira", fmtN(N.fora), "contas visitadas de outras carteiras") +
+    tile("Intenção de compra alta", fmtN(quentes.length), "contas, pelo último questionário", quentes.length ? "ok" : "") +
+    tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média") +
+    tile("Visitas em atraso", fmtN(N.atr), "planejadas e não feitas", N.atr ? "amb" : "");
+  // equipe
+  const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
+  const cel = (x) => `<td class="n">${fmtN(x.visitas)}</td><td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart && x.cob != null ? `${fmtP(x.cob)} ${dot(x.cob)}` : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${fmtN(x.fora)}</td>`;
+  const regs = H.regs.slice().sort((a, c) => a.nome.localeCompare(c.nome, "pt-BR"));
+  let eq = `<thead><tr><th>Equipe</th><th class="n" title="Visitas realizadas no período">Visitas</th><th class="n" title="Contas crédito na carteira">Contas</th><th class="n" title="Contas visitadas ÷ contas da carteira">Taxa visitadas</th><th class="n" title="Contas da carteira sem visita no período">Pendentes</th><th class="n" title="Contas visitadas fora da carteira">Fora</th></tr></thead><tbody>`;
+  for (const r of regs) {
+    const ab = b.abertos.has(r.nome) || (S.reg && S.reg.nome === r.nome);
+    eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bx" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}">${ab ? "⊟" : "⊞"}</button><b>${esc(r.nome)}</b></td>${cel(r)}</tr>`;
+    if (ab) for (const c of r.cons.slice().sort((a, c2) => a.nome.localeCompare(c2.nome, "pt-BR")))
+      eq += `<tr class="bi-c ${t.t === "cons" && t.n === c.nome ? "sel" : ""}" data-bisel="cons" data-n="${esc(c.nome)}" tabindex="0"><td>${esc(titulo(c.nome))}${c.sit === "isento" ? ` <span class="chip ch-info">${esc(c.isento)}</span>` : ""}</td>${cel(c)}</tr>`;
+  }
+  eq += `</tbody><tfoot><tr class="bi-t ${t.t === "all" ? "sel" : ""}" data-bisel="all" tabindex="0"><td><b>Total</b></td>${cel(H.total)}</tr></tfoot>`;
+  $("biEquipe").innerHTML = eq;
+  const selRow = $("biEquipe").querySelector("tr.sel:not(.bi-t)"); if (selRow && b.rolar) { selRow.scrollIntoView({ block: "nearest" }); b.rolar = false; }
+  renderBiDet(contas, fora, S.cons.length > 1);
+}
+function renderBiDet(contas, fora, multi) {
+  const b = state.bi, q = norm(b.busca), o = b.ord, ref = REF();
+  const casaB = (x) => !q || norm(x.nome).includes(q) || norm(x.local || "").includes(q) || String(x.conta || x.cid).includes(b.busca.trim()) || (x.nomes || []).some((n) => norm(n).includes(q));
+  const val = (x) => { const s = sinaisConta(x); return o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ult ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
+  const ordena = (l) => [...l].sort((x, y) => { const p = val(x), r = val(y); return (typeof p === "string" ? p.localeCompare(r, "pt-BR") : p - r) * o.d || norm(x.nome).localeCompare(norm(y.nome)); });
+  const cart = ordena(contas.filter((x) => (b.mostra === "todas" || x.st === b.mostra) && casaB(x))), fr = b.mostra === "todas" ? ordena(fora.filter(casaB)) : [];
+  $("biDetLbl").textContent = `${fmtN(contas.length)} contas na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitadas · ${fmtN(fora.length)} fora`;
+  $("biMostra").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.m === b.mostra)));
+  const cols = [["nome", "Conta / cliente"], ["st", "Visitada"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
+  const nc = cols.length;
+  const ok = (v) => v ? `<span class="ck ok" aria-label="sim">✓</span>` : `<span class="ck no" aria-label="não">✕</span>`;
+  const diasCls = (x) => x.dias == null || x.dias > 30 ? "d-red" : x.dias > 7 ? "d-amb" : "d-ok";
+  const linha = (x) => {
+    const s = sinaisConta(x), aberto = b.cliAbertos.has(x.k + x.st);
+    let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bx" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas">${aberto ? "⊟" : "⊞"}</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
+      <td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
+      <td class="n ${diasCls(x)}">${x.dias == null ? "nunca" : fmtN(x.dias)}</td><td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
+      <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td>${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
+    if (aberto) {
+      const vis = (x.cids || [x.cid]).flatMap((c) => state.db.clientes.get(c)?.vis || []).filter((v) => visivel(v) && v.st === "ok").sort((a, c) => c.dia - a.dia).slice(0, 3);
+      h += `<tr class="bi-exp"><td colspan="${nc}">${x.nVinc > 1 ? `<p class="note"><b>Vínculos:</b> ${esc((x.nomes || []).map(titulo).join(" · "))}</p>` : ""}${vis.length ? vis.map((v) => `<div class="bi-v"><span class="q">${fmtDiaAno(v.dia)}</span><b>${esc(v.sv ? v.sv.pesq : v.tipo)}</b><span class="note">${esc(titulo(v.consultor))}${x.nVinc > 1 ? " · " + esc(titulo(state.db.clientes.get(v.cid)?.nome || "")) : ""}</span>${v.notas || v.sv?.k.desc ? `<p class="txt">${esc((v.notas || v.sv.k.desc).slice(0, 420))}${(v.notas || v.sv.k.desc).length > 420 ? "…" : ""}</p>` : ""}</div>`).join("") : `<p class="note">Nenhuma visita realizada nas planilhas carregadas.</p>`}<a href="#" class="linkbtn" data-cli="${esc(x.cid)}">Abrir o histórico completo →</a></td></tr>`;
+    }
+    return h;
+  };
+  const grupo = (id, titulo0, l, lim) => {
+    const fech = b.grpFechados.has(id), vl = l.slice(0, lim);
+    return `<tr class="bi-g"><td colspan="${nc}"><button type="button" class="bx" data-bigrp="${id}">${fech ? "⊞" : "⊟"}</button><b>${titulo0}</b> <span class="note">${fmtN(l.length)} conta${l.length === 1 ? "" : "s"}</span></td></tr>` +
+      (fech ? "" : vl.map(linha).join("") + (l.length > lim ? `<tr><td colspan="${nc}" class="n"><button type="button" class="btn sm" data-bimais="${id}">Mostrar mais ${fmtN(Math.min(l.length - lim, 300))} de ${fmtN(l.length - lim)}</button></td></tr>` : ""));
+  };
+  $("biDet").innerHTML = `<thead><tr>${cols.map(([k, l], i) => `<th class="s ${i ? "n" : ""}" data-biord="${k}" tabindex="0" ${o.k === k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${o.k === k ? ` <span class="ord">${o.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`).join("")}</tr></thead><tbody>
+    ${state.db.cart ? grupo("cart", "Na carteira", cart, b.lim.cart) : ""}${fr.length || b.mostra === "todas" ? grupo("fora", state.db.cart ? "Fora da carteira" : "Visitadas", fr, b.lim.fora) : ""}
+    ${!cart.length && !fr.length ? `<tr><td colspan="${nc}" class="empty">Nada nesta seleção.</td></tr>` : ""}</tbody>`;
 }
 function exportarCarteiraCons() {
   if (!window.XLSX) { toast("Excel indisponível", "A biblioteca de planilhas não carregou."); return; }
-  const salvo = state.f.cons; state.f.cons = ""; invalidar(); const H = hierarquia(); state.f.cons = salvo; invalidar();
-  const c = H.regs.flatMap((x) => x.cons).find((x) => x.nome === state.rel.cons); if (!c) return;
-  const rows = [...c.clientes.vis.map((x) => ({ ...x, st: "Visitada" })), ...c.clientes.nao.map((x) => ({ ...x, st: "Não visitada" }))].sort((a, b) => norm(a.nome).localeCompare(norm(b.nome), "pt-BR"))
-    .map((x) => ({ "Conta crédito": x.conta || x.cid, "Cliente": titulo(x.nome), "Vínculos": x.nVinc || 1, "Local": x.local ? x.local + (x.uf ? "/" + x.uf : "") : "", "Visitas no período": x.nPer, "Visitas no total": x.nTot,
-      "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "nunca", "Próxima planejada": x.prox != null ? fmtDiaAno(x.prox) : "", "Situação": x.st }));
+  const H = semFiltroCons(hierarquia), S = biSelecao(H);
+  const rows = S.cons.flatMap((c) => [["vis", "Visitada"], ["nao", "Não visitada"], ["fora", "Fora da carteira"]].flatMap(([k, l]) => c.clientes[k].map((x) => { const s = sinaisConta(x); return {
+    "Regional": c.regional, "Consultor": titulo(c.nome), "Situação": l, "Conta crédito": x.conta || "", "Código CRM": x.cid, "Cliente": titulo(x.nome), "Vínculos": x.nVinc || 1, "Local": x.local || "",
+    "Visitas no período": x.nPer ?? x.n ?? 0, "Visitas no total": x.nTot ?? "", "Questionário no período": x.quest ? "Sim" : "Não", "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "nunca",
+    "Próxima planejada": x.prox != null ? fmtDiaAno(x.prox) : "", "Intenção de compra": s.intencao || "", "Área (ha)": s.area || "" }; })))
+    .sort((a, c) => a["Consultor"].localeCompare(c["Consultor"]) || a["Cliente"].localeCompare(c["Cliente"]));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Carteira");
-  try { XLSX.writeFile(wb, `carteira_${norm(c.nome).replace(/ /g, "_").toLowerCase()}_${isoDia(state.f.de)}_${isoDia(state.f.ate)}.xlsx`); }
+  try { XLSX.writeFile(wb, `carteira_${S.node === undefined ? "selecao" : norm(S.node.nome).replace(/ /g, "_").toLowerCase()}_${isoDia(state.f.de)}_${isoDia(state.f.ate)}.xlsx`); }
   catch { toast("Não consegui baixar", "Este visualizador bloqueia downloads. Na versão publicada o Excel baixa normalmente."); }
 }
 
@@ -3096,15 +3157,29 @@ function ligarEventos() {
   $("fileC").addEventListener("change", (e) => lerCarteiraArquivo(e.target.files[0]));
   { const el = $("dropC"); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerCarteiraArquivo(e.dataTransfer.files[0]); }); }
   $("cartAplicar").addEventListener("click", aplicarCarteira);
-  // relatório da carteira do consultor
-  const irCons = (d) => { const l = consultoresCarteira(), i = l.indexOf(state.rel.cons); const n = l[i + d]; if (!n) return; state.rel.cons = n; if (state.f.cons) aplicarFiltro("cons", n); else renderCarteira(); };
-  $("relAnt").addEventListener("click", () => irCons(-1)); $("relProx").addEventListener("click", () => irCons(1));
-  $("relCons").addEventListener("change", (e) => { state.rel.cons = e.target.value; if (state.f.cons) aplicarFiltro("cons", e.target.value); else renderCarteira(); });
-  $("relMostra").addEventListener("click", (e) => { const b = e.target.closest("[data-m]"); if (!b) return; state.rel.mostra = b.dataset.m; renderCarteira(); });
-  $("relCorpo").addEventListener("click", (e) => { const th = e.target.closest("th[data-rk]"); if (!th) return; const k = th.dataset.rk, o = state.rel.ord; state.rel.ord = { k, d: o.k === k ? -o.d : (k === "nome" || k === "dias" || k === "st" ? (k === "dias" ? -1 : 1) : -1) }; renderCarteira(); });
-  $("relXlsx").addEventListener("click", exportarCarteiraCons);
-  $("relPrint").addEventListener("click", () => { document.body.classList.add("imprimindo"); window.print(); setTimeout(() => document.body.classList.remove("imprimindo"), 500); });
-  document.addEventListener("keydown", (e) => { if (state.pane !== "carteira" || e.target.closest("input, select, textarea") || !$("mCli").hidden) return; if (e.key === "ArrowRight") irCons(1); if (e.key === "ArrowLeft") irCons(-1); });
+  // aba Carteira (formato BI)
+  const biSel = (t, n) => { const b = state.bi; if (b.sel.t === t && b.sel.n === n && t !== "all") { t = t === "cons" ? "reg" : "all"; n = t === "reg" ? (semFiltroCons(hierarquia).regs.find((r) => r.cons.some((c) => c.nome === b.sel.n)) || {}).nome : null; }
+    b.sel = { t, n }; b.lim = { cart: 200, fora: 100 }; b.rolar = true; if (t === "reg" && n) b.abertos.add(n);
+    if (state.f.cons && t !== "cons") aplicarFiltro("cons", ""); else if (state.f.cons && t === "cons") aplicarFiltro("cons", n); else renderCarteira(); };
+  $("pane-carteira").addEventListener("click", (e) => {
+    const ab = e.target.closest("[data-biab]"); if (ab) { e.stopPropagation(); const s = state.bi.abertos, n = ab.dataset.biab; s.has(n) ? s.delete(n) : s.add(n); if (state.bi.sel.t !== "all" && !s.has(n) && state.bi.sel.n === n) state.bi.sel = { t: "all", n: null }; renderCarteira(); return; }
+    const cl = e.target.closest("[data-bicli]"); if (cl) { const s = state.bi.cliAbertos, n = cl.dataset.bicli; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
+    const gp = e.target.closest("[data-bigrp]"); if (gp) { const s = state.bi.grpFechados, n = gp.dataset.bigrp; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
+    const ms = e.target.closest("[data-bimais]"); if (ms) { state.bi.lim[ms.dataset.bimais] += 300; renderCarteira(); return; }
+    const th = e.target.closest("th[data-biord]"); if (th) { const k = th.dataset.biord, o = state.bi.ord; state.bi.ord = { k, d: o.k === k ? -o.d : (["nome", "cons", "st", "quest"].includes(k) ? 1 : -1) }; renderCarteira(); return; }
+    const m = e.target.closest("#biMostra [data-m]"); if (m) { state.bi.mostra = m.dataset.m; renderCarteira(); return; }
+    if (e.target.closest("[data-cli]")) return;
+    const s = e.target.closest("[data-bisel]"); if (s) biSel(s.dataset.bisel, s.dataset.n || null);
+  });
+  $("pane-carteira").addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-bisel], th[data-biord]")) { e.preventDefault(); e.target.click(); } });
+  const irBi = (d) => { const H = semFiltroCons(hierarquia), l = biConsOrdem(H), b = state.bi; let i = b.sel.t === "cons" ? l.indexOf(b.sel.n) : -1;
+    if (i < 0) { const r = b.sel.t === "reg" ? H.regs.find((x) => x.nome === b.sel.n) : null; const n = r ? r.cons.map((c) => c.nome).sort((a, c) => a.localeCompare(c, "pt-BR"))[0] : l[0]; i = l.indexOf(n) - d; }
+    const n = l[i + d]; if (n) biSel("cons", n); };
+  $("biAnt").addEventListener("click", () => irBi(-1)); $("biProx").addEventListener("click", () => irBi(1));
+  document.addEventListener("keydown", (e) => { if (state.pane !== "carteira" || e.target.closest("input, select, textarea") || !$("mCli").hidden) return; if (e.key === "ArrowRight") irBi(1); if (e.key === "ArrowLeft") irBi(-1); });
+  let tBB; $("biBusca").addEventListener("input", (e) => { clearTimeout(tBB); tBB = setTimeout(() => { state.bi.busca = e.target.value; renderCarteira(); }, 200); });
+  $("biXlsx").addEventListener("click", exportarCarteiraCons);
+  $("biPrint").addEventListener("click", () => { document.body.classList.add("imprimindo"); window.print(); setTimeout(() => document.body.classList.remove("imprimindo"), 500); });
   // quadro carteira e cobertura
   const hTab = $("tHier");
   hTab.addEventListener("click", (e) => {
