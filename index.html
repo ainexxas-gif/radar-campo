@@ -425,14 +425,23 @@ td .linkbtn[data-isentar]:hover, td .linkbtn[data-isentar-x]:hover { color: var(
 .hier-bar input[type=search] { flex: 0 1 300px; }
 .hier-leg { margin-left: auto; font-size: .8rem; }
 .hier-wrap { max-height: 78vh; overflow: auto; }
-.hier-t { min-width: 1180px; border-collapse: separate; border-spacing: 0; }
+.hier-t { min-width: 1100px; border-collapse: separate; border-spacing: 0; }
 .hier-t th, .hier-t td { padding: 7px 8px; }
-.hier-t thead th { font-size: .64rem; letter-spacing: .05em; white-space: normal; line-height: 1.2; vertical-align: bottom; }
-.hier-t td.n { font-size: .88rem; }
+.hier-t thead th { font-size: .66rem; letter-spacing: .05em; line-height: 1.25; vertical-align: middle; }
+.hier-t thead th.hc { text-align: center; white-space: nowrap; min-width: 66px; }
+.hier-t .pct i { width: 30px; } .hier-t .cob i { width: 42px; }
+.hier-t td.n { padding-inline: 6px; }
+.hier-t thead th.hc .hl { display: inline-block; text-align: center; border-bottom: 1px dotted var(--neutro); padding-bottom: 1px; cursor: pointer; }
+.hier-t thead th.stk .hl { white-space: nowrap; }
+.hier-t thead th .ord { margin-left: 3px; color: var(--brand); }
+.hier-t td.n { font-size: .88rem; text-align: center; }
+.hier-t td.n .cob, .hier-t td.n .pct { justify-content: center; }
+.hier-t .gi { border-left: 1px solid var(--line); }
 .hier-t thead th { position: sticky; top: 0; z-index: 3; }
-.hier-t thead tr.hg th { top: 0; text-align: center; font-size: .66rem; color: var(--muted); background: var(--card); border-bottom: 0; padding-block: 5px 0; }
-.hier-t thead tr.hg th.gi { border-left: 1px solid var(--line); }
-.hier-t thead tr:nth-child(2) th { top: 21px; }
+.hier-t thead tr.hg th { top: 0; text-align: center; background: var(--card); border-bottom: 1px solid var(--line); padding-block: 6px 5px; height: 40px; }
+.hier-t thead tr.hg th b { display: block; font-size: .72rem; letter-spacing: .1em; color: var(--brand); }
+.hier-t thead tr.hg th small { display: block; font-size: .7rem; letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--muted); }
+.hier-t thead tr:nth-child(2) th { top: 40px; height: 44px; }
 .hier-t .stk { position: sticky; left: 0; z-index: 2; background: var(--surface); min-width: 250px; max-width: 300px; }
 .hier-t thead .stk { z-index: 4; background: var(--card); }
 .hier-t td .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -472,6 +481,19 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 .cnv { background: repeating-linear-gradient(45deg, var(--red) 0 4px, var(--red-bg) 4px 8px); }
 @media (max-width: 720px) { .hier-leg { margin-left: 0; } .hier-t .stk { min-width: 210px; max-width: 230px; } .hcli { left: 0; } }
 .cart-res { display: grid; align-content: center; }
+/* pontos de atenção: faixa compacta */
+.sinais-wrap { display: grid; gap: 6px; }
+.sinais-wrap h2.label { font-size: .7rem; }
+.sinais { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.sinal { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 9px; row-gap: 1px; align-items: baseline; padding: 8px 10px 8px 12px; border-left-width: 4px; }
+.sinal b.n { grid-row: 1 / 3; font-size: 1.45rem; align-self: center; }
+.sinal .t { grid-column: 2; font-size: .86rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sinal .d { grid-column: 2; font-size: .76rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sinal .go { grid-column: 3; grid-row: 1 / 3; align-self: center; font-size: 1.3rem; line-height: 1; color: var(--muted); }
+.sinal:hover .go { color: var(--brand); }
+@media (max-width: 1100px) { .sinais { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .sinais { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 400px) { .sinais { grid-template-columns: 1fr; } }
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -688,10 +710,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
     <!-- ===== VISÃO GERAL ===== -->
     <div class="pane" id="pane-geral" role="tabpanel">
       <section class="kpis" id="kpis" aria-label="Resumo"></section>
-      <section class="panel">
-        <div class="panel-head"><h2>Pontos de atenção</h2><span class="label">clique para ver a lista</span></div>
-        <div class="sinais" id="sinais"></div>
-      </section>
+      <section class="sinais-wrap" aria-labelledby="sinTit"><h2 class="label" id="sinTit">Pontos de atenção</h2><div class="sinais" id="sinais"></div></section>
       <section class="panel hier" id="hierPanel">
         <div class="panel-head"><h2>Carteira e cobertura por regional</h2><div class="tbar"><span class="label" id="hierLbl"></span><button class="btn" type="button" id="hierXlsx">Baixar Excel</button></div></div>
         <div id="hierBanner"></div>
@@ -1097,7 +1116,7 @@ const CITY_FIX = { "Primavera": "Primavera do Leste", "Tangará": "Tangará da S
   "Primavera do LE": "Primavera do Leste", "São do Miguel Araguaia": "São Miguel do Araguaia", "Palmeiras": "Palmeiras de Goiás", "Lucas Rio Verde": "Lucas do Rio Verde" };
 const CITY_UF = { "Ponta Grossa": "PR", "Cascavel": "PR", "Guarapuava": "PR", "Dourados": "MS", "Araucária": "PR", "Araguari": "MG", "Cacoal": "RO", "Rolim de Moura": "RO",
   "Marabá": "PA", "Xinguara": "PA", "Redenção": "PA", "Santana do Araguaia": "PA", "Gurupi": "TO", "Araguaína": "TO", "Paraíso do Tocantins": "TO", "Jussara": "GO",
-  "Formosa": "GO", "Catalão": "GO", "Cristalina": "GO", "Rio Verde": "GO", "Jataí": "GO", "Silvânia": "GO", "Itaberaí": "GO", "Uruaçu": "GO", "Porangatu": "GO", "Goianésia": "GO", "Vianópolis": "GO" };
+  "Piracanjuba": "GO", "Iporá": "GO", "Orizona": "GO", "Colíder": "MT", "Vilhena": "RO", "Lucas do Rio Verde": "MT", "Formosa": "GO", "Catalão": "GO", "Cristalina": "GO", "Rio Verde": "GO", "Jataí": "GO", "Silvânia": "GO", "Itaberaí": "GO", "Uruaçu": "GO", "Porangatu": "GO", "Goianésia": "GO", "Vianópolis": "GO" };
 /* territórios cujo nome não é um município (estrada, distrito, abreviação) */
 const TERR_MUN = {
   "C NOVAS": ["Caldas Novas", "GO"], "C NOVAS SENT PIRAC": ["Piracanjuba", "GO"], "L BULHOES": ["Leopoldo de Bulhões", "GO"], "P BERNARDO": ["Pires do Rio", "GO"],
@@ -1130,12 +1149,16 @@ function mapaCodigos(raw) {
   const out = {}; for (const [k, c] of m) out[k] = [...c.entries()].sort((a, b) => b[1] - a[1])[0][0];
   return out;
 }
+/* nomes definidos pela Araguaia para códigos que o C4C não traz com equipe */
+const NOME_COD = { L24: "Loja Piracanjuba", L77: "Loja Iporá", L27: "Loja Orizona", L76: "Loja Colíder", V23: "Vendas PEC", L52: "Loja Vilhena", V35: "Loja Lucas do Rio Verde", L65: "Loja Araguari" };
+const NOME_ANTIGO = Object.fromEntries(Object.keys(NOME_COD).flatMap((c) => [[c, NOME_COD[c]], ["Loja " + c, NOME_COD[c]]]));
 function regionalDe(terr, codMap) {
   if (!terr || /^N[ãa]o atribu/i.test(terr)) return "Sem território";
   const p = terrParts(terr);
   if (p.canal === "10") return "Telemarketing";
   if (p.canal === "20") return "Grandes Contas " + titulo(p.folha.replace(/grandes contas/i, "").trim());
   if (p.cod === "V67") return "Regional Ponta Grossa";
+  if (NOME_COD[p.cod]) return NOME_COD[p.cod];
   const r = codMap[p.cod];
   if (r) return r.replace("Primavera do LE", "Primavera do Leste").replace("São do Miguel", "São Miguel do").replace(/^DIRECT /, "Direct ");
   return p.cod ? (p.cod[0] === "L" ? "Loja " + p.cod : p.cod) : "Sem território";
@@ -1197,7 +1220,7 @@ function montarBase(rawV, rawA, meta, cartRaw) {
   const clientes = new Map(), muns = new Map(), regs = new Map();
   const geoCache = new Map();
   const visits = rawV.map((r) => {
-    const regional = r.regional || regionalDe(r.terr, codMap);
+    const regional = NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, codMap);
     const grupo = regional === "Sem território" ? "Sem território" : regional === "Telemarketing" ? "Telemarketing" : grupoDe(r.terr);
     if (!regs.has(regional)) regs.set(regional, grupo);
     const gk = r.terr + "|" + regional;
@@ -1236,7 +1259,7 @@ function montarCarteira(raw, db) {
   for (const r of raw.rows) {
     const k = kc(r.cid); if (!k || map.has(k)) continue;
     const vend = nomes.get(norm(r.vend)) || (r.vend ? String(r.vend).trim().toUpperCase() : "Sem vendedor");
-    const regional = r.regional || regionalDe(r.terr, db.codMap);
+    const regional = NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, db.codMap);
     if (!db.regs.has(regional)) db.regs.set(regional, regional === "Sem território" ? "Sem território" : grupoDe(r.terr));
     let munK = null;
     const gk = (r.local || "") + "|" + (r.uf || "");
@@ -1547,14 +1570,14 @@ function renderGeral() {
   const quentes = cli.filter((c) => c.sinais.intencao === "Alta").length;
   const vencidas = cli.filter((c) => c.sinais.intencao === "Alta" && c.sinais.previsao != null && c.sinais.previsao < ref).length;
   const risco = cli.filter((c) => clienteEmRisco(c.sinais).length).length;
-  const sinal = (cls, n, t, d, go, extra = "") => `<button type="button" class="sinal ${cls}" data-go="${go}" ${extra}><b class="n">${fmtN(n)}</b><span class="t">${t}</span><span class="d">${d}</span><span class="go">Ver lista →</span></button>`;
+  const sinal = (cls, n, t, d, go, extra = "") => `<button type="button" class="sinal ${cls}" data-go="${go}" ${extra} title="Ver a lista"><b class="n">${fmtN(n)}</b><span class="t">${t}</span><span class="d">${d}</span><span class="go" aria-hidden="true">›</span></button>`;
   $("sinais").innerHTML =
-    sinal(parados ? "crit" : "ok", parados, "consultores parados", `15+ dias sem visita ou nenhuma no período · mais ${fmtN(atencao)} em atenção (7–14 dias)`, "equipes") +
-    (state.db.cart ? (() => { const T = hierarquia().total; return sinal(T.nao ? "crit" : "ok", T.nao, "clientes da carteira sem visita no período", `${fmtN(T.nunca)} nunca visitados na base carregada · abra a regional no quadro abaixo`, "geral", 'data-hierfoco="1"'); })()
-      : sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita há 16+ dias", `${fmtN(cli30)} há mais de 30 dias · ${fmtN(cli15)} entre 16 e 30`, "clientes")) +
-    sinal(atr.length ? "crit" : "ok", atr.length, "visitas planejadas que não aconteceram", `ainda "Aberto" no C4C em ${fmtDiaAno(hoje)}`, "agenda") +
-    sinal(vencidas ? "" : "ok", quentes, "clientes com intenção de compra alta", `${fmtN(vencidas)} com previsão de compra já vencida`, "intel") +
-    sinal(risco ? "" : "ok", risco, "clientes que pedem ação", "risco alto, SAC, pendência financeira ou insatisfação", "intel");
+    sinal(parados ? "crit" : "ok", parados, "consultores parados", `+${fmtN(atencao)} em atenção (7–14 dias)`, "equipes") +
+    (state.db.cart ? (() => { const T = hierarquia().total; return sinal(T.nao ? "crit" : "ok", T.nao, "da carteira sem visita", `${fmtN(T.nunca)} nunca visitados`, "geral", 'data-hierfoco="1"'); })()
+      : sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")) +
+    sinal(atr.length ? "crit" : "ok", atr.length, "visitas em atraso", `planejadas e ainda "Aberto"`, "agenda") +
+    sinal(vencidas ? "" : "ok", quentes, "intenção de compra alta", `${fmtN(vencidas)} com previsão vencida`, "intel") +
+    sinal(risco ? "" : "ok", risco, "clientes pedem ação", "risco, SAC ou pendência", "intel");
   // tendência
   const dias = []; for (let d = state.f.de; d <= state.f.ate; d++) dias.push(d);
   const porDia = new Map(); for (const v of ok) porDia.set(v.dia, (porDia.get(v.dia) || 0) + 1);
@@ -1633,20 +1656,22 @@ function hierarquia() {
 }
 const corCob = (x) => (x == null ? "" : x >= 0.8 ? "ok" : x >= 0.5 ? "amb" : "red");
 const cobCel = (x) => (x == null ? `<span class="note">—</span>` : `<span class="cob ${corCob(x)}"><b>${fmtP(x)}</b><i><u style="width:${Math.min(100, x * 100).toFixed(0)}%"></u></i></span>`);
+const HGRUPOS = { "Carteira": "clientes da carteira", "Visitas": "no período escolhido", "Equipe": "consultores e agenda", "Registro": "qualidade no app" };
 const HCOLS = [
-  { k: "nome", l: "", g: "" },
-  { k: "carteira", l: "Carteira", g: "Carteira", n: 1, t: "Clientes na carteira" },
+  { k: "nome", l: "Regional › Consultor › Cliente", g: "" },
+  { k: "carteira", l: "Clientes", g: "Carteira", n: 1, t: "Clientes na carteira" },
   { k: "vis", l: "Visitados", g: "Carteira", n: 1, t: "Clientes da carteira com pelo menos uma visita realizada no período" },
-  { k: "nao", l: "Não visitados", g: "Carteira", n: 1, t: "Clientes da carteira sem visita realizada no período" },
-  { k: "cob", l: "Cobertura", g: "Carteira", n: 1, t: "Visitados ÷ carteira" },
-  { k: "fora", l: "Fora da carteira", g: "Carteira", n: 1, t: "Clientes visitados que não são da carteira do consultor" },
+  { k: "nao", l: "Não<br>visitados", g: "Carteira", n: 1, t: "Clientes da carteira sem visita realizada no período" },
+  { k: "cob", l: "Cobertura", g: "Carteira", n: 1, t: "Visitados ÷ clientes da carteira" },
+  { k: "fora", l: "Fora da<br>carteira", g: "Carteira", n: 1, t: "Clientes visitados que não são da carteira do consultor" },
   { k: "visitas", l: "Realizadas", g: "Visitas", n: 1, t: "Visitas realizadas no período" },
-  { k: "porCons", l: "Por dia útil", g: "Visitas", n: 1, t: "Visitas por consultor ativo por dia útil" },
+  { k: "porCons", l: "Por<br>dia útil", g: "Visitas", n: 1, t: "Visitas por consultor ativo por dia útil" },
   { k: "ult", l: "Última", g: "Visitas", n: 1, t: "Data da visita realizada mais recente" },
-  { k: "dias", l: "Dias sem visita", g: "Visitas", n: 1, t: "Regional e total: mediana dos clientes da carteira · Consultor: dias desde a última visita dele" },
-  { k: "sit", l: "Consultores", g: "Equipe", n: 1, t: "Ativos ÷ consultores cobrados (sem gestores) · na linha do consultor, a situação dele" },
-  { k: "atr", l: "Abertas em atraso", g: "Equipe", n: 1, t: "Visitas planejadas que não aconteceram" },
-  { k: "quest", l: "Questionário", g: "Registro", n: 1 }, { k: "gps", l: "GPS", g: "Registro", n: 1 },
+  { k: "dias", l: "Dias sem<br>visita", g: "Visitas", n: 1, t: "Regional e total: mediana dos clientes da carteira. Consultor: dias desde a última visita dele" },
+  { k: "sit", l: "Consultores", g: "Equipe", n: 1, t: "Ativos ÷ consultores cobrados (sem gestores). Na linha do consultor, a situação dele" },
+  { k: "atr", l: "Visitas<br>em atraso", g: "Equipe", n: 1, t: "Visitas planejadas que não aconteceram (ainda Aberto no C4C)" },
+  { k: "quest", l: "Com<br>questionário", g: "Registro", n: 1, t: "Visitas realizadas com questionário respondido" },
+  { k: "gps", l: "Com<br>GPS", g: "Registro", n: 1, t: "Visitas realizadas com localização no check-in" },
 ];
 function hVal(x, k) { if (k === "nome") return x.nome; if (k === "sit") return x.tipo === "cons" ? ORD_SIT[x.sit] : x.total ? x.ativos / x.total : 0; if (k === "cob") return x.cob ?? -1; return x[k] ?? -1; }
 function hOrd(l) { const o = state.hier.ord; return [...l].sort((a, b) => { const x = hVal(a, o.k), y = hVal(b, o.k); return (typeof x === "string" ? x.localeCompare(y) : x - y) * o.d; }); }
@@ -1659,7 +1684,7 @@ function hCelulas(x) {
     `<span class="${!c && x.dias != null && x.dias > 30 ? "hn" : c && (x.dias ?? 999) >= 15 ? "hn" : ""}">${diasTxt}</span>`,
     c ? `${sitChip(x)}${x.sit === "isento" ? "" : " " + btnIsentar(x)}` : `${fmtN(x.ativos)} / ${fmtN(x.total)}${x.parados ? ` <span class="chip ch-red" title="parados ou sem visita no período">${x.parados} parado${x.parados > 1 ? "s" : ""}</span>` : ""}`,
     x.atr ? `<span class="chip ch-amb">${fmtN(x.atr)}</span>` : "0", x.visitas ? pctCel(x.quest) : "—", x.visitas ? pctCel(x.gps) : "—",
-  ].map((h, i) => `<td class="n">${h}</td>`).join("");
+  ].map((h, i) => `<td class="n ${i && HCOLS[i].g !== HCOLS[i + 1].g ? "gi" : ""}">${h}</td>`).join("");
 }
 function renderHier() {
   const H = hierarquia(), h = state.hier, q = norm(h.busca);
@@ -1673,8 +1698,8 @@ function renderHier() {
   $("hierLbl").textContent = temCart ? `${fmtN(H.total.carteira)} clientes na carteira · cobertura ${fmtP(H.total.cob || 0)}` : `${plural(H.regs.length, "regional", "regionais")}`;
   const o = h.ord, ncol = HCOLS.length;
   const grupos = []; for (const c of HCOLS) { const g = grupos[grupos.length - 1]; if (g && g.g === c.g) g.n++; else grupos.push({ g: c.g, n: 1 }); }
-  let html = `<thead><tr class="hg">${grupos.map((g, i) => `<th colspan="${g.n}" class="${i ? "gi" : "stk"}">${esc(g.g)}</th>`).join("")}</tr>
-    <tr>${HCOLS.map((c, i) => `<th class="s ${c.n ? "n" : ""} ${i ? "" : "stk"}" data-hk="${c.k}" tabindex="0" title="${esc(c.t || "")}" ${o.k === c.k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${i ? c.l : "Regional › consultor › cliente"} <span class="ord">${o.k === c.k ? (o.d > 0 ? "▲" : "▼") : ""}</span></th>`).join("")}</tr></thead><tbody>`;
+  let html = `<thead><tr class="hg">${grupos.map((g, i) => `<th colspan="${g.n}" class="${i ? "gi" : "stk"}">${g.g ? `<b>${esc(g.g)}</b><small>${esc(HGRUPOS[g.g] || "")}</small>` : ""}</th>`).join("")}</tr>
+    <tr>${HCOLS.map((c, i) => `<th class="s ${i ? "hc" : "stk"} ${i && HCOLS[i - 1].g !== c.g ? "gi" : ""}" data-hk="${c.k}" tabindex="0" title="${esc(c.t || "Ordenar por nome")}" ${o.k === c.k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}><span class="hl">${c.l}${o.k === c.k ? `<span class="ord">${o.d > 0 ? "▲" : "▼"}</span>` : ""}</span></th>`).join("")}</tr></thead><tbody>`;
   const T = H.total;
   html += `<tr class="h-tot"><td class="stk"><b>Total${state.escopo ? " da sua equipe" : ""}</b><span class="sub">${plural(H.regs.length, "regional", "regionais")} · ${plural(T.total, "consultor", "consultores")}</span></td>${hCelulas(T)}</tr>`;
   for (const r of regs) {
