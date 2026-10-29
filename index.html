@@ -494,6 +494,46 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 @media (max-width: 1100px) { .sinais { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .sinais { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 400px) { .sinais { grid-template-columns: 1fr; } }
+/* relatório: carteira do consultor */
+.rel { display: grid; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px 16px; }
+.rel-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+.rel-sel { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.rel-sel select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-weight: 700; color: var(--ink); min-width: min(320px, 70vw); }
+.rel-sel .btn { width: 36px; padding: 6px 0; font-size: 1.1rem; }
+.rel-cab { display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--hdr); color: #fff; border-radius: 8px; padding: 12px 18px; }
+.rel-cab h2 { color: #fff; font-size: 1.5rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rel-cab .note { color: var(--hdr-ctx); }
+.rel-anel { width: 84px; height: 84px; flex: 0 0 auto; }
+.rel-anel circle { fill: none; stroke-width: 9; }
+.rel-anel .t { stroke: rgba(255,255,255,.2); } .rel-anel .v { stroke: #fff; stroke-linecap: round; }
+.rel-anel .v.ok { stroke: var(--ok); } .rel-anel .v.amb { stroke: var(--amb); } .rel-anel .v.red { stroke: #FF6B60; }
+.rel-anel text { fill: #fff; font: 700 17px var(--f); }
+.rel-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.rk { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 7px; padding: 8px 11px; display: grid; gap: 1px; }
+.rk b { font-size: 1.55rem; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rk span:last-child { font-size: .78rem; color: var(--muted); }
+.rk.ok { border-top-color: var(--ok); } .rk.red { border-top-color: var(--red); } .rk.red b { color: var(--red); } .rk.amb { border-top-color: var(--amb); }
+.rel-fx { display: grid; gap: 6px; }
+.rel-tbl { max-height: none; }
+.rel-tbl table { min-width: 760px; }
+.rel-tbl th, .rel-tbl td { padding: 4px 10px; }
+.rel-tbl td { white-space: nowrap; }
+.rel-tbl .subi { margin-left: 8px; font-size: .76rem; color: var(--muted); }
+.rel-tbl .chip { padding: 1px 7px; font-size: .72rem; }
+.rel-tbl td.n, .rel-tbl th.n { text-align: center; }
+.rel-tbl td.rel-i { color: var(--muted); font-size: .78rem; width: 36px; }
+.rel-tbl tr.nao td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+.rel-tbl tr.vis td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+.vinc { font-size: .72rem; font-weight: 700; color: var(--brand); background: var(--info-bg); border-radius: 999px; padding: 0 6px; margin-left: 4px; white-space: nowrap; }
+.rel-fora .tags { margin-top: 6px; } .rel-fora .chip { border: 0; cursor: pointer; }
+.rel-nota { font-size: .8rem; }
+@media print {
+  body.imprimindo .hdr, body.imprimindo .filters, body.imprimindo .rodape, body.imprimindo .banner, body.imprimindo .toast, body.imprimindo .rel-top, body.imprimindo .coach { display: none !important; }
+  body.imprimindo .wrap > .pane:not(#pane-carteira) { display: none !important; }
+  body.imprimindo .rel { border: 0; padding: 0; background: #fff; }
+  body.imprimindo .rel-tbl { overflow: visible; border: 0; }
+  @page { size: A4 portrait; margin: 10mm; }
+}
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -662,6 +702,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       </div>
       <nav class="tabs" role="tablist" aria-label="Seções" id="tabs">
         <button class="tab" role="tab" type="button" data-pane="geral" aria-selected="true">Visão geral</button>
+        <button class="tab" role="tab" type="button" data-pane="carteira">Carteira</button>
         <button class="tab" role="tab" type="button" data-pane="equipes">Equipes</button>
         <button class="tab" role="tab" type="button" data-pane="mapa">Mapa</button>
         <button class="tab" role="tab" type="button" data-pane="clientes">Clientes</button>
@@ -742,6 +783,23 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
           <p class="note">Sem GPS = latitude zerada no check-in. Realizada em outro dia = check-in em data diferente da planejada.</p>
         </section>
       </div>
+    </div>
+
+    <!-- ===== CARTEIRA DO CONSULTOR (relatório de uma tela) ===== -->
+    <div class="pane" id="pane-carteira" role="tabpanel" hidden>
+      <section class="rel" id="rel">
+        <div class="rel-top">
+          <div class="rel-sel">
+            <button class="btn" type="button" id="relAnt" aria-label="Consultor anterior">‹</button>
+            <select id="relCons" aria-label="Consultor"></select>
+            <button class="btn" type="button" id="relProx" aria-label="Próximo consultor">›</button>
+            <span class="note" id="relPos"></span>
+          </div>
+          <div class="tbar"><div class="seg2" id="relMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Só não visitadas</button><button type="button" data-m="vis">Só visitadas</button></div>
+            <button class="btn" type="button" id="relXlsx">Baixar Excel</button><button class="btn" type="button" id="relPrint" hidden>Imprimir / PDF</button></div>
+        </div>
+        <div id="relCorpo"></div>
+      </section>
     </div>
 
     <!-- ===== EQUIPES ===== -->
@@ -1480,6 +1538,7 @@ function render() {
   renderCtx(); renderChips();
   const p = state.pane;
   if (p === "geral") renderGeral();
+  else if (p === "carteira") renderCarteira();
   else if (p === "equipes") renderEquipes();
   else if (p === "mapa") renderMapa();
   else if (p === "clientes") renderClientes();
@@ -1624,7 +1683,7 @@ function hierarquia() {
   const ultCli = new Map(), perCli = new Map(), abCli = new Map();
   for (const v of state.db.visits) {
     if (!visivel(v)) continue; const k = ck(v.cid);
-    if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k); if (!u || v.dia > u.dia) ultCli.set(k, { dia: v.dia, por: v.consultor }); }
+    if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k); if (!u || v.dia > u.dia) ultCli.set(k, { dia: v.dia, por: v.consultor, n: (u?.n || 0) + 1 }); else u.n++; }
     if (v.st === "ok" && noPeriodo(v) && casa(v, { grupo: 1, reg: 1, cons: 1, q: 1 })) { const p = perCli.get(k) || { n: 0, por: new Set() }; p.n++; p.por.add(v.consultor); perCli.set(k, p); }
     if (v.st === "ab") { const a = abCli.get(k); if (a == null || v.diaPlan < a) abCli.set(k, v.diaPlan); }
   }
@@ -1639,7 +1698,7 @@ function hierarquia() {
     if (!dono || dono.vend !== v.consultor) { const f = n.foraM.get(k) || { k, cid: dono ? dono.cid : v.cid, nome: dono ? dono.nome : state.db.clientes.get(v.cid)?.nome || v.cid, dono: dono ? dono.vend : null, conta: dono?.conta, nVinc: dono?.nVinc || 1, nomes: dono?.nomes || [], n: 0 }; f.n++; n.foraM.set(k, f); }
   }
   for (const c of stats.values()) node(c.nome);
-  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nPer: p ? p.n : 0, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
+  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
   const cons = [...nodes.values()].map((n) => {
     const st = stats.get(n.nome) || null, cl = n.cart.map(cli), vis = cl.filter((c) => c.nPer > 0), nao = cl.filter((c) => !c.nPer);
     const fora = [...n.foraM.values()].map((f) => ({ ...f, ...cli({ k: f.k }), nome: f.nome, cid: f.cid, dono: f.dono }));
@@ -1730,6 +1789,84 @@ function renderHier() {
   if (!regs.length) html += `<tr><td colspan="${ncol}" class="empty">Nada encontrado com esses filtros.</td></tr>`;
   $("tHier").innerHTML = html + "</tbody>";
 }
+/* =================== CARTEIRA DO CONSULTOR: relatório de uma tela, consultor por consultor =================== */
+if (!state.rel) state.rel = { cons: null, mostra: "todas", ord: { k: "nome", d: 1 } };
+function consultoresCarteira() {
+  const f = state.f, cart = state.db.cart;
+  const ok = (r) => (!state.escopo || state.escopo.has(r)) && (!f.reg || r === f.reg);
+  const nomes = cart ? [...cart.map.values()].filter((c) => ok(c.regional) && (!f.grupo || c.grupo === f.grupo)).map((c) => c.vend)
+    : state.db.visits.filter((v) => visivel(v) && ok(v.regional) && (!f.grupo || v.grupo === f.grupo)).map((v) => v.consultor);
+  return [...new Set(nomes)].sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+function renderCarteira() {
+  const lista = consultoresCarteira(), r = state.rel;
+  if (state.f.cons && lista.includes(state.f.cons)) r.cons = state.f.cons;
+  if (!r.cons || !lista.includes(r.cons)) r.cons = lista[0] || null;
+  $("relCons").innerHTML = lista.map((n) => `<option value="${esc(n)}" ${n === r.cons ? "selected" : ""}>${esc(titulo(n))}</option>`).join("") || `<option>Nenhum consultor neste recorte</option>`;
+  const i = lista.indexOf(r.cons); $("relPos").textContent = lista.length ? `${i + 1} de ${lista.length}` : "";
+  $("relAnt").disabled = i <= 0; $("relProx").disabled = i < 0 || i >= lista.length - 1;
+  $("relPrint").hidden = API !== SupaAPI;
+  $("relMostra").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === r.mostra)));
+  if (!r.cons) { $("relCorpo").innerHTML = `<p class="empty">Nenhum consultor com carteira neste recorte.</p>`; return; }
+  // dados do consultor (a hierarquia já calcula tudo; aqui só lemos o nó dele, sem o filtro de consultor do topo)
+  const salvo = state.f.cons; state.f.cons = ""; invalidar();
+  const H = hierarquia(); state.f.cons = salvo; invalidar();
+  const c = H.regs.flatMap((x) => x.cons).find((x) => x.nome === r.cons);
+  if (!c) { $("relCorpo").innerHTML = `<p class="empty">Sem dados para este consultor no período.</p>`; return; }
+  const temCart = !!state.db.cart, contas = [...c.clientes.vis.map((x) => ({ ...x, st: "vis" })), ...c.clientes.nao.map((x) => ({ ...x, st: "nao" }))];
+  const fx = [0, 0, 0, 0, 0]; for (const x of contas) fx[x.dias == null ? 4 : x.dias <= 7 ? 0 : x.dias <= 15 ? 1 : x.dias <= 30 ? 2 : 3]++;
+  const cob = c.cob ?? 0, R0 = 34, P = 2 * Math.PI * R0;
+  const anel = `<svg viewBox="0 0 84 84" class="rel-anel" role="img" aria-label="Cobertura ${fmtP(cob)}"><circle cx="42" cy="42" r="${R0}" class="t"/><circle cx="42" cy="42" r="${R0}" class="v ${corCob(cob)}" stroke-dasharray="${(P * cob).toFixed(1)} ${P.toFixed(1)}" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle">${fmtP(cob)}</text></svg>`;
+  const kp = (l, v, s, cls = "") => `<div class="rk ${cls}"><span class="label">${l}</span><b>${v}</b>${s ? `<span>${s}</span>` : ""}</div>`;
+  const ref = REF(), periodo = `${fmtDia(state.f.de)} a ${fmtDia(state.f.ate)}`;
+  const regTxt = `${esc(c.regional)}${c.gerente ? ` · Gerente: ${esc(titulo(c.gerente))}` : ""}`;
+  let lin = r.mostra === "todas" ? contas : contas.filter((x) => x.st === r.mostra);
+  const o = r.ord, val = (x) => o.k === "nome" ? norm(x.nome) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ult ?? -1) : o.k === "st" ? (x.st === "nao" ? 0 : 1) : (x[o.k] ?? -1);
+  lin = [...lin].sort((a, b) => { const p = val(a), q = val(b); return (typeof p === "string" ? p.localeCompare(q, "pt-BR") : p - q) * o.d; });
+  const th = (k, l, cls = "") => `<th class="s ${cls}" data-rk="${k}" tabindex="0" ${o.k === k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${o.k === k ? ` <span class="ord">${o.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
+  const diasChip = (x) => x.dias == null ? `<span class="chip ch-red">nunca</span>` : `<span class="chip ${x.dias > 30 ? "ch-red" : x.dias > 15 ? "ch-amb" : x.dias > 7 ? "ch-info" : "ch-ok"}">${fmtN(x.dias)} d</span>`;
+  const linhas = lin.map((x, i) => `<tr class="clk ${x.st}" data-cli="${esc(x.cid)}" tabindex="0">
+      <td class="n rel-i">${i + 1}</td>
+      <td><b>${esc(titulo(x.nome))}</b>${x.nVinc > 1 ? ` <span class="vinc" title="${esc(x.nomes.map(titulo).join("\n"))}">+${x.nVinc - 1} vínculo${x.nVinc > 2 ? "s" : ""}</span>` : ""}<span class="subi">${x.conta ? esc(x.conta) : esc(x.cid)}${x.local ? " · " + esc(x.local) + (x.uf ? "/" + esc(x.uf) : "") : ""}</span></td>
+      <td class="n">${x.nPer ? `<b>${fmtN(x.nPer)}</b>` : `<span class="hn">0</span>`}</td>
+      <td class="n">${fmtN(x.nTot)}</td>
+      <td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}${x.ultPor && x.ultPor !== c.nome ? ` <span class="subi" title="Visitada por ${esc(titulo(x.ultPor))}">por ${esc(titulo(x.ultPor).split(" ")[0])}</span>` : ""}</td>
+      <td class="n">${diasChip(x)}</td>
+      <td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
+      <td class="n"><span class="chip ${x.st === "vis" ? "ch-ok" : "ch-red"}">${x.st === "vis" ? "Visitada" : "Não visitada"}</span></td></tr>`).join("");
+  const fora = [...c.clientes.fora].sort((a, b) => norm(a.nome).localeCompare(norm(b.nome), "pt-BR"));
+  $("relCorpo").innerHTML = `
+    <header class="rel-cab">
+      <div><span class="eyebrow">Carteira do consultor · ${periodo}</span><h2>${esc(titulo(c.nome))} ${sitChip(c)}</h2><p class="note">${regTxt}</p></div>
+      ${temCart ? anel : ""}
+    </header>
+    <div class="rel-kpis">
+      ${temCart ? kp("Contas na carteira", fmtN(c.carteira), "") + kp("Visitadas", fmtN(c.vis), "no período", "ok") + kp("Não visitadas", fmtN(c.nao), `${fmtN(fx[4])} nunca visitadas`, c.nao ? "red" : "") : ""}
+      ${kp("Visitas realizadas", fmtN(c.visitas), `${fmtN(c.porCons, 1)} por dia útil`)}
+      ${kp("Última visita", c.ult != null ? fmtDia(c.ult) : "—", c.dias == null ? "nenhuma realizada" : `há ${fmtN(c.dias)} dia${c.dias === 1 ? "" : "s"}`, (c.dias ?? 99) >= 15 ? "red" : (c.dias ?? 0) >= 7 ? "amb" : "")}
+      ${kp("Fora da carteira", fmtN(c.fora), "contas visitadas de outros")}
+      ${kp("Visitas em atraso", fmtN(c.atr), "planejadas e não feitas", c.atr ? "amb" : "")}
+    </div>
+    ${temCart ? `<div class="rel-fx"><span class="label">Contas por tempo sem visita</span><div class="split">${[["Até 7 dias", "c1"], ["8 a 15", "c2"], ["16 a 30", "ca"], ["Mais de 30", "cr"], ["Nunca", "cnv"]].map(([l, k], j) => fx[j] ? `<i class="${k}" style="flex:${fx[j]}" title="${l}: ${fx[j]}"></i>` : "").join("")}</div>
+      <div class="legend">${[["Até 7 dias", "c1"], ["8 a 15 dias", "c2"], ["16 a 30 dias", "ca"], ["Mais de 30 dias", "cr"], ["Nunca visitadas", "cnv"]].map(([l, k], j) => `<span><i class="sw ${k}"></i>${l} <b>${fmtN(fx[j])}</b></span>`).join("")}</div></div>` : ""}
+    ${temCart ? `<div class="tbl-wrap rel-tbl"><table><thead><tr><th class="n">#</th>${th("nome", "Conta crédito / cliente")}${th("nPer", "Visitas no período", "n")}${th("nTot", "Visitas no total", "n")}${th("ult", "Última visita", "n")}${th("dias", "Dias sem visita", "n")}${th("prox", "Próxima planejada", "n")}${th("st", "Situação", "n")}</tr></thead>
+      <tbody>${linhas || `<tr><td colspan="8" class="empty">Nenhuma conta nesta lista.</td></tr>`}</tbody></table></div>`
+      : `<p class="banner">Carregue a carteira de clientes em Administração para ver as contas deste consultor.</p>`}
+    ${fora.length ? `<div class="rel-fora"><span class="label">Visitou fora da carteira (${fmtN(fora.length)})</span><div class="tags">${fora.map((x) => `<button type="button" class="chip ch-neu" data-cli="${esc(x.cid)}" title="${x.dono ? "Carteira de " + esc(titulo(x.dono)) : "Sem carteira"}">${esc(titulo(x.nome))} · ${fmtN(x.n)}</button>`).join("")}</div></div>` : ""}
+    <p class="note rel-nota">Uma linha por conta crédito, em ordem alfabética (os vínculos contam como uma conta). Visitas no período = de ${periodo}; no total = todas as visitas realizadas nas planilhas carregadas. Clique numa conta para ver o histórico e o texto das visitas.</p>`;
+}
+function exportarCarteiraCons() {
+  if (!window.XLSX) { toast("Excel indisponível", "A biblioteca de planilhas não carregou."); return; }
+  const salvo = state.f.cons; state.f.cons = ""; invalidar(); const H = hierarquia(); state.f.cons = salvo; invalidar();
+  const c = H.regs.flatMap((x) => x.cons).find((x) => x.nome === state.rel.cons); if (!c) return;
+  const rows = [...c.clientes.vis.map((x) => ({ ...x, st: "Visitada" })), ...c.clientes.nao.map((x) => ({ ...x, st: "Não visitada" }))].sort((a, b) => norm(a.nome).localeCompare(norm(b.nome), "pt-BR"))
+    .map((x) => ({ "Conta crédito": x.conta || x.cid, "Cliente": titulo(x.nome), "Vínculos": x.nVinc || 1, "Local": x.local ? x.local + (x.uf ? "/" + x.uf : "") : "", "Visitas no período": x.nPer, "Visitas no total": x.nTot,
+      "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "nunca", "Próxima planejada": x.prox != null ? fmtDiaAno(x.prox) : "", "Situação": x.st }));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Carteira");
+  try { XLSX.writeFile(wb, `carteira_${norm(c.nome).replace(/ /g, "_").toLowerCase()}_${isoDia(state.f.de)}_${isoDia(state.f.ate)}.xlsx`); }
+  catch { toast("Não consegui baixar", "Este visualizador bloqueia downloads. Na versão publicada o Excel baixa normalmente."); }
+}
+
 const ABAS_CLI = [["nao", "Não visitadas"], ["vis", "Visitadas"], ["fora", "Fora da carteira"]];
 function painelClientes(c) {
   const h = state.hier, temCart = !!state.db.cart;
@@ -2959,6 +3096,15 @@ function ligarEventos() {
   $("fileC").addEventListener("change", (e) => lerCarteiraArquivo(e.target.files[0]));
   { const el = $("dropC"); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerCarteiraArquivo(e.dataTransfer.files[0]); }); }
   $("cartAplicar").addEventListener("click", aplicarCarteira);
+  // relatório da carteira do consultor
+  const irCons = (d) => { const l = consultoresCarteira(), i = l.indexOf(state.rel.cons); const n = l[i + d]; if (!n) return; state.rel.cons = n; if (state.f.cons) aplicarFiltro("cons", n); else renderCarteira(); };
+  $("relAnt").addEventListener("click", () => irCons(-1)); $("relProx").addEventListener("click", () => irCons(1));
+  $("relCons").addEventListener("change", (e) => { state.rel.cons = e.target.value; if (state.f.cons) aplicarFiltro("cons", e.target.value); else renderCarteira(); });
+  $("relMostra").addEventListener("click", (e) => { const b = e.target.closest("[data-m]"); if (!b) return; state.rel.mostra = b.dataset.m; renderCarteira(); });
+  $("relCorpo").addEventListener("click", (e) => { const th = e.target.closest("th[data-rk]"); if (!th) return; const k = th.dataset.rk, o = state.rel.ord; state.rel.ord = { k, d: o.k === k ? -o.d : (k === "nome" || k === "dias" || k === "st" ? (k === "dias" ? -1 : 1) : -1) }; renderCarteira(); });
+  $("relXlsx").addEventListener("click", exportarCarteiraCons);
+  $("relPrint").addEventListener("click", () => { document.body.classList.add("imprimindo"); window.print(); setTimeout(() => document.body.classList.remove("imprimindo"), 500); });
+  document.addEventListener("keydown", (e) => { if (state.pane !== "carteira" || e.target.closest("input, select, textarea") || !$("mCli").hidden) return; if (e.key === "ArrowRight") irCons(1); if (e.key === "ArrowLeft") irCons(-1); });
   // quadro carteira e cobertura
   const hTab = $("tHier");
   hTab.addEventListener("click", (e) => {
