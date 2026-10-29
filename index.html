@@ -720,7 +720,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
           <span class="legend hier-leg"><span><i class="sw cg"></i>Cobertura 80%+</span><span><i class="sw ca"></i>50 a 79%</span><span><i class="sw cr"></i>abaixo de 50%</span></span>
         </div>
         <div class="tbl-wrap hier-wrap"><table class="hier-t" id="tHier"></table></div>
-        <p class="note">Clique numa regional para ver os consultores; clique num consultor para ver os clientes (não visitados, visitados e fora da carteira). Visitado = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Clique no título de uma coluna para ordenar todos os níveis.</p>
+        <p class="note">Clique numa regional para ver os consultores; clique num consultor para ver as contas (não visitadas, visitadas e fora da carteira). A carteira é contada por <b>conta crédito</b>: os clientes vinculados contam como um só, e uma visita a qualquer vínculo vale para a conta. Visitada = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Clique no título de uma coluna para ordenar todos os níveis.</p>
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Visitas realizadas por dia</h2><span class="label" id="trendLbl"></span></div>
@@ -1255,31 +1255,41 @@ function montarCarteira(raw, db) {
   const nomes = new Map(); for (const v of db.visits) nomes.set(norm(v.consultor), v.consultor);
   const porCid = new Map(), geo = new Map();
   for (const v of db.visits) { const k = kc(v.cid); if (!porCid.has(k)) porCid.set(k, v.cid); }
-  const map = new Map(); let casados = 0;
+  // vínculos: vários clientes (código CRM) dentro de uma mesma conta crédito; a unidade de cobertura é a conta
+  const contaDe = new Map(), grupos = new Map();
   for (const r of raw.rows) {
-    const k = kc(r.cid); if (!k || map.has(k)) continue;
-    const vend = nomes.get(norm(r.vend)) || (r.vend ? String(r.vend).trim().toUpperCase() : "Sem vendedor");
-    const regional = NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, db.codMap);
-    if (!db.regs.has(regional)) db.regs.set(regional, regional === "Sem território" ? "Sem território" : grupoDe(r.terr));
-    let munK = null;
-    const gk = (r.local || "") + "|" + (r.uf || "");
-    if (!geo.has(gk)) { const g = r.local ? acharMun(r.local, /^[A-Z]{2}$/.test(r.uf || "") ? r.uf : undefined) || acharMun(r.local) : null; geo.set(gk, g); }
-    const g = geo.get(gk);
+    const k = kc(r.cid); if (!k || contaDe.has(k)) continue;
+    const conta = kc(r.conta) || k; contaDe.set(k, conta);
+    const g = grupos.get(conta) || []; g.push({ ...r, k }); grupos.set(conta, g);
+  }
+  const map = new Map(); let casados = 0, vinculos = 0;
+  for (const [conta, rows] of grupos) {
+    vinculos += rows.length;
+    const pri = rows.find((r) => kc(r.sap) === conta) || rows.find((r) => porCid.has(r.k)) || rows[0];
+    const vend = moda(rows.map((r) => nomes.get(norm(r.vend)) || (r.vend ? String(r.vend).trim().toUpperCase() : "Sem vendedor")));
+    const regional = moda(rows.map((r) => NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, db.codMap)));
+    if (!db.regs.has(regional)) db.regs.set(regional, regional === "Sem território" ? "Sem território" : grupoDe(pri.terr));
+    const gk = (pri.local || "") + "|" + (pri.uf || "");
+    if (!geo.has(gk)) { const g = pri.local ? acharMun(pri.local, /^[A-Z]{2}$/.test(pri.uf || "") ? pri.uf : undefined) || acharMun(pri.local) : null; geo.set(gk, g); }
+    const g = geo.get(gk); let munK = null;
     if (g) { munK = g.nome + "/" + g.uf; if (!db.muns.has(munK)) db.muns.set(munK, { k: munK, nome: g.nome, uf: g.uf, lat: g.lat, lon: g.lon, nivel: "carteira" }); }
-    const cidVis = porCid.get(k);
-    if (cidVis) casados++;
-    map.set(k, { k, cid: cidVis || r.cid, nome: r.nome || cidVis || r.cid, vend, regional, grupo: db.regs.get(regional), terr: r.terr || "", local: r.local || "", uf: r.uf || "", gerente: r.gerente || "", munK });
-    if (!cidVis && !db.clientes.has(r.cid)) db.clientes.set(r.cid, { cid: r.cid, nome: r.nome || r.cid, vis: [] });
+    const cids = rows.map((r) => porCid.get(r.k) || r.cid);
+    for (const r of rows) if (!porCid.has(r.k) && !db.clientes.has(r.cid)) db.clientes.set(r.cid, { cid: r.cid, nome: r.nome || r.cid, vis: [] });
+    const comVisita = cids.filter((c) => db.clientes.get(c)?.vis.length);
+    if (comVisita.length) casados++;
+    const priCid = porCid.get(pri.k) || pri.cid;
+    map.set(conta, { k: conta, conta, cid: comVisita.includes(priCid) ? priCid : comVisita[0] || priCid, cids, nomes: [...new Set(rows.map((r) => r.nome).filter(Boolean))],
+      nome: pri.nome || priCid, nVinc: rows.length, vend, regional, grupo: db.regs.get(regional), terr: pri.terr || "", local: pri.local || "", uf: pri.uf || "", gerente: moda(rows.map((r) => r.gerente).filter(Boolean)) || "", munK });
   }
   const vendSemVisita = new Set([...map.values()].map((c) => c.vend).filter((n) => !db.visits.some((v) => v.consultor === n))).size;
-  return { map, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita };
+  return { map, contaDe, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita, vinculos };
 }
 /* demonstração: carteira de exemplo montada a partir das próprias visitas (cada cliente fica com o consultor que mais o visitou) */
 function carteiraExemplo(rawV) {
   const m = new Map();
   for (const v of rawV) { const g = m.get(v.cid) || { cid: v.cid, nome: v.cliente, resp: [], terr: [] }; g.resp.push(v.resp); g.terr.push(v.terr); m.set(v.cid, g); }
   return { exemplo: true, meta: { arquivo: "carteira de exemplo (montada a partir das visitas)" },
-    rows: [...m.values()].map((g) => ({ cid: g.cid, nome: g.nome, vend: moda(g.resp), terr: moda(g.terr), local: "", uf: "", gerente: "" })) };
+    rows: [...m.values()].map((g) => ({ cid: g.cid, conta: g.cid, nome: g.nome, vend: moda(g.resp), terr: moda(g.terr), local: "", uf: "", gerente: "" })) };
 }
 /* importação da planilha da carteira: só as colunas usadas pelo painel entram (sem CPF, RG, telefone, e-mail) */
 function lerCarteira(wb) {
@@ -1289,7 +1299,7 @@ function lerCarteira(wb) {
   if (hi < 0) throw new Error('Não achei a linha de títulos com "Código CRM" e "Nome Vendedor". Confira se é a base de carteira.');
   const H = rows[hi].map((h) => norm(h)), dados = rows.slice(hi + 1).filter((r) => r.some((c) => String(c).trim()));
   const col = (...nomes) => { for (const n of nomes) { const i = H.indexOf(norm(n)); if (i >= 0) return i; } return -1; };
-  const C = { cid: col("Código CRM", "Codigo CRM", "ID do cliente"), sap: col("Código SAP"), vend: col("Nome Vendedor", "Nome do vendedor", "Vendedor"),
+  const C = { cid: col("Código CRM", "Codigo CRM", "ID do cliente"), sap: col("Código SAP"), conta: col("Cta.créd.", "Cta.cred.", "Cta créd", "Conta crédito", "Conta credito", "Conta de crédito"), vend: col("Nome Vendedor", "Nome do vendedor", "Vendedor"),
     terr: col("Código do território - Integração C/4", "Código do território", "Território de vendas"), local: col("Local", "Cidade", "Município"),
     gerente: col("Nome Gerente", "Nome do gerente"), uf: col("UF", "Estado", "Rg") };
   // a coluna com o nome do cliente: a primeira candidata que tem texto (no C4C ela às vezes vem como "Nº cliente")
@@ -1298,7 +1308,7 @@ function lerCarteira(wb) {
   const falta = [["cid", "Código CRM"], ["vend", "Nome Vendedor"], ["terr", "Código do território"]].filter(([k]) => C[k] < 0).map(([, n]) => n);
   if (falta.length) throw new Error("Colunas não encontradas: " + falta.join(", "));
   const g = (r, k) => (C[k] >= 0 ? String(r[C[k]] ?? "").trim() : "");
-  const out = dados.map((r) => ({ cid: kc(g(r, "cid")), sap: g(r, "sap"), nome: g(r, "nome"), vend: g(r, "vend"), terr: g(r, "terr"), local: titulo(g(r, "local")),
+  const out = dados.map((r) => ({ cid: kc(g(r, "cid")), conta: kc(g(r, "conta")), sap: kc(g(r, "sap")), nome: g(r, "nome"), vend: g(r, "vend"), terr: g(r, "terr"), local: titulo(g(r, "local")),
     gerente: g(r, "gerente"), uf: /^[A-Za-z]{2}$/.test(g(r, "uf")) ? g(r, "uf").toUpperCase() : "" })).filter((x) => x.cid);
   return out;
 }
@@ -1431,18 +1441,21 @@ const btnIsentar = (c) => state.conta?.perfil !== "admin" ? "" : c.sit === "isen
   : `<button type="button" class="linkbtn" data-isentar="${esc(c.nome)}" title="Tirar ${esc(titulo(c.nome))} da cobrança de visitas (gestor, interno…)">não cobrar</button>`;
 
 /* ---------- clientes ---------- */
+/* chave do cliente: com carteira carregada, a conta crédito (vínculos contam como um só); sem carteira, o próprio código */
+const ck = (cid) => { const k = kc(cid); return state.db.cart?.contaDe.get(k) || k; };
+const contaDoCid = (cid) => state.db.cart?.map.get(ck(cid)) || null;
 function statsClientes() {
   const { base, per } = recorte(), ref = REF();
-  const m = new Map();
-  for (const v of base) { let c = m.get(v.cid); if (!c) { c = { cid: v.cid, nome: state.db.clientes.get(v.cid)?.nome || v.cid, todas: [], per: [] }; m.set(v.cid, c); } c.todas.push(v); }
-  for (const v of per) m.get(v.cid).per.push(v);
-  const cart = state.db.cart;
-  if (cart) for (const c of cart.map.values()) if (casaCart(c) && !m.has(c.cid)) m.set(c.cid, { cid: c.cid, nome: c.nome, todas: [], per: [] });
+  const m = new Map(), cart = state.db.cart;
+  const novo = (v) => { const dono = cart?.map.get(ck(v.cid)); return { cid: dono ? dono.cid : v.cid, nome: dono ? dono.nome : state.db.clientes.get(v.cid)?.nome || v.cid, todas: [], per: [] }; };
+  for (const v of base) { const k = ck(v.cid); let c = m.get(k); if (!c) { c = novo(v); m.set(k, c); } c.todas.push(v); }
+  for (const v of per) m.get(ck(v.cid)).per.push(v);
+  if (cart) for (const c of cart.map.values()) if (casaCart(c) && !m.has(c.k)) m.set(c.k, { cid: c.cid, nome: c.nome, todas: [], per: [] });
   return [...m.values()].map((c) => {
     const ok = c.todas.filter((v) => v.st === "ok" && v.dia <= ref);
     const ult = ok.length ? ok.reduce((a, v) => (v.dia > a.dia ? v : a)) : null;
     const sem = ult ? ref - ult.dia : null;
-    const dono = cart ? cart.map.get(kc(c.cid)) : null;
+    const dono = cart ? cart.map.get(ck(c.cid)) : null;
     const faixa = sem == null ? (c.todas.length ? 4 : 5) : sem <= 7 ? 0 : sem <= 15 ? 1 : sem <= 30 ? 2 : 3;
     const sinais = ultimosSinais(c.todas);
     const abertas = c.todas.filter((v) => v.st === "ab");
@@ -1559,7 +1572,7 @@ function renderGeral() {
   const comQ = ok.filter((v) => v.sv).length;
   $("kpis").innerHTML =
     kpi("Visitas realizadas", fmtN(ok.length), `<b>${fmtN(ok.length / Math.max(1, ativos) / Math.max(1, uteis), 1)}</b> por consultor ativo por dia útil`) +
-    (state.db.cart ? (() => { const T = hierarquia().total; return kpi("Cobertura da carteira", fmtP(T.cob || 0), `<b>${fmtN(T.vis)}</b> de ${fmtN(T.carteira)} clientes visitados · ${fmtN(T.fora)} fora da carteira`, (T.cob || 0) < 0.5 ? "alert" : (T.cob || 0) < 0.8 ? "warn" : ""); })()
+    (state.db.cart ? (() => { const T = hierarquia().total; return kpi("Cobertura da carteira", fmtP(T.cob || 0), `<b>${fmtN(T.vis)}</b> de ${fmtN(T.carteira)} contas crédito visitadas · ${fmtN(T.fora)} fora da carteira`, (T.cob || 0) < 0.5 ? "alert" : (T.cob || 0) < 0.8 ? "warn" : ""); })()
       : kpi("Clientes visitados", fmtN(new Set(ok.map((v) => v.cid)).size), `de <b>${fmtN(cli.length)}</b> clientes com histórico`)) +
     kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(consC.length)}</small>`, `<b>${fmtN(consC.length - ativos)}</b> sem visita realizada no período${cons.length > consC.length ? ` · ${fmtN(cons.length - consC.length)} fora da cobrança` : ""}`, consC.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
     kpi("Abertas em atraso", fmtN(atr.length), `planejadas antes de ${fmtDia(hoje)} e não realizadas`, atr.length ? "alert clk" : "clk", 'data-go="agenda"') +
@@ -1601,7 +1614,7 @@ function renderGeral() {
 /* =================== CARTEIRA × VISITAS: Regional → Consultor → Clientes =================== */
 const casaCart = (c) => { const f = state.f; if (state.escopo && !state.escopo.has(c.regional)) return false; if (f.grupo && c.grupo !== f.grupo) return false;
   if (f.reg && c.regional !== f.reg) return false; if (f.cons && c.vend !== f.cons) return false;
-  if (f.q) { const q = norm(f.q); if (!norm(c.nome).includes(q) && !String(c.cid).includes(f.q.trim())) return false; } return true; };
+  if (f.q) { const q = norm(f.q), t = f.q.trim(); if (!norm(c.nome).includes(q) && !c.nomes.some((n) => norm(n).includes(q)) && !c.cids.some((x) => String(x).includes(t)) && !String(c.conta).includes(t)) return false; } return true; };
 if (!state.hier) state.hier = { abertos: new Set(), consAbertos: new Set(), aba: new Map(), tudo: new Set(), busca: "", ord: { k: "nao", d: -1 } };
 function hierarquia() {
   if (CACHE && CACHE.hier) return CACHE.hier;
@@ -1610,7 +1623,7 @@ function hierarquia() {
   // última visita realizada de cada cliente (qualquer consultor) e visitas do período (qualquer consultor)
   const ultCli = new Map(), perCli = new Map(), abCli = new Map();
   for (const v of state.db.visits) {
-    if (!visivel(v)) continue; const k = kc(v.cid);
+    if (!visivel(v)) continue; const k = ck(v.cid);
     if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k); if (!u || v.dia > u.dia) ultCli.set(k, { dia: v.dia, por: v.consultor }); }
     if (v.st === "ok" && noPeriodo(v) && casa(v, { grupo: 1, reg: 1, cons: 1, q: 1 })) { const p = perCli.get(k) || { n: 0, por: new Set() }; p.n++; p.por.add(v.consultor); perCli.set(k, p); }
     if (v.st === "ab") { const a = abCli.get(k); if (a == null || v.diaPlan < a) abCli.set(k, v.diaPlan); }
@@ -1622,8 +1635,8 @@ function hierarquia() {
   for (const c of cartRows) { const n = node(c.vend); n.cart.push(c); n.regs.push(c.regional); if (c.gerente) n.gers.push(c.gerente); }
   for (const v of ok) {
     const n = node(v.consultor); n.visitas++; n.regs.push(v.regional);
-    const k = kc(v.cid), dono = cart?.map.get(k);
-    if (!dono || dono.vend !== v.consultor) { const f = n.foraM.get(k) || { k, cid: v.cid, nome: state.db.clientes.get(v.cid)?.nome || v.cid, dono: dono ? dono.vend : null, n: 0 }; f.n++; n.foraM.set(k, f); }
+    const k = ck(v.cid), dono = cart?.map.get(k);
+    if (!dono || dono.vend !== v.consultor) { const f = n.foraM.get(k) || { k, cid: dono ? dono.cid : v.cid, nome: dono ? dono.nome : state.db.clientes.get(v.cid)?.nome || v.cid, dono: dono ? dono.vend : null, conta: dono?.conta, nVinc: dono?.nVinc || 1, nomes: dono?.nomes || [], n: 0 }; f.n++; n.foraM.set(k, f); }
   }
   for (const c of stats.values()) node(c.nome);
   const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nPer: p ? p.n : 0, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
@@ -1656,14 +1669,14 @@ function hierarquia() {
 }
 const corCob = (x) => (x == null ? "" : x >= 0.8 ? "ok" : x >= 0.5 ? "amb" : "red");
 const cobCel = (x) => (x == null ? `<span class="note">—</span>` : `<span class="cob ${corCob(x)}"><b>${fmtP(x)}</b><i><u style="width:${Math.min(100, x * 100).toFixed(0)}%"></u></i></span>`);
-const HGRUPOS = { "Carteira": "clientes da carteira", "Visitas": "no período escolhido", "Equipe": "consultores e agenda", "Registro": "qualidade no app" };
+const HGRUPOS = { "Carteira": "por conta crédito", "Visitas": "no período escolhido", "Equipe": "consultores e agenda", "Registro": "qualidade no app" };
 const HCOLS = [
   { k: "nome", l: "Regional › Consultor › Cliente", g: "" },
-  { k: "carteira", l: "Clientes", g: "Carteira", n: 1, t: "Clientes na carteira" },
-  { k: "vis", l: "Visitados", g: "Carteira", n: 1, t: "Clientes da carteira com pelo menos uma visita realizada no período" },
-  { k: "nao", l: "Não<br>visitados", g: "Carteira", n: 1, t: "Clientes da carteira sem visita realizada no período" },
-  { k: "cob", l: "Cobertura", g: "Carteira", n: 1, t: "Visitados ÷ clientes da carteira" },
-  { k: "fora", l: "Fora da<br>carteira", g: "Carteira", n: 1, t: "Clientes visitados que não são da carteira do consultor" },
+  { k: "carteira", l: "Contas", g: "Carteira", n: 1, t: "Contas crédito na carteira. Os clientes vinculados a uma conta contam como um só" },
+  { k: "vis", l: "Visitadas", g: "Carteira", n: 1, t: "Contas com pelo menos uma visita realizada no período, em qualquer cliente vinculado" },
+  { k: "nao", l: "Não<br>visitadas", g: "Carteira", n: 1, t: "Contas da carteira sem nenhuma visita realizada no período" },
+  { k: "cob", l: "Cobertura", g: "Carteira", n: 1, t: "Contas visitadas ÷ contas da carteira" },
+  { k: "fora", l: "Fora da<br>carteira", g: "Carteira", n: 1, t: "Contas visitadas pelo consultor que não são da carteira dele" },
   { k: "visitas", l: "Realizadas", g: "Visitas", n: 1, t: "Visitas realizadas no período" },
   { k: "porCons", l: "Por<br>dia útil", g: "Visitas", n: 1, t: "Visitas por consultor ativo por dia útil" },
   { k: "ult", l: "Última", g: "Visitas", n: 1, t: "Data da visita realizada mais recente" },
@@ -1695,7 +1708,7 @@ function renderHier() {
   const temCart = H.temCart;
   $("hierBanner").innerHTML = !temCart ? `<p class="banner">A <b>carteira de clientes</b> ainda não foi carregada: as colunas de carteira ficam vazias. Carregue a base em <b>Administração › Atualizar as bases</b>.</p>`
     : H.exemplo ? `<p class="banner">Carteira <b>de exemplo</b>, montada a partir das visitas (cada cliente com o consultor que mais o visitou). Com a base real da carteira, aparecem também os clientes que nunca receberam visita.</p>` : "";
-  $("hierLbl").textContent = temCart ? `${fmtN(H.total.carteira)} clientes na carteira · cobertura ${fmtP(H.total.cob || 0)}` : `${plural(H.regs.length, "regional", "regionais")}`;
+  $("hierLbl").textContent = temCart ? `${fmtN(H.total.carteira)} contas crédito na carteira · cobertura ${fmtP(H.total.cob || 0)}` : `${plural(H.regs.length, "regional", "regionais")}`;
   const o = h.ord, ncol = HCOLS.length;
   const grupos = []; for (const c of HCOLS) { const g = grupos[grupos.length - 1]; if (g && g.g === c.g) g.n++; else grupos.push({ g: c.g, n: 1 }); }
   let html = `<thead><tr class="hg">${grupos.map((g, i) => `<th colspan="${g.n}" class="${i ? "gi" : "stk"}">${g.g ? `<b>${esc(g.g)}</b><small>${esc(HGRUPOS[g.g] || "")}</small>` : ""}</th>`).join("")}</tr>
@@ -1710,14 +1723,14 @@ function renderHier() {
     for (const c of hOrd(r.consV)) {
       const ca = h.consAbertos.has(c.nome);
       html += `<tr class="h-cons ${ca ? "aberto" : ""}" data-hcons="${esc(c.nome)}" tabindex="0" aria-expanded="${ca}">
-        <td class="stk"><span class="hx" aria-hidden="true">▸</span><b>${esc(titulo(c.nome))}</b><span class="sub">${c.carteira ? `${fmtN(c.carteira)} na carteira` : "sem carteira"} · <button type="button" class="linkbtn hf" data-cons="${esc(c.nome)}">ver o mês</button> · <button type="button" class="linkbtn hf" data-nota="${esc(c.nome)}">${notasDe(c.nome).length ? `anotações (${notasDe(c.nome).length})` : "anotar"}</button></span></td>${hCelulas(c)}</tr>`;
+        <td class="stk"><span class="hx" aria-hidden="true">▸</span><b>${esc(titulo(c.nome))}</b><span class="sub">${c.carteira ? `${fmtN(c.carteira)} contas na carteira` : "sem carteira"} · <button type="button" class="linkbtn hf" data-cons="${esc(c.nome)}">ver o mês</button> · <button type="button" class="linkbtn hf" data-nota="${esc(c.nome)}">${notasDe(c.nome).length ? `anotações (${notasDe(c.nome).length})` : "anotar"}</button></span></td>${hCelulas(c)}</tr>`;
       if (ca) html += `<tr class="h-cli"><td colspan="${ncol}">${painelClientes(c)}</td></tr>`;
     }
   }
   if (!regs.length) html += `<tr><td colspan="${ncol}" class="empty">Nada encontrado com esses filtros.</td></tr>`;
   $("tHier").innerHTML = html + "</tbody>";
 }
-const ABAS_CLI = [["nao", "Não visitados"], ["vis", "Visitados"], ["fora", "Fora da carteira"]];
+const ABAS_CLI = [["nao", "Não visitadas"], ["vis", "Visitadas"], ["fora", "Fora da carteira"]];
 function painelClientes(c) {
   const h = state.hier, temCart = !!state.db.cart;
   let aba = h.aba.get(c.nome) || (temCart && c.clientes.nao.length ? "nao" : temCart && c.clientes.vis.length ? "vis" : "fora");
@@ -1728,16 +1741,17 @@ function painelClientes(c) {
   const ult = (x) => x.ult != null ? `${fmtDiaAno(x.ult)}${x.ultPor && x.ultPor !== c.nome ? `<span class="sub">por ${esc(titulo(x.ultPor))}</span>` : ""}` : "—";
   const prox = (x) => x.prox == null ? "—" : `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}`;
   const sinal = (x) => { const cl = state.db.clientes.get(x.cid); return cl ? tagsSinais(ultimosSinais(cl.vis.filter(visivel)), 2) : "—"; };
-  const nomeCel = (x) => `<b>${esc(titulo(x.nome))}</b><span class="sub"><span class="mono">${esc(x.cid)}</span>${x.local ? " · " + esc(x.local) + (x.uf ? "/" + esc(x.uf) : "") : ""}</span>`;
-  const cab = aba === "nao" ? ["Cliente", "Dias sem visita", "Última visita", "Próxima planejada", "Último sinal do campo"]
-    : aba === "vis" ? ["Cliente", "Visitas no período", "Última visita", "Visitado por", "Último sinal do campo"] : ["Cliente", "Carteira de", "Visitas no período", "Última visita", "Último sinal do campo"];
+  const vinc = (x) => x.nVinc > 1 ? ` · <span class="vinc" title="${esc(x.nomes.map(titulo).join("\n"))}">${x.nVinc} vínculos</span>` : "";
+  const nomeCel = (x) => `<b>${esc(titulo(x.nome))}</b><span class="sub">${x.conta ? `Conta <span class="mono">${esc(x.conta)}</span>` : `<span class="mono">${esc(x.cid)}</span>`}${vinc(x)}${x.local ? " · " + esc(x.local) + (x.uf ? "/" + esc(x.uf) : "") : ""}</span>`;
+  const cab = aba === "nao" ? ["Conta crédito", "Dias sem visita", "Última visita", "Próxima planejada", "Último sinal do campo"]
+    : aba === "vis" ? ["Conta crédito", "Visitas no período", "Última visita", "Visitado por", "Último sinal do campo"] : ["Conta crédito", "Carteira de", "Visitas no período", "Última visita", "Último sinal do campo"];
   const lin = lst.map((x) => `<tr class="clk" data-cli="${esc(x.cid)}" tabindex="0">${(aba === "nao" ? [nomeCel(x), diasChip(x), ult(x), prox(x), sinal(x)]
     : aba === "vis" ? [nomeCel(x), fmtN(x.nPer), ult(x), esc(x.por.map(titulo).join(", ")), sinal(x)]
     : [nomeCel(x), x.dono ? esc(titulo(x.dono)) : `<span class="chip ch-neu">sem carteira</span>`, fmtN(x.n), ult(x), sinal(x)]).map((v) => `<td>${v}</td>`).join("")}</tr>`).join("");
   return `<div class="hcli">
     <div class="hcli-h"><div class="seg2" role="tablist">${ABAS_CLI.map(([k, l]) => `<button type="button" data-haba="${k}" data-hc="${esc(c.nome)}" aria-pressed="${aba === k}" ${!temCart && k !== "fora" ? "disabled" : ""}>${l} <small>${fmtN(c.clientes[k].length)}</small></button>`).join("")}</div>
-      <span class="note">${aba === "nao" ? "Ordem: há mais tempo sem visita primeiro." : aba === "vis" ? "Visitados no período por qualquer consultor." : "Clientes que ele visitou e que não são da carteira dele."}</span></div>
-    ${L.length ? `<div class="tbl-wrap"><table class="hcli-t"><thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` : `<p class="empty">${aba === "nao" ? "Toda a carteira foi visitada no período. 👏" : "Nenhum cliente nesta lista."}</p>`}
+      <span class="note">${aba === "nao" ? "Ordem: há mais tempo sem visita primeiro. Uma visita a qualquer cliente vinculado conta para a conta." : aba === "vis" ? "Visitadas no período por qualquer consultor." : "Contas que ele visitou e que não são da carteira dele."}</span></div>
+    ${L.length ? `<div class="tbl-wrap"><table class="hcli-t"><thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` : `<p class="empty">${aba === "nao" ? "Todas as contas da carteira foram visitadas no período. 👏" : "Nenhum cliente nesta lista."}</p>`}
     ${L.length > lim ? `<button type="button" class="btn sm" data-htudo="${esc(c.nome + aba)}">Mostrar todos (${fmtN(L.length)})</button>` : ""}</div>`;
 }
 function exportarHier() {
@@ -1748,7 +1762,7 @@ function exportarHier() {
   const regs = H.regs.map((r) => linha(r, { "Regional": r.nome, "Canal": r.grupo, "Gerente": titulo(r.gerente), "Consultores ativos": r.ativos, "Consultores cobrados": r.total, "Parados": r.parados }));
   const cons = H.regs.flatMap((r) => r.cons.map((c) => linha(c, { "Regional": r.nome, "Consultor": titulo(c.nome), "Situação": sitTxt(c) })));
   const clis = H.regs.flatMap((r) => r.cons.flatMap((c) => [["nao", "Não visitado"], ["vis", "Visitado"], ["fora", "Fora da carteira"]].flatMap(([k, l]) => c.clientes[k].map((x) => ({
-    "Regional": r.nome, "Consultor": titulo(c.nome), "Situação": l, "Código": x.cid, "Cliente": titulo(x.nome), "Local": x.local ? x.local + (x.uf ? "/" + x.uf : "") : "",
+    "Regional": r.nome, "Consultor": titulo(c.nome), "Situação": l, "Conta crédito": x.conta || "", "Código CRM": x.cid, "Cliente": titulo(x.nome), "Vínculos": x.nVinc || 1, "Local": x.local ? x.local + (x.uf ? "/" + x.uf : "") : "",
     "Carteira de": k === "fora" ? (x.dono ? titulo(x.dono) : "sem carteira") : titulo(c.nome), "Visitas no período": x.nPer ?? x.n ?? 0,
     "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "nunca", "Próxima planejada": x.prox != null ? fmtDiaAno(x.prox) : "" })))));
   const wb = XLSX.utils.book_new();
@@ -2229,12 +2243,14 @@ async function copiarTabela(id) {
 
 /* =================== GAVETAS: cliente e consultor =================== */
 function abrirCliente(cid) {
-  const c = state.db.clientes.get(cid); if (!c) return;
+  const conta = contaDoCid(cid);
+  const c = conta ? { nome: conta.nome, vis: conta.cids.flatMap((x) => state.db.clientes.get(x)?.vis || []).sort((a, b) => (a.ck ?? a.ini) - (b.ck ?? b.ini)) } : state.db.clientes.get(cid);
+  if (!c) return;
   const vis = c.vis.filter(visivel), ref = REF(), hoje = HOJE();
   const ok = vis.filter((v) => v.st === "ok"), ult = ok.filter((v) => v.dia <= ref).pop();
   const s = ultimosSinais(vis);
   $("mCliT").textContent = titulo(c.nome);
-  $("mCliS").textContent = `Cliente ${cid} · ${moda(vis.map((v) => v.regional)) || ""}`;
+  $("mCliS").textContent = conta ? `Conta crédito ${conta.conta}${conta.nVinc > 1 ? ` · ${conta.nVinc} vínculos` : ""} · ${conta.regional} · carteira de ${titulo(conta.vend)}` : `Cliente ${cid} · ${moda(vis.map((v) => v.regional)) || ""}`;
   const kv = (l, k, f = (x) => esc(x)) => (s[k] != null && s[k] !== "" ? `<dt>${l}</dt><dd>${f(s[k])}</dd>` : "");
   const sin = kv("Intenção de compra", "intencao") + kv("Previsão de compra", "previsao", fmtDiaAno) + kv("Área estimada", "area", (x) => fmtN(x) + " ha") + kv("Concorrente", "concorrente", (x) => esc(titulo(x))) +
     kv("Risco percebido", "risco") + kv("Relacionamento", "relac") + kv("Fidelidade", "fidel") + kv("Satisfação", "satisf") + kv("Produtos em pauta", "grupos", (x) => esc(x.join(", "))) + kv("Cultura", "cultura", (x) => esc(x.join(", ")));
@@ -2243,12 +2259,13 @@ function abrirCliente(cid) {
     const dest = [k.intencao && `Intenção ${k.intencao.toLowerCase()}`, k.previsao != null && `previsão ${fmtDia(k.previsao)}`, k.area && `${fmtN(k.area)} ha`, k.concAtiva === "Sim" && `concorrente: ${titulo(k.concorrente || "sim")}`, k.risco && `risco ${k.risco.toLowerCase()}`, k.satisf && `satisfação ${k.satisf.toLowerCase()}`].filter(Boolean).join(" · ");
     return `<li><span class="dt"><b>${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)}</b>${dDate(v.st === "ok" ? v.dia : v.diaPlan).getUTCFullYear()}</span><span class="rail"><i class="${v.st === "ok" ? "" : v.st}"></i></span>
       <div class="bx"><div class="h"><b>${esc(v.sv ? v.sv.pesq : v.tipo)}</b>${chipStatus(v, hoje)}</div>
-      <span class="m">${esc(titulo(v.consultor))} · ${esc(v.tipo)} · ${esc(titulo(v.folha))}${v.st === "ok" ? ` · check-in ${fmtHora(v.ck)}${v.gps ? "" : " · sem GPS"}${v.dia !== v.diaPlan ? ` · planejada ${fmtDia(v.diaPlan)}` : ""}` : ` · planejada ${fmtDia(v.diaPlan)} ${fmtHora(v.ini)}`}${v.nanexo ? ` · ${v.nanexo} anexo(s)` : ""}</span>
+      <span class="m">${conta && conta.nVinc > 1 ? `<b>${esc(titulo(state.db.clientes.get(v.cid)?.nome || v.cid))}</b> · ` : ""}${esc(titulo(v.consultor))} · ${esc(v.tipo)} · ${esc(titulo(v.folha))}${v.st === "ok" ? ` · check-in ${fmtHora(v.ck)}${v.gps ? "" : " · sem GPS"}${v.dia !== v.diaPlan ? ` · planejada ${fmtDia(v.diaPlan)}` : ""}` : ` · planejada ${fmtDia(v.diaPlan)} ${fmtHora(v.ini)}`}${v.nanexo ? ` · ${v.nanexo} anexo(s)` : ""}</span>
       ${dest ? `<span class="m" style="color:var(--ink)">${esc(dest)}</span>` : ""}
       ${v.notas ? `<div class="nota">${esc(v.notas)}</div>` : ""}
       ${v.sv ? `<details class="qd"><summary>Respostas do questionário (${v.sv.qa.length})</summary><dl class="qa">${v.sv.qa.map(([p, , r]) => `<dt>${esc(p)}</dt><dd>${esc(r)}</dd>`).join("")}</dl></details>` : ""}</div></li>`;
   }).join("");
   $("mCliC").innerHTML = `<div class="m-kpis"><div><b>${fmtN(ok.length)}</b><span>visitas realizadas</span></div><div><b>${fmtN(vis.filter((v) => v.st === "ab").length)}</b><span>abertas</span></div><div><b>${ult ? fmtN(ref - ult.dia) : "—"}</b><span>dias sem visita</span></div><div><b>${fmtN(new Set(ok.map((v) => v.consultor)).size)}</b><span>consultor(es)</span></div></div>
+    ${conta && conta.nVinc > 1 ? `<div><h3 class="label">Clientes vinculados a esta conta crédito</h3><div class="tags" style="margin-top:6px">${conta.cids.map((x, i) => `<span class="chip ${state.db.clientes.get(x)?.vis.length ? "ch-info" : "ch-neu"}">${esc(titulo(state.db.clientes.get(x)?.nome || conta.nomes[i] || x))} <span class="mono">${esc(x)}</span></span>`).join("")}</div></div>` : ""}
     ${sin ? `<div><h3 class="label">Último retrato do campo</h3><dl class="qa">${sin}</dl></div>` : ""}
     <div><h3 class="label" style="margin-bottom:8px">Linha do tempo das visitas</h3><ol class="tl">${tl}</ol></div>`;
   abrirModal("mCli");
@@ -2290,7 +2307,7 @@ function renderMetodo() {
     ["Regional / equipe", "derivada do código do território (V08, L39…), pela equipe de vendas mais frequente daquele código. Corrige os registros em que o C4C grava o nome do território no lugar da equipe."],
     ["Mapa", "a exportação traz só a latitude do check-in (as duas colunas são latitude). Cada visita é posicionada no município do seu território (base IBGE, kelvins/municipios-brasileiros); rotas e distritos usam o município mais próximo ou a sede da regional. Pedir ao time do C4C para incluir a longitude permite ligar o mapa ao ponto exato do check-in."],
     ["Inteligência de campo", "perguntas-chave lidas pelo texto da pergunta (Intenção de compra, Previsão de compra, Área estimada, Concorrência, Risco, Satisfação, SAC, Fidelidade, Pendência). Para cada cliente vale a resposta mais recente. Área acima de 100 mil ha é descartada como erro de digitação."],
-    ["Carteira e cobertura", "a carteira vem da base de clientes carregada na Administração (Código CRM, vendedor, território). Cliente e visita são casados pelo código CRM sem os zeros à esquerda; vendedor e consultor, pelo nome. Visitado = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Cobertura = visitados ÷ carteira. Fora da carteira = clientes que o consultor visitou e que não são da carteira dele. Dias sem visita: no cliente, desde a última visita realizada; no consultor, desde a última visita dele; na regional e no total, a mediana dos clientes da carteira. A regional do consultor é a mais comum na carteira dele."],
+    ["Carteira e cobertura", "a carteira vem da base de clientes carregada na Administração e é contada por conta crédito (Cta.créd.): os clientes vinculados a uma conta contam como um só, e uma visita a qualquer vínculo vale para a conta. Cliente e visita são casados pelo código CRM sem os zeros à esquerda; vendedor e consultor, pelo nome. O nome da conta é o do cliente cujo Código SAP é a própria conta (ou o primeiro vínculo). Visitado = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Cobertura = visitados ÷ carteira. Fora da carteira = clientes que o consultor visitou e que não são da carteira dele. Dias sem visita: no cliente, desde a última visita realizada; no consultor, desde a última visita dele; na regional e no total, a mediana dos clientes da carteira. A regional do consultor é a mais comum na carteira dele."],
     ["Anotações do gestor", "na aba Equipes, cada consultor tem um botão Anotar. A anotação guarda assunto, texto, autor e data, e pode citar uma visita. Quem vê a regional do consultor vê as anotações; só o autor ou um admin pode excluir."],
     ["Quem vê o quê", "Admin e Diretoria veem todas as regionais. Gerente vê só as regionais atribuídas a ele na Administração; clientes, mapa e agenda seguem a mesma trava. Na versão publicada a trava é feita no banco (Supabase, row level security), não só na tela."],
     ["Senhas", `o Radar tem login próprio, separado do Ruptura Zero e dos outros sistemas do projeto de Melhoria Contínua. Usuário novo e senha resetada entram com a senha padrão e são obrigados a criar uma senha própria (8+ caracteres, letras e números). Cinco tentativas erradas bloqueiam o login por 10 minutos.`],
@@ -2467,14 +2484,15 @@ const SupaAPI = {
       : { extraido: Math.floor(Date.now() / 86400000), periodos: [[Math.floor(Date.now() / 86400000) - 30, Math.floor(Date.now() / 86400000)]], fontes: [] };
     let cart = null;
     try {
-      const [rows, info] = await Promise.all([this.todos("carteira", "cid,nome,vend,terr,regional,local,uf,gerente", "cid"), this.sb.from("carteira_info").select("arquivo,linhas,atualizado_em,por_nome").eq("id", 1).maybeSingle().then((r) => r.data)]);
+      const [rows, info] = await Promise.all([this.todos("carteira", "cid,conta,nome,vend,terr,regional,local,uf,gerente,cod_sap", "cid"), this.sb.from("carteira_info").select("arquivo,linhas,atualizado_em,por_nome").eq("id", 1).maybeSingle().then((r) => r.data)]);
+      rows.forEach((r) => { r.sap = r.cod_sap; });
       if (rows.length) cart = { rows, meta: info ? { arquivo: info.arquivo, linhas: info.linhas, quando: Date.parse(info.atualizado_em), por: info.por_nome } : {} };
     } catch (e) { console.warn("carteira:", e.message); }
     return { rawV, rawA, meta, cart };
   },
   async importarCarteira(rows, meta) {
     const codMap = mapaCodigos(state.raw.rawV);
-    const linhas = rows.map((r) => ({ cid: r.cid, nome: r.nome, vend: r.vend, terr: r.terr, regional: regionalDe(r.terr, codMap), local: r.local, uf: r.uf, gerente: r.gerente, cod_sap: r.sap || null }));
+    const linhas = rows.map((r) => ({ cid: r.cid, conta: r.conta || r.cid, nome: r.nome, vend: r.vend, terr: r.terr, regional: regionalDe(r.terr, codMap), local: r.local, uf: r.uf, gerente: r.gerente, cod_sap: r.sap || null }));
     const falha = (e) => new Error(/does not exist|could not find the table/i.test(e.message) ? "Falta rodar o carteira.sql no Supabase." : "Carteira: " + e.message);
     { const { error } = await this.sb.from("carteira").delete().neq("cid", ""); if (error) throw falha(error); }
     const vistos = new Set(), unicas = linhas.filter((l) => !vistos.has(l.cid) && vistos.add(l.cid));
@@ -2673,8 +2691,8 @@ function renderCarteiraInfo() {
   const c = state.db.cart;
   if (!c) { $("cartLbl").textContent = "não carregada"; $("cartRes").innerHTML = `<p class="note">Nenhuma carteira carregada ainda.</p>`; return; }
   const m = c.meta || {}, n = c.map.size;
-  $("cartLbl").textContent = `${fmtN(n)} clientes${c.exemplo ? " · exemplo" : ""}`;
-  if (!state.imp.c) $("cartRes").innerHTML = `<p class="note">${c.exemplo ? "Carteira <b>de exemplo</b>, montada a partir das visitas." : `Atual: <b>${esc(m.arquivo || "carteira")}</b>${m.quando ? ` · carregada em ${new Date(m.quando).toLocaleDateString("pt-BR")}` : ""}${m.por ? ` por ${esc(m.por)}` : ""}.`} ${fmtP(c.casados / Math.max(1, n))} dos clientes da carteira têm alguma visita na base. ${c.vendSemVisita ? `${fmtN(c.vendSemVisita)} vendedor(es) da carteira sem nenhuma visita no C4C.` : ""}</p>`;
+  $("cartLbl").textContent = `${fmtN(n)} contas crédito · ${fmtN(c.vinculos)} clientes${c.exemplo ? " · exemplo" : ""}`;
+  if (!state.imp.c) $("cartRes").innerHTML = `<p class="note">${c.exemplo ? "Carteira <b>de exemplo</b>, montada a partir das visitas." : `Atual: <b>${esc(m.arquivo || "carteira")}</b>${m.quando ? ` · carregada em ${new Date(m.quando).toLocaleDateString("pt-BR")}` : ""}${m.por ? ` por ${esc(m.por)}` : ""}.`} ${fmtP(c.casados / Math.max(1, n))} das contas crédito têm alguma visita na base, em qualquer vínculo. ${c.vendSemVisita ? `${fmtN(c.vendSemVisita)} vendedor(es) da carteira sem nenhuma visita no C4C.` : ""}</p>`;
 }
 async function lerCarteiraArquivo(file) {
   if (!file) return; const el = $("dropC"), txt = $("dropCtxt");
@@ -2684,10 +2702,11 @@ async function lerCarteiraArquivo(file) {
     const wb = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: false });
     const rows = lerCarteira(wb);
     const ids = new Set(state.db.visits.map((v) => kc(v.cid))), vend = new Set(state.db.visits.map((v) => norm(v.consultor)));
-    const casa = rows.filter((r) => ids.has(r.cid)).length, vends = [...new Set(rows.map((r) => r.vend).filter(Boolean))], vCasa = vends.filter((v) => vend.has(norm(v))).length;
+    const contaDe = (r) => r.conta || r.cid, contas = new Set(rows.map(contaDe)), contasVis = new Set(rows.filter((r) => ids.has(r.cid)).map(contaDe));
+    const vends = [...new Set(rows.map((r) => r.vend).filter(Boolean))], vCasa = vends.filter((v) => vend.has(norm(v))).length, semConta = rows.filter((r) => !r.conta).length;
     state.imp.c = { rows, arquivo: file.name };
-    txt.textContent = `${file.name} · ${fmtN(rows.length)} clientes · ${fmtN(vends.length)} vendedores`; el.classList.add("ok");
-    $("cartRes").innerHTML = `<p class="banner info"><b>${fmtN(casa)}</b> clientes (${fmtP(casa / Math.max(1, rows.length), 1)}) já têm visita na base, pelo código CRM. <b>${fmtN(vCasa)}</b> de ${fmtN(vends.length)} vendedores foram reconhecidos nas visitas pelo nome.${vends.length - vCasa ? ` Os outros ${fmtN(vends.length - vCasa)} aparecem no painel com a carteira, mas sem visitas: confira se o nome está igual ao do C4C.` : ""}</p>`;
+    txt.textContent = `${file.name} · ${fmtN(contas.size)} contas crédito (${fmtN(rows.length)} clientes vinculados) · ${fmtN(vends.length)} vendedores`; el.classList.add("ok");
+    $("cartRes").innerHTML = `<p class="banner info">A carteira é contada por <b>conta crédito</b>: ${fmtN(contas.size)} contas reúnem ${fmtN(rows.length)} clientes vinculados. <b>${fmtN(contasVis.size)}</b> contas (${fmtP(contasVis.size / Math.max(1, contas.size), 1)}) já têm visita na base em algum vínculo.${semConta ? ` ${fmtN(semConta)} linha(s) sem Cta.créd. contam como conta própria.` : ""} <b>${fmtN(vCasa)}</b> de ${fmtN(vends.length)} vendedores foram reconhecidos nas visitas pelo nome.${vends.length - vCasa ? ` Os outros ${fmtN(vends.length - vCasa)} aparecem no painel com a carteira, mas sem visitas: confira se o nome está igual ao do C4C.` : ""}</p>`;
     $("cartAplicar").disabled = false;
   } catch (e) { el.classList.remove("ok"); txt.textContent = e.message; }
 }
@@ -2697,7 +2716,7 @@ async function aplicarCarteira() {
   try {
     await API.importarCarteira(c.rows, { arquivo: c.arquivo });
     carregarBase(state.raw); state.imp.c = null; $("dropC").classList.remove("ok"); $("dropCtxt").textContent = "Planilha com Código CRM, Nome Vendedor e Código do território";
-    toast("Carteira atualizada", `${fmtN(state.db.cart?.map.size || 0)} clientes de carteira.${API === DemoAPI ? " Na demonstração, a carga vale até recarregar a página." : ""}`); render();
+    toast("Carteira atualizada", `${fmtN(state.db.cart?.map.size || 0)} contas crédito na carteira.${API === DemoAPI ? " Na demonstração, a carga vale até recarregar a página." : ""}`); render();
   } catch (e) { toast("Não consegui carregar a carteira", e.message); b.disabled = false; } finally { b.textContent = "Substituir a carteira"; }
 }
 async function lerArquivo(tipo, file) {
