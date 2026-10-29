@@ -515,6 +515,9 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 .bi-eq .tbl-wrap { height: 100%; max-height: 236px; overflow: auto; }
 .bi-eq-t th, .bi-eq-t td { padding: 5px 6px; font-size: .84rem; }
 .bi-eq-t th { font-size: .62rem; }
+.bi-eq-t th.s { cursor: pointer; } .bi-eq-t th.s:hover { color: var(--brand-2); }
+.bi-eq-t .cob i { width: 46px; } .bi-eq-t tfoot .cob b { color: #fff; } .bi-eq-t tfoot .cob i { background: rgba(255,255,255,.25); }
+.bi-det-t td.n .subi { display: block; margin-left: 0; }
 .bi-eq-t th { text-align: center; line-height: 1.2; vertical-align: middle; } .bi-eq-t th:first-child { text-align: left; }
 .bi-eq-t td.n { text-align: center; }
 .bi-eq-t tr[data-bisel] { cursor: pointer; }
@@ -1869,18 +1872,22 @@ function renderCarteira() {
       tile("Taxa de clientes visitados", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
       : tile("Clientes da carteira", "—", "carteira não carregada")) +
     tile("Visitas fora da carteira", fmtN(visFora), "visitas a clientes de outras carteiras") +
+    tile("Clientes fora da carteira", fmtN(N.fora), "visitados, mas da carteira de outro consultor ou sem carteira") +
     tile("Intenção de compra alta", fmtN(quentes.length), "clientes, pelo último questionário", quentes.length ? "ok" : "") +
-    tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média") +
-    tile("Clientes fora da carteira", fmtN(N.fora), "visitados, mas da carteira de outro consultor ou sem carteira");
+    tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média");
   // equipe
   const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
-  const cel = (x) => `<td class="n">${fmtN(x.visitas)}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart && x.cob != null ? `${fmtP(x.cob)} ${dot(x.cob)}` : "—"}</td><td class="n">${fmtN(x.fora)}</td>`;
-  const regs = H.regs.slice().sort((a, c) => a.nome.localeCompare(c.nome, "pt-BR"));
-  let eq = `<thead><tr><th>Equipe</th><th class="n" title="Visitas realizadas no período">Qtd<br>visitas</th><th class="n" title="Clientes da carteira com pelo menos uma visita no período">Clientes<br>visitados</th><th class="n" title="Clientes na carteira (por conta crédito)">Carteira</th><th class="n" title="Clientes da carteira sem visita no período">Clientes não<br>visitados</th><th class="n" title="Clientes visitados ÷ carteira">Taxa</th><th class="n" title="Clientes visitados que não são da carteira">Clientes fora<br>carteira</th></tr></thead><tbody>`;
+  const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td><td class="n">${fmtN(x.fora)}</td><td class="n">${fmtN(x.visitas)}</td>`;
+  const eo = b.eqOrd || (b.eqOrd = { k: "nome", d: 1 });
+  const eVal = (x) => eo.k === "nome" ? norm(x.nome) : eo.k === "cob" ? (x.cob ?? -1) : (x[eo.k] ?? -1);
+  const eSort = (l) => [...l].sort((a, c) => { const p = eVal(a), q = eVal(c); return (typeof p === "string" ? p.localeCompare(q, "pt-BR") : p - q) * eo.d || norm(a.nome).localeCompare(norm(c.nome)); });
+  const eth = (k, l, t) => `<th class="s ${k === "nome" ? "" : "n"}" data-eqord="${k}" tabindex="0" title="${t}" ${eo.k === k ? `aria-sort="${eo.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${eo.k === k ? ` <span class="ord">${eo.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
+  const regs = eSort(H.regs);
+  let eq = `<thead><tr>${eth("nome", "Equipe", "Ordenar por nome")}${eth("carteira", "Clientes de<br>carteira", "Clientes na carteira (por conta crédito)")}${eth("vis", "Clientes<br>visitados", "Clientes da carteira com pelo menos uma visita no período")}${eth("nao", "Clientes não<br>visitados", "Clientes da carteira sem visita no período")}${eth("cob", "Taxa", "Clientes visitados ÷ clientes de carteira")}${eth("fora", "Clientes visitados<br>fora carteira", "Clientes visitados que não são da carteira")}${eth("visitas", "Qtd<br>visitas", "Visitas realizadas no período")}</tr></thead><tbody>`;
   for (const r of regs) {
     const ab = b.abertos.has(r.nome) || (S.reg && S.reg.nome === r.nome);
     eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bxb" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}" aria-expanded="${ab}">▸</button><b class="bi-cn" title="${esc(r.nome)}">${esc(r.nome)}</b></td>${cel(r)}</tr>`;
-    if (ab) for (const c of r.cons.slice().sort((a, c2) => a.nome.localeCompare(c2.nome, "pt-BR")))
+    if (ab) for (const c of eSort(r.cons))
       eq += `<tr class="bi-c ${t.t === "cons" && t.n === c.nome ? "sel" : ""}" data-bisel="cons" data-n="${esc(c.nome)}" tabindex="0"><td><span class="bi-cn" title="${esc(titulo(c.nome))}">${esc(titulo(c.nome))}</span>${c.sit === "isento" ? ` <span class="chip ch-info">${esc(c.isento)}</span>` : ""}</td>${cel(c)}</tr>`;
   }
   eq += `</tbody><tfoot><tr class="bi-t ${t.t === "all" ? "sel" : ""}" data-bisel="all" tabindex="0"><td><b>Total</b></td>${cel(H.total)}</tr></tfoot>`;
@@ -1905,7 +1912,7 @@ function renderBiDet(contas, fora, multi) {
     let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bxb" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas" aria-expanded="${aberto}">▸</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
       <td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
       <td class="n ${diasCls(x)}">${x.dias == null ? "nunca" : fmtN(x.dias)}</td><td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
-      <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td>${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
+      <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td class="n">${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
     if (aberto) {
       const vis = (x.cids || [x.cid]).flatMap((c) => state.db.clientes.get(c)?.vis || []).filter((v) => visivel(v) && v.st === "ok").sort((a, c) => c.dia - a.dia).slice(0, 3);
       h += `<tr class="bi-exp"><td colspan="${nc}">${x.nVinc > 1 ? `<p class="note"><b>Vínculos:</b> ${esc((x.nomes || []).map(titulo).join(" · "))}</p>` : ""}${vis.length ? vis.map((v) => `<div class="bi-v"><span class="q">${fmtDiaAno(v.dia)}</span><b>${esc(v.sv ? v.sv.pesq : v.tipo)}</b><span class="note">${esc(titulo(v.consultor))}${x.nVinc > 1 ? " · " + esc(titulo(state.db.clientes.get(v.cid)?.nome || "")) : ""}</span>${v.notas || v.sv?.k.desc ? `<p class="txt">${esc((v.notas || v.sv.k.desc).slice(0, 420))}${(v.notas || v.sv.k.desc).length > 420 ? "…" : ""}</p>` : ""}</div>`).join("") : `<p class="note">Nenhuma visita realizada nas planilhas carregadas.</p>`}<a href="#" class="linkbtn" data-cli="${esc(x.cid)}">Abrir o histórico completo →</a></td></tr>`;
@@ -3172,12 +3179,13 @@ function ligarEventos() {
     const cl = e.target.closest("[data-bicli]"); if (cl) { const s = state.bi.cliAbertos, n = cl.dataset.bicli; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
     const gp = e.target.closest("[data-bigrp]"); if (gp) { const s = state.bi.grpFechados, n = gp.dataset.bigrp; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
     const ms = e.target.closest("[data-bimais]"); if (ms) { state.bi.lim[ms.dataset.bimais] += 300; renderCarteira(); return; }
+    const eq = e.target.closest("th[data-eqord]"); if (eq) { const k = eq.dataset.eqord, o = state.bi.eqOrd || { k: "nome", d: 1 }; state.bi.eqOrd = { k, d: o.k === k ? -o.d : (k === "nome" || k === "cob" ? 1 : -1) }; renderCarteira(); return; }
     const th = e.target.closest("th[data-biord]"); if (th) { const k = th.dataset.biord, o = state.bi.ord; state.bi.ord = { k, d: o.k === k ? -o.d : (["nome", "cons", "st", "quest"].includes(k) ? 1 : -1) }; renderCarteira(); return; }
     const m = e.target.closest("#biMostra [data-m]"); if (m) { state.bi.mostra = m.dataset.m; renderCarteira(); return; }
     if (e.target.closest("[data-cli]")) return;
     const s = e.target.closest("[data-bisel]"); if (s) biSel(s.dataset.bisel, s.dataset.n || null);
   });
-  $("pane-carteira").addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-bisel], th[data-biord]")) { e.preventDefault(); e.target.click(); } });
+  $("pane-carteira").addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-bisel], th[data-biord], th[data-eqord]")) { e.preventDefault(); e.target.click(); } });
   const irBi = (d) => { const H = semFiltroCons(hierarquia), l = biConsOrdem(H), b = state.bi; let i = b.sel.t === "cons" ? l.indexOf(b.sel.n) : -1;
     if (i < 0) { const r = b.sel.t === "reg" ? H.regs.find((x) => x.nome === b.sel.n) : null; const n = r ? r.cons.map((c) => c.nome).sort((a, c) => a.localeCompare(c, "pt-BR"))[0] : l[0]; i = l.indexOf(n) - d; }
     const n = l[i + d]; if (n) biSel("cons", n); };
