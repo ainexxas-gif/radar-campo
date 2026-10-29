@@ -482,9 +482,9 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 @media (max-width: 720px) { .hier-leg { margin-left: 0; } .hier-t .stk { min-width: 210px; max-width: 230px; } .hcli { left: 0; } }
 .cart-res { display: grid; align-content: center; }
 /* pontos de atenção: faixa compacta */
-.sinais-wrap { display: grid; gap: 6px; }
+.sinais-wrap { display: grid; margin-top: -8px; }
 .sinais-wrap h2.label { font-size: .7rem; }
-.sinais { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.sinais { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .sinal { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 9px; row-gap: 1px; align-items: baseline; padding: 8px 10px 8px 12px; border-left-width: 4px; }
 .sinal b.n { grid-row: 1 / 3; font-size: 1.45rem; align-self: center; }
 .sinal .t { grid-column: 2; font-size: .86rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -710,7 +710,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
     <!-- ===== VISÃO GERAL ===== -->
     <div class="pane" id="pane-geral" role="tabpanel">
       <section class="kpis" id="kpis" aria-label="Resumo"></section>
-      <section class="sinais-wrap" aria-labelledby="sinTit"><h2 class="label" id="sinTit">Pontos de atenção</h2><div class="sinais" id="sinais"></div></section>
+      <section class="sinais-wrap" aria-label="Pontos de atenção"><div class="sinais" id="sinais"></div></section>
       <section class="panel hier" id="hierPanel">
         <div class="panel-head"><h2>Carteira e cobertura por regional</h2><div class="tbar"><span class="label" id="hierLbl"></span><button class="btn" type="button" id="hierXlsx">Baixar Excel</button></div></div>
         <div id="hierBanner"></div>
