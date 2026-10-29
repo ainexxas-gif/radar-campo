@@ -409,6 +409,18 @@ details.qd summary { cursor: pointer; font-size: .82rem; font-weight: 700; color
 td .linkbtn[data-isentar], td .linkbtn[data-isentar-x] { font-size: .76rem; font-weight: 700; color: var(--muted); padding: 0 2px; }
 td .linkbtn[data-isentar]:hover, td .linkbtn[data-isentar-x]:hover { color: var(--brand); }
 #excBusca { flex: 1 1 280px; }
+/* primeiro acesso: destaque do botão de vídeo */
+.coach { position: fixed; inset: 0; z-index: 95; }
+.coach-luz { position: fixed; border-radius: 999px; box-shadow: 0 0 0 9999px rgba(0, 20, 45, .62); outline: 3px solid var(--eyebrow); outline-offset: 2px; pointer-events: none; animation: coachPulso 1.6s ease-out infinite; }
+@keyframes coachPulso { 0% { outline-offset: 2px; outline-color: rgba(93,178,0,1); } 100% { outline-offset: 12px; outline-color: rgba(93,178,0,0); } }
+.coach-balao { position: fixed; width: min(340px, calc(100vw - 32px)); background: var(--surface); color: var(--text); border-radius: 10px; box-shadow: var(--shadow); padding: 16px 18px; display: grid; gap: 8px; border-top: 4px solid var(--eyebrow); animation: coachEntra .35s ease-out; }
+@keyframes coachEntra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.coach-balao .eyebrow { color: var(--ok-ink); }
+.coach-balao h2 { font-size: 1.15rem; color: var(--ink); }
+.coach-balao p { font-size: .92rem; }
+.coach-balao .m-pe { justify-content: flex-end; margin-top: 4px; }
+.coach-seta { position: absolute; top: -12px; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 9px solid var(--eyebrow); }
+@media (prefers-reduced-motion: reduce) { .coach-luz, .coach-balao { animation: none; } }
 /* anotações */
 .nbadge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; border-radius: 999px; background: var(--hdr); color: #fff; font-size: .72rem; }
 .nbtn { white-space: nowrap; }
@@ -920,6 +932,17 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <button class="btn primary" type="submit" id="uSalvar">Salvar</button>
       </div>
     </form>
+  </div>
+</div>
+<!-- primeiro acesso: destaque apontando para o vídeo -->
+<div class="coach" id="coach" hidden>
+  <div class="coach-luz" id="coachLuz" aria-hidden="true"></div>
+  <div class="coach-balao" id="coachBalao" role="dialog" aria-modal="true" aria-labelledby="coachTit">
+    <span class="coach-seta" id="coachSeta" aria-hidden="true"></span>
+    <span class="eyebrow">Primeiro acesso</span>
+    <h2 id="coachTit">Olá! Comece pelo tour de 3 minutos</h2>
+    <p>Este botão abre um vídeo que mostra como usar cada aba do painel. Ele fica sempre aqui no alto, para quando precisar.</p>
+    <div class="m-pe"><button class="btn" type="button" id="coachDepois">Ver depois</button><button class="btn primary" type="button" id="coachVer">Assistir agora</button></div>
   </div>
 </div>
 <!-- modal: vídeo de apresentação -->
@@ -2382,6 +2405,26 @@ async function entrou(conta) {
   carregarBase(state.raw);
   telas("app"); selPane(location.hash.slice(1) || "geral");
   if (conta.perfil === "gerente" && !conta.regionais.length) toast("Nenhuma regional liberada", "Peça ao administrador para atribuir as regionais da sua equipe.");
+  if (!store.get("rc_tour_" + conta.id, false)) setTimeout(mostrarCoach, 900);
+}
+/* ---------- primeiro acesso: aponta para o botão do vídeo (uma vez por usuário, por navegador) ---------- */
+function posicionarCoach() {
+  const r = $("btnAjuda").getBoundingClientRect(), luz = $("coachLuz"), bal = $("coachBalao"), seta = $("coachSeta");
+  Object.assign(luz.style, { left: r.left - 4 + "px", top: r.top - 4 + "px", width: r.width + 8 + "px", height: r.height + 8 + "px" });
+  const w = bal.offsetWidth, x = Math.max(16, Math.min(innerWidth - w - 16, r.left + r.width / 2 - w / 2));
+  Object.assign(bal.style, { left: x + "px", top: r.bottom + 16 + "px" });
+  seta.style.left = Math.max(14, Math.min(w - 34, r.left + r.width / 2 - x - 10)) + "px";
+}
+function mostrarCoach() {
+  if ($("app").hidden || !$("mVideo").hidden) return;
+  scrollTo({ top: 0 }); $("coach").hidden = false; posicionarCoach(); $("coachVer").focus();
+  addEventListener("resize", posicionarCoach);
+}
+function fecharCoach(assistir) {
+  if ($("coach").hidden) return;
+  $("coach").hidden = true; removeEventListener("resize", posicionarCoach);
+  if (state.conta) store.set("rc_tour_" + state.conta.id, true);
+  if (assistir) $("btnAjuda").click();
 }
 function carregarBase(raw) {
   state.db = montarBase(raw.rawV, raw.rawA, raw.meta);
@@ -2550,6 +2593,11 @@ function ligarEventos() {
   $("excAdd").addEventListener("click", () => { const n = $("excBusca").value.trim(); const ok = [...new Set(state.db.visits.map((v) => v.consultor))].find((x) => norm(x) === norm(n)); if (!ok) { toast("Nome não encontrado", "Escolha um nome da lista que aparece ao digitar."); return; } $("excBusca").value = ""; abrirIsentar(ok); });
   $("acPer").addEventListener("click", (e) => { const b = e.target.closest("[data-d]"); if (!b) return; acs.dias = +b.dataset.d; $("acPer").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderAcessos(); });
   $("acAdm").addEventListener("change", (e) => { acs.admins = e.target.checked; renderAcessos(); });
+  $("coachVer").addEventListener("click", () => fecharCoach(true));
+  $("coachDepois").addEventListener("click", () => fecharCoach(false));
+  $("coach").addEventListener("click", (e) => { if (e.target === $("coach")) fecharCoach(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharCoach(false); });
+  $("btnAjuda").addEventListener("click", () => { if (state.conta) store.set("rc_tour_" + state.conta.id, true); });
   $("btnAjuda").addEventListener("click", () => { abrirModal("mVideo"); const v = $("vTour"); v.volume = 0.5; v.play?.().catch(() => {}); });
   $("vTour").addEventListener("error", () => { $("vErr").hidden = false; }, true);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("vTour").pause(); });
