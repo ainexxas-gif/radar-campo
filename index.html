@@ -502,7 +502,7 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 .bi-trilha button.on { color: var(--ink); font-size: 1.15rem; }
 .bi-trilha .sep { color: var(--muted); }
 .bi-trilha .note { margin-left: 8px; }
-.bi { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.bi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 14px; align-items: stretch; }
 .bi-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-content: start; }
 .bk { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 8px; padding: 9px 11px; display: grid; gap: 2px; align-content: start; min-height: 104px; }
 .bk .label { font-size: .64rem; line-height: 1.25; min-height: 2.5em; }
@@ -513,18 +513,23 @@ tr.aberto > td .hx { transform: rotate(90deg); }
 .bk.ok { border-top-color: var(--ok); } .bk.red { border-top-color: var(--red); } .bk.red b { color: var(--red); } .bk.amb { border-top-color: var(--amb); }
 .bi-eq { min-width: 0; }
 .bi-eq .tbl-wrap { height: 100%; max-height: 236px; overflow: auto; }
-.bi-eq-t th, .bi-eq-t td { padding: 5px 8px; font-size: .84rem; }
-.bi-eq-t th { text-align: center; } .bi-eq-t th:first-child { text-align: left; }
+.bi-eq-t th, .bi-eq-t td { padding: 5px 6px; font-size: .84rem; }
+.bi-eq-t th { font-size: .62rem; }
+.bi-eq-t th { text-align: center; line-height: 1.2; vertical-align: middle; } .bi-eq-t th:first-child { text-align: left; }
 .bi-eq-t td.n { text-align: center; }
 .bi-eq-t tr[data-bisel] { cursor: pointer; }
 .bi-eq-t tr.bi-r td { background: var(--card); }
-.bi-eq-t tr.bi-c td:first-child { padding-left: 34px; }
+.bi-eq-t tr.bi-c td:first-child { padding-left: 30px; white-space: nowrap; }
+.bi-cn { display: inline-block; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.bi-eq-t tr.bi-r td:first-child { white-space: nowrap; }
 .bi-eq-t tr.sel td { background: var(--info-bg) !important; box-shadow: inset 0 1px 0 var(--brand-2), inset 0 -1px 0 var(--brand-2); }
 .bi-eq-t tr[data-bisel]:hover td { background: var(--info-bg); }
 .bi-eq-t tfoot td { position: sticky; bottom: 0; background: var(--hdr); color: #fff; font-weight: 700; border: 0; }
 .bi-eq-t tfoot td b, .bi-eq-t tfoot .hn { color: #fff; }
 .bi-eq-t tfoot tr.sel td { background: var(--brand-2) !important; box-shadow: none; }
-.bx { border: 0; background: none; color: var(--brand); cursor: pointer; font-size: .95rem; width: 22px; padding: 0; margin-right: 4px; line-height: 1; }
+.bxb { border: 0; background: none; color: var(--brand); cursor: pointer; font-size: .8rem; width: 20px; height: 20px; padding: 0; margin-right: 4px; line-height: 1; display: inline-grid; place-items: center; border-radius: 4px; transition: transform .15s; vertical-align: 1px; }
+.bxb:hover { background: var(--info-bg); }
+.bxb[aria-expanded="true"] { transform: rotate(90deg); }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-left: 3px; background: var(--neutro); }
 .dot.ok { background: var(--ok); } .dot.amb { background: var(--amb); } .dot.red { background: var(--red); }
 .bi-det .tbar input[type=search] { flex: 0 1 320px; }
@@ -783,10 +788,10 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <div class="tbar hier-bar">
           <input type="search" id="hierBusca" placeholder="Buscar regional ou consultor" aria-label="Buscar regional ou consultor">
           <button class="btn sm" type="button" id="hierAbrir">Abrir todas</button><button class="btn sm" type="button" id="hierFechar">Fechar todas</button>
-          <span class="legend hier-leg"><span><i class="sw cg"></i>Cobertura 80%+</span><span><i class="sw ca"></i>50 a 79%</span><span><i class="sw cr"></i>abaixo de 50%</span></span>
+          <span class="legend hier-leg"><span><i class="sw cg"></i>Taxa 80%+</span><span><i class="sw ca"></i>50 a 79%</span><span><i class="sw cr"></i>abaixo de 50%</span></span>
         </div>
         <div class="tbl-wrap hier-wrap"><table class="hier-t" id="tHier"></table></div>
-        <p class="note">Clique numa regional para ver os consultores; clique num consultor para ver as contas (não visitadas, visitadas e fora da carteira). A carteira é contada por <b>conta crédito</b>: os clientes vinculados contam como um só, e uma visita a qualquer vínculo vale para a conta. Visitada = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Clique no título de uma coluna para ordenar todos os níveis.</p>
+        <p class="note">Clique numa regional para ver os consultores; clique num consultor para ver os clientes (não visitados, visitados e fora da carteira). Cada cliente é contado pela <b>conta crédito</b>: os vínculos contam como um só, e uma visita a qualquer vínculo vale para o cliente. Visitado = pelo menos uma visita realizada no período escolhido, por qualquer consultor. Clique no título de uma coluna para ordenar todos os níveis.</p>
       </section>
       <section class="panel">
         <div class="panel-head"><h2>Visitas realizadas por dia</h2><span class="label" id="trendLbl"></span></div>
@@ -823,10 +828,10 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       </div>
       <section class="panel bi-det">
         <div class="panel-head"><h2>Detalhamento de clientes</h2><div class="tbar"><span class="label" id="biDetLbl"></span>
-          <div class="seg2" id="biMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Não visitadas</button><button type="button" data-m="vis">Visitadas</button></div></div></div>
-        <div class="tbar"><input type="search" id="biBusca" placeholder="Buscar conta, cliente ou município" aria-label="Buscar no detalhamento"><span class="legend"><span><i class="sw cg"></i>até 7 dias</span><span><i class="sw ca"></i>8 a 30</span><span><i class="sw cr"></i>mais de 30 ou nunca</span></span></div>
+          <div class="seg2" id="biMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Não visitados</button><button type="button" data-m="vis">Visitados</button></div></div></div>
+        <div class="tbar"><input type="search" id="biBusca" placeholder="Buscar cliente, conta crédito ou município" aria-label="Buscar no detalhamento"><span class="legend"><span><i class="sw cg"></i>até 7 dias</span><span><i class="sw ca"></i>8 a 30</span><span><i class="sw cr"></i>mais de 30 ou nunca</span></span></div>
         <div class="tbl-wrap bi-det-w"><table class="bi-det-t" id="biDet"></table></div>
-        <p class="note">Uma linha por conta crédito (vínculos juntos). ⊞ abre as últimas visitas com o texto do consultor; clicar no nome abre o histórico completo. Questionário = pelo menos uma visita do período com questionário respondido. Intenção e área vêm do último questionário da conta.</p>
+        <p class="note">Um cliente por linha, pela conta crédito (os vínculos já vêm juntos). A setinha ▸ abre as últimas visitas com o texto do consultor; clicar no nome abre o histórico completo. Questionário = pelo menos uma visita do período com questionário respondido. Intenção e área vêm do último questionário do cliente.</p>
       </section>
     </div>
 
@@ -1659,7 +1664,7 @@ function renderGeral() {
   const comQ = ok.filter((v) => v.sv).length;
   $("kpis").innerHTML =
     kpi("Visitas realizadas", fmtN(ok.length), `<b>${fmtN(ok.length / Math.max(1, ativos) / Math.max(1, uteis), 1)}</b> por consultor ativo por dia útil`) +
-    (state.db.cart ? (() => { const T = hierarquia().total; return kpi("Cobertura da carteira", fmtP(T.cob || 0), `<b>${fmtN(T.vis)}</b> de ${fmtN(T.carteira)} contas crédito visitadas · ${fmtN(T.fora)} fora da carteira`, (T.cob || 0) < 0.5 ? "alert" : (T.cob || 0) < 0.8 ? "warn" : ""); })()
+    (state.db.cart ? (() => { const T = hierarquia().total; return kpi("Cobertura da carteira", fmtP(T.cob || 0), `<b>${fmtN(T.vis)}</b> de ${fmtN(T.carteira)} clientes visitados · ${fmtN(T.fora)} fora da carteira`, (T.cob || 0) < 0.5 ? "alert" : (T.cob || 0) < 0.8 ? "warn" : ""); })()
       : kpi("Clientes visitados", fmtN(new Set(ok.map((v) => v.cid)).size), `de <b>${fmtN(cli.length)}</b> clientes com histórico`)) +
     kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(consC.length)}</small>`, `<b>${fmtN(consC.length - ativos)}</b> sem visita realizada no período${cons.length > consC.length ? ` · ${fmtN(cons.length - consC.length)} fora da cobrança` : ""}`, consC.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
     kpi("Abertas em atraso", fmtN(atr.length), `planejadas antes de ${fmtDia(hoje)} e não realizadas`, atr.length ? "alert clk" : "clk", 'data-go="agenda"') +
@@ -1759,11 +1764,11 @@ const cobCel = (x) => (x == null ? `<span class="note">—</span>` : `<span clas
 const HGRUPOS = { "Carteira": "por conta crédito", "Visitas": "no período escolhido", "Equipe": "consultores e agenda", "Registro": "qualidade no app" };
 const HCOLS = [
   { k: "nome", l: "Regional › Consultor › Cliente", g: "" },
-  { k: "carteira", l: "Contas", g: "Carteira", n: 1, t: "Contas crédito na carteira. Os clientes vinculados a uma conta contam como um só" },
-  { k: "vis", l: "Visitadas", g: "Carteira", n: 1, t: "Contas com pelo menos uma visita realizada no período, em qualquer cliente vinculado" },
-  { k: "nao", l: "Não<br>visitadas", g: "Carteira", n: 1, t: "Contas da carteira sem nenhuma visita realizada no período" },
-  { k: "cob", l: "Cobertura", g: "Carteira", n: 1, t: "Contas visitadas ÷ contas da carteira" },
-  { k: "fora", l: "Fora da<br>carteira", g: "Carteira", n: 1, t: "Contas visitadas pelo consultor que não são da carteira dele" },
+  { k: "carteira", l: "Clientes", g: "Carteira", n: 1, t: "Clientes na carteira, contados pela conta crédito (os vínculos contam como um só)" },
+  { k: "vis", l: "Visitados", g: "Carteira", n: 1, t: "Clientes com pelo menos uma visita realizada no período (em qualquer vínculo)" },
+  { k: "nao", l: "Não<br>visitados", g: "Carteira", n: 1, t: "Clientes da carteira sem nenhuma visita realizada no período" },
+  { k: "cob", l: "Taxa", g: "Carteira", n: 1, t: "Clientes visitados ÷ clientes da carteira" },
+  { k: "fora", l: "Fora da<br>carteira", g: "Carteira", n: 1, t: "Clientes visitados pelo consultor que não são da carteira dele" },
   { k: "visitas", l: "Realizadas", g: "Visitas", n: 1, t: "Visitas realizadas no período" },
   { k: "porCons", l: "Por<br>dia útil", g: "Visitas", n: 1, t: "Visitas por consultor ativo por dia útil" },
   { k: "ult", l: "Última", g: "Visitas", n: 1, t: "Data da visita realizada mais recente" },
@@ -1795,7 +1800,7 @@ function renderHier() {
   const temCart = H.temCart;
   $("hierBanner").innerHTML = !temCart ? `<p class="banner">A <b>carteira de clientes</b> ainda não foi carregada: as colunas de carteira ficam vazias. Carregue a base em <b>Administração › Atualizar as bases</b>.</p>`
     : H.exemplo ? `<p class="banner">Carteira <b>de exemplo</b>, montada a partir das visitas (cada cliente com o consultor que mais o visitou). Com a base real da carteira, aparecem também os clientes que nunca receberam visita.</p>` : "";
-  $("hierLbl").textContent = temCart ? `${fmtN(H.total.carteira)} contas crédito na carteira · cobertura ${fmtP(H.total.cob || 0)}` : `${plural(H.regs.length, "regional", "regionais")}`;
+  $("hierLbl").textContent = temCart ? `${fmtN(H.total.carteira)} clientes na carteira · taxa de visitados ${fmtP(H.total.cob || 0)}` : `${plural(H.regs.length, "regional", "regionais")}`;
   const o = h.ord, ncol = HCOLS.length;
   const grupos = []; for (const c of HCOLS) { const g = grupos[grupos.length - 1]; if (g && g.g === c.g) g.n++; else grupos.push({ g: c.g, n: 1 }); }
   let html = `<thead><tr class="hg">${grupos.map((g, i) => `<th colspan="${g.n}" class="${i ? "gi" : "stk"}">${g.g ? `<b>${esc(g.g)}</b><small>${esc(HGRUPOS[g.g] || "")}</small>` : ""}</th>`).join("")}</tr>
@@ -1810,7 +1815,7 @@ function renderHier() {
     for (const c of hOrd(r.consV)) {
       const ca = h.consAbertos.has(c.nome);
       html += `<tr class="h-cons ${ca ? "aberto" : ""}" data-hcons="${esc(c.nome)}" tabindex="0" aria-expanded="${ca}">
-        <td class="stk"><span class="hx" aria-hidden="true">▸</span><b>${esc(titulo(c.nome))}</b><span class="sub">${c.carteira ? `${fmtN(c.carteira)} contas na carteira` : "sem carteira"} · <button type="button" class="linkbtn hf" data-cons="${esc(c.nome)}">ver o mês</button> · <button type="button" class="linkbtn hf" data-nota="${esc(c.nome)}">${notasDe(c.nome).length ? `anotações (${notasDe(c.nome).length})` : "anotar"}</button></span></td>${hCelulas(c)}</tr>`;
+        <td class="stk"><span class="hx" aria-hidden="true">▸</span><b>${esc(titulo(c.nome))}</b><span class="sub">${c.carteira ? `${fmtN(c.carteira)} clientes na carteira` : "sem carteira"} · <button type="button" class="linkbtn hf" data-cons="${esc(c.nome)}">ver o mês</button> · <button type="button" class="linkbtn hf" data-nota="${esc(c.nome)}">${notasDe(c.nome).length ? `anotações (${notasDe(c.nome).length})` : "anotar"}</button></span></td>${hCelulas(c)}</tr>`;
       if (ca) html += `<tr class="h-cli"><td colspan="${ncol}">${painelClientes(c)}</td></tr>`;
     }
   }
@@ -1854,28 +1859,29 @@ function renderCarteira() {
   const contas = S.cons.flatMap(doCons), fora = S.cons.flatMap((c) => c.clientes.fora.map((x) => ({ ...x, st: "fora", consultor: c.nome })));
   const quentes = contas.concat(fora).filter((x) => sinaisConta(x).intencao === "Alta");
   const areaOp = contas.concat(fora).filter((x) => /Alta|Média/.test(sinaisConta(x).intencao || "")).reduce((s, x) => s + (sinaisConta(x).area || 0), 0);
+  const visFora = fora.reduce((t, x) => t + (x.n || 0), 0);
   const delta = ant && ant.carteira && ant.cob != null && N.cob != null ? N.cob - ant.cob : null;
   const tile = (l, v, s = "", cls = "") => `<div class="bk ${cls}"><span class="label">${l}</span><b>${v}</b>${s ? `<span class="s">${s}</span>` : ""}</div>`;
   $("biKpis").innerHTML =
     tile("Total de visitas", fmtN(N.visitas), `${fmtN(N.porCons, 1)} por consultor por dia útil`) +
-    (temCart ? tile("Contas da carteira visitadas", fmtN(N.vis), `de ${fmtN(N.carteira)} contas na carteira`, "ok") +
-      tile("Contas pendentes", fmtN(N.nao), `${fmtN(N.nunca)} nunca visitadas`, N.nao ? "red" : "") +
-      tile("Taxa de contas visitadas", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
-      : tile("Contas da carteira", "—", "carteira não carregada")) +
-    tile("Visitas fora da carteira", fmtN(N.fora), "contas visitadas de outras carteiras") +
-    tile("Intenção de compra alta", fmtN(quentes.length), "contas, pelo último questionário", quentes.length ? "ok" : "") +
+    (temCart ? tile("Clientes da carteira visitados", fmtN(N.vis), `de ${fmtN(N.carteira)} clientes na carteira`, "ok") +
+      tile("Clientes não visitados", fmtN(N.nao), `${fmtN(N.nunca)} nunca visitados`, N.nao ? "red" : "") +
+      tile("Taxa de clientes visitados", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
+      : tile("Clientes da carteira", "—", "carteira não carregada")) +
+    tile("Visitas fora da carteira", fmtN(visFora), "visitas a clientes de outras carteiras") +
+    tile("Intenção de compra alta", fmtN(quentes.length), "clientes, pelo último questionário", quentes.length ? "ok" : "") +
     tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média") +
-    tile("Visitas em atraso", fmtN(N.atr), "planejadas e não feitas", N.atr ? "amb" : "");
+    tile("Clientes fora da carteira", fmtN(N.fora), "visitados, mas da carteira de outro consultor ou sem carteira");
   // equipe
   const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
-  const cel = (x) => `<td class="n">${fmtN(x.visitas)}</td><td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart && x.cob != null ? `${fmtP(x.cob)} ${dot(x.cob)}` : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${fmtN(x.fora)}</td>`;
+  const cel = (x) => `<td class="n">${fmtN(x.visitas)}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart && x.cob != null ? `${fmtP(x.cob)} ${dot(x.cob)}` : "—"}</td><td class="n">${fmtN(x.fora)}</td>`;
   const regs = H.regs.slice().sort((a, c) => a.nome.localeCompare(c.nome, "pt-BR"));
-  let eq = `<thead><tr><th>Equipe</th><th class="n" title="Visitas realizadas no período">Visitas</th><th class="n" title="Contas crédito na carteira">Contas</th><th class="n" title="Contas visitadas ÷ contas da carteira">Taxa visitadas</th><th class="n" title="Contas da carteira sem visita no período">Pendentes</th><th class="n" title="Contas visitadas fora da carteira">Fora</th></tr></thead><tbody>`;
+  let eq = `<thead><tr><th>Equipe</th><th class="n" title="Visitas realizadas no período">Qtd<br>visitas</th><th class="n" title="Clientes da carteira com pelo menos uma visita no período">Clientes<br>visitados</th><th class="n" title="Clientes na carteira (por conta crédito)">Carteira</th><th class="n" title="Clientes da carteira sem visita no período">Clientes não<br>visitados</th><th class="n" title="Clientes visitados ÷ carteira">Taxa</th><th class="n" title="Clientes visitados que não são da carteira">Clientes fora<br>carteira</th></tr></thead><tbody>`;
   for (const r of regs) {
     const ab = b.abertos.has(r.nome) || (S.reg && S.reg.nome === r.nome);
-    eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bx" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}">${ab ? "⊟" : "⊞"}</button><b>${esc(r.nome)}</b></td>${cel(r)}</tr>`;
+    eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bxb" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}" aria-expanded="${ab}">▸</button><b class="bi-cn" title="${esc(r.nome)}">${esc(r.nome)}</b></td>${cel(r)}</tr>`;
     if (ab) for (const c of r.cons.slice().sort((a, c2) => a.nome.localeCompare(c2.nome, "pt-BR")))
-      eq += `<tr class="bi-c ${t.t === "cons" && t.n === c.nome ? "sel" : ""}" data-bisel="cons" data-n="${esc(c.nome)}" tabindex="0"><td>${esc(titulo(c.nome))}${c.sit === "isento" ? ` <span class="chip ch-info">${esc(c.isento)}</span>` : ""}</td>${cel(c)}</tr>`;
+      eq += `<tr class="bi-c ${t.t === "cons" && t.n === c.nome ? "sel" : ""}" data-bisel="cons" data-n="${esc(c.nome)}" tabindex="0"><td><span class="bi-cn" title="${esc(titulo(c.nome))}">${esc(titulo(c.nome))}</span>${c.sit === "isento" ? ` <span class="chip ch-info">${esc(c.isento)}</span>` : ""}</td>${cel(c)}</tr>`;
   }
   eq += `</tbody><tfoot><tr class="bi-t ${t.t === "all" ? "sel" : ""}" data-bisel="all" tabindex="0"><td><b>Total</b></td>${cel(H.total)}</tr></tfoot>`;
   $("biEquipe").innerHTML = eq;
@@ -1888,15 +1894,15 @@ function renderBiDet(contas, fora, multi) {
   const val = (x) => { const s = sinaisConta(x); return o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ult ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
   const ordena = (l) => [...l].sort((x, y) => { const p = val(x), r = val(y); return (typeof p === "string" ? p.localeCompare(r, "pt-BR") : p - r) * o.d || norm(x.nome).localeCompare(norm(y.nome)); });
   const cart = ordena(contas.filter((x) => (b.mostra === "todas" || x.st === b.mostra) && casaB(x))), fr = b.mostra === "todas" ? ordena(fora.filter(casaB)) : [];
-  $("biDetLbl").textContent = `${fmtN(contas.length)} contas na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitadas · ${fmtN(fora.length)} fora`;
+  $("biDetLbl").textContent = `${fmtN(contas.length)} clientes na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitados · ${fmtN(fora.length)} fora da carteira`;
   $("biMostra").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.m === b.mostra)));
-  const cols = [["nome", "Conta / cliente"], ["st", "Visitada"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
+  const cols = [["nome", "Cliente"], ["st", "Visitado"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
   const nc = cols.length;
   const ok = (v) => v ? `<span class="ck ok" aria-label="sim">✓</span>` : `<span class="ck no" aria-label="não">✕</span>`;
   const diasCls = (x) => x.dias == null || x.dias > 30 ? "d-red" : x.dias > 7 ? "d-amb" : "d-ok";
   const linha = (x) => {
     const s = sinaisConta(x), aberto = b.cliAbertos.has(x.k + x.st);
-    let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bx" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas">${aberto ? "⊟" : "⊞"}</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
+    let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bxb" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas" aria-expanded="${aberto}">▸</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
       <td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
       <td class="n ${diasCls(x)}">${x.dias == null ? "nunca" : fmtN(x.dias)}</td><td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
       <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td>${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
@@ -1908,7 +1914,7 @@ function renderBiDet(contas, fora, multi) {
   };
   const grupo = (id, titulo0, l, lim) => {
     const fech = b.grpFechados.has(id), vl = l.slice(0, lim);
-    return `<tr class="bi-g"><td colspan="${nc}"><button type="button" class="bx" data-bigrp="${id}">${fech ? "⊞" : "⊟"}</button><b>${titulo0}</b> <span class="note">${fmtN(l.length)} conta${l.length === 1 ? "" : "s"}</span></td></tr>` +
+    return `<tr class="bi-g"><td colspan="${nc}"><button type="button" class="bxb" data-bigrp="${id}" aria-expanded="${!fech}">▸</button><b>${titulo0}</b> <span class="note">${fmtN(l.length)} cliente${l.length === 1 ? "" : "s"}</span></td></tr>` +
       (fech ? "" : vl.map(linha).join("") + (l.length > lim ? `<tr><td colspan="${nc}" class="n"><button type="button" class="btn sm" data-bimais="${id}">Mostrar mais ${fmtN(Math.min(l.length - lim, 300))} de ${fmtN(l.length - lim)}</button></td></tr>` : ""));
   };
   $("biDet").innerHTML = `<thead><tr>${cols.map(([k, l], i) => `<th class="s ${i ? "n" : ""}" data-biord="${k}" tabindex="0" ${o.k === k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${o.k === k ? ` <span class="ord">${o.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`).join("")}</tr></thead><tbody>
@@ -1928,7 +1934,7 @@ function exportarCarteiraCons() {
   catch { toast("Não consegui baixar", "Este visualizador bloqueia downloads. Na versão publicada o Excel baixa normalmente."); }
 }
 
-const ABAS_CLI = [["nao", "Não visitadas"], ["vis", "Visitadas"], ["fora", "Fora da carteira"]];
+const ABAS_CLI = [["nao", "Não visitados"], ["vis", "Visitados"], ["fora", "Fora da carteira"]];
 function painelClientes(c) {
   const h = state.hier, temCart = !!state.db.cart;
   let aba = h.aba.get(c.nome) || (temCart && c.clientes.nao.length ? "nao" : temCart && c.clientes.vis.length ? "vis" : "fora");
@@ -1941,15 +1947,15 @@ function painelClientes(c) {
   const sinal = (x) => { const cl = state.db.clientes.get(x.cid); return cl ? tagsSinais(ultimosSinais(cl.vis.filter(visivel)), 2) : "—"; };
   const vinc = (x) => x.nVinc > 1 ? ` · <span class="vinc" title="${esc(x.nomes.map(titulo).join("\n"))}">${x.nVinc} vínculos</span>` : "";
   const nomeCel = (x) => `<b>${esc(titulo(x.nome))}</b><span class="sub">${x.conta ? `Conta <span class="mono">${esc(x.conta)}</span>` : `<span class="mono">${esc(x.cid)}</span>`}${vinc(x)}${x.local ? " · " + esc(x.local) + (x.uf ? "/" + esc(x.uf) : "") : ""}</span>`;
-  const cab = aba === "nao" ? ["Conta crédito", "Dias sem visita", "Última visita", "Próxima planejada", "Último sinal do campo"]
-    : aba === "vis" ? ["Conta crédito", "Visitas no período", "Última visita", "Visitado por", "Último sinal do campo"] : ["Conta crédito", "Carteira de", "Visitas no período", "Última visita", "Último sinal do campo"];
+  const cab = aba === "nao" ? ["Cliente", "Dias sem visita", "Última visita", "Próxima planejada", "Último sinal do campo"]
+    : aba === "vis" ? ["Cliente", "Visitas no período", "Última visita", "Visitado por", "Último sinal do campo"] : ["Cliente", "Carteira de", "Visitas no período", "Última visita", "Último sinal do campo"];
   const lin = lst.map((x) => `<tr class="clk" data-cli="${esc(x.cid)}" tabindex="0">${(aba === "nao" ? [nomeCel(x), diasChip(x), ult(x), prox(x), sinal(x)]
     : aba === "vis" ? [nomeCel(x), fmtN(x.nPer), ult(x), esc(x.por.map(titulo).join(", ")), sinal(x)]
     : [nomeCel(x), x.dono ? esc(titulo(x.dono)) : `<span class="chip ch-neu">sem carteira</span>`, fmtN(x.n), ult(x), sinal(x)]).map((v) => `<td>${v}</td>`).join("")}</tr>`).join("");
   return `<div class="hcli">
     <div class="hcli-h"><div class="seg2" role="tablist">${ABAS_CLI.map(([k, l]) => `<button type="button" data-haba="${k}" data-hc="${esc(c.nome)}" aria-pressed="${aba === k}" ${!temCart && k !== "fora" ? "disabled" : ""}>${l} <small>${fmtN(c.clientes[k].length)}</small></button>`).join("")}</div>
-      <span class="note">${aba === "nao" ? "Ordem: há mais tempo sem visita primeiro. Uma visita a qualquer cliente vinculado conta para a conta." : aba === "vis" ? "Visitadas no período por qualquer consultor." : "Contas que ele visitou e que não são da carteira dele."}</span></div>
-    ${L.length ? `<div class="tbl-wrap"><table class="hcli-t"><thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` : `<p class="empty">${aba === "nao" ? "Todas as contas da carteira foram visitadas no período. 👏" : "Nenhum cliente nesta lista."}</p>`}
+      <span class="note">${aba === "nao" ? "Ordem: há mais tempo sem visita primeiro. Uma visita a qualquer vínculo conta para o cliente." : aba === "vis" ? "Visitados no período por qualquer consultor." : "Clientes que ele visitou e que não são da carteira dele."}</span></div>
+    ${L.length ? `<div class="tbl-wrap"><table class="hcli-t"><thead><tr>${cab.map((x) => `<th>${x}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table></div>` : `<p class="empty">${aba === "nao" ? "Todos os clientes da carteira foram visitados no período. 👏" : "Nenhum cliente nesta lista."}</p>`}
     ${L.length > lim ? `<button type="button" class="btn sm" data-htudo="${esc(c.nome + aba)}">Mostrar todos (${fmtN(L.length)})</button>` : ""}</div>`;
 }
 function exportarHier() {
