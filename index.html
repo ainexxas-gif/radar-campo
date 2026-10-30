@@ -1041,6 +1041,12 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <div class="tbl-wrap"><table id="tExc"></table></div>
       </section>
       <section class="panel">
+        <div class="panel-head"><h2>Regionais ocultas</h2><span class="label" id="ocLbl"></span></div>
+        <p class="lead">Regionais ou canais que não usam o app (como o Telemarketing) saem do painel inteiro, para todos os usuários: visitas, carteira, consultores e filtros. Os dados continuam guardados; é só clicar em <b>Mostrar de novo</b>.</p>
+        <div class="tbar"><input type="search" id="ocBusca" list="ocOpcoes" placeholder="Regional ou canal para ocultar" aria-label="Regional para ocultar"><datalist id="ocOpcoes"></datalist><button class="btn" type="button" id="ocAdd">Ocultar</button></div>
+        <div class="tbl-wrap"><table id="tOc"></table></div>
+      </section>
+      <section class="panel">
         <div class="panel-head"><h2>Regiões de cada gerente</h2><div class="tbar"><span class="label" id="atrLbl"></span><button class="btn primary" type="button" id="atrSalvar" disabled>Salvar alterações</button></div></div>
         <p class="lead">Marque as regionais que cada gerente enxerga. É a equipe dele: o painel inteiro (números, mapa, clientes, agenda) passa a mostrar só essas regionais para ele. Admin e diretoria veem tudo.</p>
         <div class="tbl-wrap tall"><table class="atr" id="tAtr"></table></div>
@@ -1126,7 +1132,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 <div class="modal" id="mVideo" hidden>
   <div class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="vTit">
     <div class="panel-head"><div><h2 id="vTit">Como funciona o Radar de Campo</h2><span class="label">tour de 4 minutos, com legendas</span></div><button class="hbtn ico" type="button" data-fechar aria-label="Fechar">✕</button></div>
-    <div class="m-corpo"><video id="vTour" controls playsinline preload="none" poster="tour.jpg?v=2"><source src="tour.mp4?v=2" type="video/mp4"></video>
+    <div class="m-corpo"><video id="vTour" controls playsinline preload="none" poster="tour.jpg?v=3"><source src="tour.mp4?v=3" type="video/mp4"></video>
       <p class="note" id="vErr" hidden>O vídeo não está disponível neste endereço. Na versão publicada, o arquivo tour.mp4 fica junto do index.html.</p></div>
   </div>
 </div>
@@ -1313,12 +1319,22 @@ function montarBase(rawV, rawA, meta, cartRaw) {
   for (const s of surveys.values()) s.k = chavesQuest(s.qa);
   const clientes = new Map(), muns = new Map(), regs = new Map();
   const geoCache = new Map();
-  const visits = rawV.map((r) => {
-    const regional = NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, codMap);
-    const grupo = regional === "Sem território" ? "Sem território" : regional === "Telemarketing" ? "Telemarketing" : grupoDe(r.terr);
+  // regional de cada visita = regional do CONSULTOR (a mais frequente dele), não a do território do cliente visitado.
+  // Assim um consultor que visita um cliente cadastrado em outro território não aparece para o gerente daquela regional.
+  const grpDe = (reg, terr) => reg === "Sem território" ? "Sem território" : reg === "Telemarketing" ? "Telemarketing" : grupoDe(terr);
+  const regTerrDe = (r) => { const x = regionalDe(r.terr, codMap); return NOME_ANTIGO[x] || x; };
+  const porResp = new Map(), grpReg = new Map();
+  for (const r of rawV) { const rg = NOME_ANTIGO[r.regional] || r.regional || regTerrDe(r); const k = r.resp || "Não informado"; (porResp.get(k) || porResp.set(k, []).get(k)).push(rg); const rt = regTerrDe(r); if (!grpReg.has(rt)) grpReg.set(rt, grpDe(rt, r.terr)); }
+  const casa = new Map([...porResp].map(([k, l]) => [k, moda(l)]));
+  const oc = state.ocultas || new Set(), todas = new Map();
+  const visits = rawV.flatMap((r) => {
+    const regTerr = regTerrDe(r), regional = casa.get(r.resp || "Não informado") || regTerr;
+    const grupo = grpReg.get(regional) || grpDe(regional, r.terr);
+    if (!todas.has(regional)) todas.set(regional, grupo);
+    if (oc.has(regional) || oc.has(grupo)) return [];
     if (!regs.has(regional)) regs.set(regional, grupo);
-    const gk = r.terr + "|" + regional;
-    if (!geoCache.has(gk)) geoCache.set(gk, geocodificar(r.terr, regional));
+    const gk = r.terr + "|" + regTerr;
+    if (!geoCache.has(gk)) geoCache.set(gk, geocodificar(r.terr, regTerr));
     const g = geoCache.get(gk);
     let munK = null;
     if (g) { munK = g.nome + "/" + g.uf; if (!muns.has(munK)) muns.set(munK, { k: munK, nome: g.nome, uf: g.uf, lat: g.lat, lon: g.lon, nivel: g.nivel }); else if (g.nivel === "território") muns.get(munK).nivel = "território"; }
@@ -1326,16 +1342,16 @@ function montarBase(rawV, rawA, meta, cartRaw) {
     if (!clientes.has(r.cid)) clientes.set(r.cid, { cid: r.cid, nome: r.cliente, vis: [] });
     const dur = r.ck != null && r.co != null ? r.co - r.ck : null;
     const v = { id: r.id, tipo: r.tipo || "Não informado", status: r.status, st, safra: r.safra, canal: r.canal, cid: r.cid, consultor: r.resp || "Não informado",
-      terr: r.terr || "Não atribuído", folha: terrParts(r.terr).folha, regional, grupo, munK, ini: r.ini, fim: r.fim, ck: r.ck, co: r.co,
+      terr: r.terr || "Não atribuído", folha: terrParts(r.terr).folha, regional, regTerr, grupo, munK, ini: r.ini, fim: r.fim, ck: r.ck, co: r.co,
       dia: st === "ok" && r.ck != null ? dayOf(r.ck) : dayOf(r.ini), diaPlan: dayOf(r.ini), dur, gps: r.lat != null && Math.abs(r.lat) > 0.0001,
       nanexo: r.nanexo || 0, notas: r.notas || "", criado: r.criado, sv: surveys.get(r.id) || null };
     clientes.get(r.cid).vis.push(v);
-    return v;
+    return [v];
   });
   for (const c of clientes.values()) c.vis.sort((a, b) => (a.ck ?? a.ini) - (b.ck ?? b.ini));
-  const ids = new Set(visits.map((v) => v.id));
+  const ids = new Set(rawV.map((r) => r.id));
   const orfaos = [...surveys.values()].filter((s) => !ids.has(s.vid)).length;
-  const db = { visits, clientes, muns, regs, surveys, orfaos, meta, codMap };
+  const db = { visits, clientes, muns, regs, regsTodas: todas, surveys, orfaos, meta, codMap };
   db.cart = montarCarteira(cartRaw, db);
   return db;
 }
@@ -1362,6 +1378,7 @@ function montarCarteira(raw, db) {
     const pri = rows.find((r) => kc(r.sap) === conta) || rows.find((r) => porCid.has(r.k)) || rows[0];
     const vend = moda(rows.map((r) => nomes.get(norm(r.vend)) || (r.vend ? String(r.vend).trim().toUpperCase() : "Sem vendedor")));
     const regional = moda(rows.map((r) => NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, db.codMap)));
+    { const oc = state.ocultas || new Set(), gr = db.regs.get(regional) || (regional === "Telemarketing" ? "Telemarketing" : grupoDe(pri.terr)); if (!db.regsTodas.has(regional)) db.regsTodas.set(regional, gr); if (oc.has(regional) || oc.has(gr)) continue; }
     if (!db.regs.has(regional)) db.regs.set(regional, regional === "Sem território" ? "Sem território" : grupoDe(pri.terr));
     const gk = (pri.local || "") + "|" + (pri.uf || "");
     if (!geo.has(gk)) { const g = pri.local ? acharMun(pri.local, /^[A-Z]{2}$/.test(pri.uf || "") ? pri.uf : undefined) || acharMun(pri.local) : null; geo.set(gk, g); }
@@ -1516,7 +1533,7 @@ function statsConsultores() {
     const sem = ult == null ? null : ref - ult;
     const isento = state.excecoes?.get(c.nome) || null;
     const sit = isento ? "isento" : !ok.length ? "sem" : sem >= 15 ? "parado" : sem >= 7 ? "atencao" : "ativo";
-    return { nome: c.nome, regional: moda(c.regs), terrs: [...new Set(c.terrs)], ok: ok.length, ab: c.vis.filter((v) => v.st === "ab").length,
+    return { nome: c.nome, regional: moda(c.regs), terrs: contar(c.terrs, (x) => x).map(([t]) => t), ok: ok.length, ab: c.vis.filter((v) => v.st === "ab").length,
       atr: c.todas.filter((v) => v.st === "ab" && v.diaPlan < hoje).length, cx: c.vis.filter((v) => v.st === "cx").length,
       cli: new Set(ok.map((v) => v.cid)).size, dias: dias.size, porDia: dias.size ? ok.length / dias.size : 0, porUtil: uteis ? ok.length / uteis : 0,
       quest: ok.length ? ok.filter((v) => v.sv).length / ok.length : 0, gps: ok.length ? ok.filter((v) => v.gps).length / ok.length : 0,
@@ -2017,7 +2034,7 @@ function renderEquipes() {
   renderTabCons(cons);
   // territórios
   const { per, base } = recorte(), t = new Map();
-  for (const v of base) { const k = v.terr; if (!t.has(k)) t.set(k, { terr: v.folha, regional: v.regional, mun: v.munK, ok: 0, cli: new Set(), cons: new Set(), ab: 0, ult: null }); }
+  for (const v of base) { const k = v.terr; if (!t.has(k)) t.set(k, { terr: v.folha, regional: v.regTerr || v.regional, mun: v.munK, ok: 0, cli: new Set(), cons: new Set(), ab: 0, ult: null }); }
   for (const v of per) { const r = t.get(v.terr); if (v.st === "ok") { r.ok++; r.cli.add(v.cid); r.cons.add(v.consultor); } if (v.st === "ab") r.ab++; }
   for (const v of base) if (v.st === "ok" && v.dia <= ref) { const r = t.get(v.terr); r.ult = Math.max(r.ult ?? 0, v.dia); }
   tabela("tTerr", [
@@ -2601,6 +2618,9 @@ const DemoAPI = {
   async excecoes() { return store.get("rc_excecoes", []); },
   async isentar(nome, motivo) { const a = store.get("rc_excecoes", []).filter((x) => x.nome !== nome); a.push({ nome, motivo, por: state.conta.nome, criado: Date.now() }); store.set("rc_excecoes", a); },
   async desisentar(nome) { store.set("rc_excecoes", store.get("rc_excecoes", []).filter((x) => x.nome !== nome)); },
+  async ocultas() { return store.get("rc_ocultas", [{ regional: "Telemarketing", por: "Configuração inicial", criado: Date.now() }]); },
+  async ocultar(regional) { const a = (await this.ocultas()).filter((x) => x.regional !== regional); a.push({ regional, por: state.conta.nome, criado: Date.now() }); store.set("rc_ocultas", a); },
+  async mostrar(regional) { store.set("rc_ocultas", (await this.ocultas()).filter((x) => x.regional !== regional)); },
   async criarNota(n) { const a = store.get("rc_notas", []); const nova = { ...n, id: "n" + Date.now(), autor_id: state.conta.id, autor_nome: state.conta.nome, criado: Date.now() }; a.push(nova); store.set("rc_notas", a); return nova; },
   async excluirNota(id) { store.set("rc_notas", store.get("rc_notas", []).filter((n) => n.id !== id)); },
   async resetar(id) { const u = this.usuarios.find((x) => x.id === id); u.h = await hash(SENHA_PADRAO); u.trocar = true; this.salvarTodos(); },
@@ -2661,6 +2681,13 @@ const SupaAPI = {
     if (error) throw new Error(/does not exist|could not find the table/i.test(error.message) ? "Falta rodar o excecoes.sql no Supabase." : error.message);
   },
   async desisentar(nome) { const { error } = await this.sb.from("excecoes").delete().eq("nome", nome); if (error) throw new Error(error.message); },
+  async ocultas() {
+    const { data, error } = await this.sb.from("ocultas").select("regional,por_nome,criado_em");
+    if (error) { if (/does not exist|could not find the table/i.test(error.message)) return [{ regional: "Telemarketing", por: "padrão (falta rodar o consultor_regional.sql)", semTabela: true }]; throw new Error(error.message); }
+    return data.map((x) => ({ regional: x.regional, por: x.por_nome, criado: Date.parse(x.criado_em) }));
+  },
+  async ocultar(regional) { const { error } = await this.sb.from("ocultas").upsert({ regional, por_nome: state.conta.nome }, { onConflict: "regional" }); if (error) throw new Error(/does not exist|could not find the table/i.test(error.message) ? "Falta rodar o consultor_regional.sql no Supabase." : error.message); },
+  async mostrar(regional) { const { error } = await this.sb.from("ocultas").delete().eq("regional", regional); if (error) throw new Error(/does not exist|could not find the table/i.test(error.message) ? "Falta rodar o consultor_regional.sql no Supabase." : error.message); },
   async notas() {
     const { data, error } = await this.sb.from("anotacoes").select("id,consultor,regional,tema,texto,vid,autor,autor_nome,criado_em").order("criado_em", { ascending: false }).limit(5000);
     if (error) { console.warn("anotações:", error.message); return []; }
@@ -2713,7 +2740,9 @@ const SupaAPI = {
   },
   async importar(rawV, rawA, meta) {
     const codMap = mapaCodigos(state.raw.rawV.concat(rawV));
-    const linhas = rawV.map((v) => ({ ...v, regional: regionalDe(v.terr, codMap) }));
+    // a visita pertence à regional do consultor (a mais frequente nas visitas dele), não à do território do cliente
+    const porR = new Map(); for (const v of state.raw.rawV.concat(rawV)) { const k = v.resp || ""; (porR.get(k) || porR.set(k, []).get(k)).push(regionalDe(v.terr, codMap)); }
+    const linhas = rawV.map((v) => ({ ...v, regional: moda(porR.get(v.resp || "") || []) || regionalDe(v.terr, codMap) }));
     const ids = new Set(state.raw.rawV.map((v) => v.id)); let nv = 0, at = 0; for (const v of rawV) ids.has(v.id) ? at++ : nv++;
     for (let i = 0; i < linhas.length; i += 500) { const { error } = await this.sb.from("visitas").upsert(linhas.slice(i, i + 500), { onConflict: "id" }); if (error) throw new Error("Visitas: " + error.message); }
     const vids = [...new Set(rawA.map((a) => a.vid))];
@@ -2736,7 +2765,26 @@ function listaRegionais() {
 }
 async function renderAdmin() {
   try { adm.usuarios = await API.listar(); } catch (e) { toast("Não consegui carregar os usuários", e.message); return; }
-  renderUsuarios(); renderExcecoes(); renderAtribuicao(); renderCarteiraInfo(); renderImportacao(); renderAcessos();
+  renderUsuarios(); renderExcecoes(); renderOcultas(); renderAtribuicao(); renderCarteiraInfo(); renderImportacao(); renderAcessos();
+}
+/* ---------- regionais ocultas (ex.: Telemarketing, que não usa o app) ---------- */
+async function carregarOcultas() {
+  let l = []; try { l = await API.ocultas(); } catch {}
+  state.ocultasLista = l; state.ocultas = new Set(l.map((x) => x.regional));
+}
+async function alternarOculta(regional, ocultar) {
+  try {
+    await (ocultar ? API.ocultar(regional) : API.mostrar(regional)); await carregarOcultas();
+    state.db = montarBase(state.raw.rawV, state.raw.rawA, state.raw.meta, state.raw.cart); preencherFiltros(); invalidar(); render();
+    toast(ocultar ? "Regional oculta" : "Regional visível de novo", ocultar ? `${regional} saiu do painel para todos os usuários.` : `${regional} voltou a aparecer no painel.`);
+  } catch (e) { toast("Não consegui alterar", e.message); }
+}
+function renderOcultas() {
+  const l = [...(state.ocultasLista || [])].sort((a, b) => a.regional.localeCompare(b.regional));
+  const todas = state.db.regsTodas || new Map();
+  $("ocLbl").textContent = plural(l.length, "regional oculta", "regionais ocultas");
+  $("ocOpcoes").innerHTML = [...todas.keys()].concat([...new Set(todas.values())]).filter((n, i, a) => a.indexOf(n) === i && !state.ocultas.has(n)).sort().map((n) => `<option value="${esc(n)}"></option>`).join("");
+  $("tOc").innerHTML = l.length ? `<thead><tr><th>Regional ou canal</th><th>Ocultada por</th><th></th></tr></thead><tbody>${l.map((x) => `<tr><td><b>${esc(x.regional)}</b></td><td>${esc(x.por || "—")}<span class="sub">${x.criado ? new Date(x.criado).toLocaleDateString("pt-BR") : ""}</span></td><td class="n"><button class="btn sm" type="button" data-mostrar="${esc(x.regional)}">Mostrar de novo</button></td></tr>`).join("")}</tbody>` : `<tbody><tr><td class="note">Nenhuma regional oculta. Tudo o que vem do C4C aparece no painel.</td></tr></tbody>`;
 }
 /* ---------- fora da cobrança de visitas ---------- */
 async function carregarExcecoes() {
@@ -2979,7 +3027,7 @@ async function entrou(conta) {
   $("tabAdmin").hidden = conta.perfil !== "admin";
   if (!state.raw) { $("ctx").textContent = "Carregando visitas…"; telas("app"); try { state.raw = await API.dados(); } catch (e) { telas("login"); $("lErr").textContent = "Não consegui carregar as visitas: " + e.message + (API === DemoAPI ? " Preencha o config.js com o Supabase." : ""); return; } }
   try { state.notas = await API.notas(); } catch { state.notas = []; }
-  await carregarExcecoes();
+  await carregarExcecoes(); await carregarOcultas();
   carregarBase(state.raw);
   telas("app"); selPane(location.hash.slice(1) || "geral");
   if (conta.perfil === "gerente" && !conta.regionais.length) toast("Nenhuma regional liberada", "Peça ao administrador para atribuir as regionais da sua equipe.");
@@ -3211,6 +3259,8 @@ function ligarEventos() {
   $("hierXlsx").addEventListener("click", exportarHier);
   $("eForm").addEventListener("submit", salvarIsentar);
   $("eMot").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) $("eMot").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", String(x === b))); });
+  $("ocAdd").addEventListener("click", () => { const n = $("ocBusca").value.trim(); const ok = [...$("ocOpcoes").options].map((o) => o.value).find((x) => norm(x) === norm(n)); if (!ok) { toast("Regional não encontrada", "Escolha um nome da lista."); return; } $("ocBusca").value = ""; alternarOculta(ok, true).then(renderOcultas); });
+  $("tOc").addEventListener("click", (e) => { const b = e.target.closest("[data-mostrar]"); if (b) alternarOculta(b.dataset.mostrar, false).then(renderOcultas); });
   $("excAdd").addEventListener("click", () => { const n = $("excBusca").value.trim(); const ok = [...new Set(state.db.visits.map((v) => v.consultor))].find((x) => norm(x) === norm(n)); if (!ok) { toast("Nome não encontrado", "Escolha um nome da lista que aparece ao digitar."); return; } $("excBusca").value = ""; abrirIsentar(ok); });
   $("acPer").addEventListener("click", (e) => { const b = e.target.closest("[data-d]"); if (!b) return; acs.dias = +b.dataset.d; $("acPer").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderAcessos(); });
   $("acAdm").addEventListener("change", (e) => { acs.admins = e.target.checked; renderAcessos(); });
