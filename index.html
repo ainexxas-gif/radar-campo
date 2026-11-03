@@ -862,7 +862,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       <section class="panel">
         <div class="panel-head"><h2>Onde a equipe está</h2>
           <div class="seg2" id="mapaMet" role="group" aria-label="O que o tamanho da bolha mostra">
-            <button type="button" data-m="vis" aria-pressed="true">Visitas realizadas</button><button type="button" data-m="cli">Clientes visitados</button><button type="button" data-m="sem">Clientes sem visita 16+ dias</button><button type="button" data-m="ab">Não realizadas</button>
+            <button type="button" data-m="vis" aria-pressed="true">Visitas realizadas</button><button type="button" data-m="cli">Clientes visitados</button><button type="button" data-m="sem">Clientes sem visita 16+ dias</button>
           </div></div>
         <div class="mapa-wrap">
           <div class="mapa" id="mapa"></div>
@@ -915,13 +915,13 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       <section class="panel">
         <div class="panel-head"><h2>Calendário de visitas</h2><span class="label">pela data planejada (abertas) ou de realização</span></div>
         <div class="cal-h"><button class="btn sm" type="button" id="calAnt" aria-label="Mês anterior">‹</button><h3 id="calMes"></h3><button class="btn sm" type="button" id="calProx" aria-label="Próximo mês">›</button>
-          <div class="legend"><span><i class="sw ca"></i>Abertas (hoje em diante)</span><span><i class="sw cr"></i>Não realizadas</span><span><i class="sw c2"></i>Realizadas</span><span><i class="sw cn"></i>Canceladas</span></div></div>
+          <div class="legend"><span><i class="sw ca"></i>Abertas (hoje em diante)</span><span><i class="sw c2"></i>Realizadas</span><span><i class="sw cn"></i>Canceladas</span></div></div>
         <div class="cal" id="cal"></div>
         <div id="calDia"></div>
       </section>
       <div class="grid2">
         <section class="panel">
-          <div class="panel-head"><h2>Consultores com mais visitas não realizadas</h2><span class="label">no período</span></div>
+          <div class="panel-head"><h2>Consultores com mais visitas planejadas</h2><span class="label">abertas de hoje em diante</span></div>
           <ol class="rank red" id="rankAbertas"></ol>
         </section>
         <section class="panel">
@@ -1339,8 +1339,8 @@ function montarBase(rawV, rawA, meta, cartRaw) {
     let munK = null;
     if (g) { munK = g.nome + "/" + g.uf; if (!muns.has(munK)) muns.set(munK, { k: munK, nome: g.nome, uf: g.uf, lat: g.lat, lon: g.lon, nivel: g.nivel }); else if (g.nivel === "território") muns.get(munK).nivel = "território"; }
     let st = ST[r.status] || "ab";
-    // aberta com data de início antes de hoje não tem mais como ser feita: vira "não realizada" (sai das abertas)
-    if (st === "ab" && dayOf(r.ini) < hojeSP()) st = "nr";
+    // aberta com data de início antes de hoje não tem mais como ser feita: fica fora do painel (pedido da gestão, nov/2026)
+    if (st === "ab" && dayOf(r.ini) < hojeSP()) return [];
     if (!clientes.has(r.cid)) clientes.set(r.cid, { cid: r.cid, nome: r.cliente, vis: [] });
     const dur = r.ck != null && r.co != null ? r.co - r.ck : null;
     const v = { id: r.id, tipo: r.tipo || "Não informado", status: r.status, st, safra: r.safra, canal: r.canal, cid: r.cid, consultor: r.resp || "Não informado",
@@ -1494,7 +1494,7 @@ const state = { db: null, conta: null, escopo: null, f: { de: null, ate: null, g
 
 function periodoTotal() { const ps = state.db.meta.periodos; return [Math.min(...ps.map((p) => p[0])), Math.max(...ps.map((p) => p[1]))]; }
 const REF = () => Math.min(state.f.ate, state.db.meta.extraido);   // dias sem visita contam até aqui
-const HOJE = () => hojeSP();                                          // abertas antes de hoje viram "não realizadas"
+const HOJE = () => hojeSP();                                          // abertas com início antes de hoje ficam fora do painel
 const visivel = (v) => !state.escopo || state.escopo.has(v.regional);
 function casa(v, sem = {}) {
   const f = state.f;
@@ -1682,14 +1682,14 @@ function renderGeral() {
   const cons = statsConsultores(), cli = statsClientes();
   const consC = cobrados(cons), ativos = consC.filter((c) => c.ok > 0).length;
   const uteis = diasUteis(state.f.de, ref);
-  const atr = per.filter((v) => v.st === "nr");
+  const abFut = base.filter((v) => v.st === "ab");
   const comQ = ok.filter((v) => v.sv).length;
   $("kpis").innerHTML =
     kpi("Visitas realizadas", fmtN(ok.length), `<b>${fmtN(ok.length / Math.max(1, ativos) / Math.max(1, uteis), 1)}</b> por consultor ativo por dia útil`) +
     (state.db.cart ? (() => { const T = hierarquia().total; return kpi("Cobertura da carteira", fmtP(T.cob || 0), `<b>${fmtN(T.vis)}</b> de ${fmtN(T.carteira)} clientes visitados · ${fmtN(T.fora)} fora da carteira`, (T.cob || 0) < 0.5 ? "alert" : (T.cob || 0) < 0.8 ? "warn" : ""); })()
       : kpi("Clientes visitados", fmtN(new Set(ok.map((v) => v.cid)).size), `de <b>${fmtN(cli.length)}</b> clientes com histórico`)) +
     kpi("Consultores ativos", `${fmtN(ativos)}<small> / ${fmtN(consC.length)}</small>`, `<b>${fmtN(consC.length - ativos)}</b> sem visita realizada no período${cons.length > consC.length ? ` · ${fmtN(cons.length - consC.length)} fora da cobrança` : ""}`, consC.length - ativos > 0 ? "warn clk" : "clk", 'data-go="equipes"') +
-    kpi("Não realizadas", fmtN(atr.length), `planejadas no período, a data passou e a visita não aconteceu`, atr.length ? "alert clk" : "clk", 'data-go="agenda"') +
+    kpi("Visitas planejadas", fmtN(abFut.length), abFut.length ? `abertas de hoje até ${fmtDia(Math.max(...abFut.map((v) => v.diaPlan)))}` : "nenhuma aberta de hoje em diante na base", "clk", 'data-go="agenda"') +
     kpi("Com questionário", fmtP(ok.length ? comQ / ok.length : 0), `<b>${fmtN(comQ)}</b> visitas com respostas`);
   // sinais
   const parados = cons.filter((c) => c.sit === "parado" || c.sit === "sem").length, atencao = cons.filter((c) => c.sit === "atencao").length;
@@ -1702,7 +1702,8 @@ function renderGeral() {
     sinal(parados ? "crit" : "ok", parados, "consultores parados", `+${fmtN(atencao)} em atenção (7–14 dias)`, "equipes") +
     (state.db.cart ? (() => { const T = hierarquia().total; return sinal(T.nao ? "crit" : "ok", T.nao, "da carteira sem visita", `${fmtN(T.nunca)} nunca visitados`, "geral", 'data-hierfoco="1"'); })()
       : sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")) +
-    sinal(atr.length ? "crit" : "ok", atr.length, "visitas não realizadas", `planejadas e a data já passou`, "agenda") +
+    (state.db.cart ? sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")
+      : sinal(abFut.length ? "" : "ok", abFut.length, "visitas planejadas", "abertas de hoje em diante", "agenda")) +
     sinal(vencidas ? "" : "ok", quentes, "intenção de compra alta", `${fmtN(vencidas)} com previsão vencida`, "intel") +
     sinal(risco ? "" : "ok", risco, "clientes pedem ação", "risco, SAC ou pendência", "intel");
   // tendência
@@ -1796,7 +1797,6 @@ const HCOLS = [
   { k: "ult", l: "Última", g: "Visitas", n: 1, t: "Data da visita realizada mais recente" },
   { k: "dias", l: "Dias sem<br>visita", g: "Visitas", n: 1, t: "Regional e total: mediana dos clientes da carteira. Consultor: dias desde a última visita dele" },
   { k: "sit", l: "Consultores", g: "Equipe", n: 1, t: "Ativos ÷ consultores cobrados (sem gestores). Na linha do consultor, a situação dele" },
-  { k: "atr", l: "Visitas não<br>realizadas", g: "Equipe", n: 1, t: "Visitas planejadas no período cuja data passou sem a visita acontecer" },
   { k: "quest", l: "Com<br>questionário", g: "Registro", n: 1, t: "Visitas realizadas com questionário respondido" },
   { k: "gps", l: "Com<br>GPS", g: "Registro", n: 1, t: "Visitas realizadas com localização no check-in" },
 ];
@@ -1810,7 +1810,7 @@ function hCelulas(x) {
     fmtN(x.visitas), x.visitas ? fmtN(x.porCons, 1) : "—", x.ult != null ? fmtDia(x.ult) : "—",
     `<span class="${!c && x.dias != null && x.dias > 30 ? "hn" : c && (x.dias ?? 999) >= 15 ? "hn" : ""}">${diasTxt}</span>`,
     c ? `${sitChip(x)}${x.sit === "isento" ? "" : " " + btnIsentar(x)}` : `${fmtN(x.ativos)} / ${fmtN(x.total)}${x.parados ? ` <span class="chip ch-red" title="parados ou sem visita no período">${x.parados} parado${x.parados > 1 ? "s" : ""}</span>` : ""}`,
-    x.atr ? `<span class="chip ch-amb">${fmtN(x.atr)}</span>` : "0", x.visitas ? pctCel(x.quest) : "—", x.visitas ? pctCel(x.gps) : "—",
+    x.visitas ? pctCel(x.quest) : "—", x.visitas ? pctCel(x.gps) : "—",
   ].map((h, i) => `<td class="n ${i && HCOLS[i].g !== HCOLS[i + 1].g ? "gi" : ""}">${h}</td>`).join("");
 }
 function renderHier() {
@@ -1987,7 +1987,7 @@ function painelClientes(c) {
 function exportarHier() {
   if (!window.XLSX) { toast("Excel indisponível", "A biblioteca de planilhas não carregou."); return; }
   const H = hierarquia(), linha = (x, extra) => ({ ...extra, "Carteira": x.carteira, "Visitados": x.vis, "Não visitados": x.nao, "Cobertura (%)": x.cob == null ? "" : Math.round(x.cob * 1000) / 10,
-    "Fora da carteira": x.fora, "Visitas realizadas": x.visitas, "Visitas por dia útil": Math.round(x.porCons * 10) / 10, "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "", "Abertas em atraso": x.atr,
+    "Fora da carteira": x.fora, "Visitas realizadas": x.visitas, "Visitas por dia útil": Math.round(x.porCons * 10) / 10, "Última visita": x.ult != null ? fmtDiaAno(x.ult) : "", "Dias sem visita": x.dias ?? "",
     "Com questionário (%)": Math.round(x.quest * 100), "Com GPS (%)": Math.round(x.gps * 100) });
   const regs = H.regs.map((r) => linha(r, { "Regional": r.nome, "Canal": r.grupo, "Gerente": titulo(r.gerente), "Consultores ativos": r.ativos, "Consultores cobrados": r.total, "Parados": r.parados }));
   const cons = H.regs.flatMap((r) => r.cons.map((c) => linha(c, { "Regional": r.nome, "Consultor": titulo(c.nome), "Situação": sitTxt(c) })));
@@ -2030,7 +2030,7 @@ function renderEquipes() {
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "nunca" : fmtN(c.sem)) },
     { k: "ult", l: "Última visita", n: 1, h: (c) => fmtDiaAno(c.ult) },
     { k: "ok", l: "Realizadas no período", n: 1, h: (c) => fmtN(c.ok) },
-    { k: "ab", l: "Abertas", n: 1, h: (c) => (c.atr ? `${fmtN(c.ab)} <span class="chip ch-red">${c.atr} não realizadas</span>` : fmtN(c.ab)) },
+    { k: "ab", l: "Abertas", n: 1, h: (c) => fmtN(c.ab) },
     colNota,
   ], parados, { ord: { k: "sit", d: 1 }, clk: (c) => `data-cons="${esc(c.nome)}"`, vazio: "Todos os consultores visitaram nos últimos 7 dias." });
   renderTabCons(cons);
@@ -2057,7 +2057,6 @@ function renderTabCons(cons) {
     { k: "ok", l: "Visitas", n: 1, h: (c) => fmtN(c.ok) }, { k: "cli", l: "Clientes", n: 1, h: (c) => fmtN(c.cli) },
     { k: "dias", l: "Dias em campo", n: 1, h: (c) => fmtN(c.dias) }, { k: "porDia", l: "Visitas/dia em campo", n: 1, h: (c) => fmtN(c.porDia, 1) },
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "—" : fmtN(c.sem)) },
-    { k: "atr", l: "Não realizadas", n: 1, h: (c) => (c.atr ? `<span class="chip ch-amb">${c.atr}</span>` : "0") },
     { k: "quest", l: "Questionário", n: 1, h: (c) => pctCel(c.quest) }, { k: "gps", l: "GPS", n: 1, h: (c) => pctCel(c.gps) }, colNota,
   ], lin, { ord: { k: "ok", d: -1 }, clk: (c) => `data-cons="${esc(c.nome)}"`, redo: () => renderTabCons() });
 }
@@ -2073,7 +2072,7 @@ function abrirNotas(nome) {
   const vis = state.db.visits.filter((v) => v.consultor === nome && visivel(v)).sort((a, b) => (b.ck ?? b.ini) - (a.ck ?? a.ini)).slice(0, 25);
   $("nTitulo").textContent = titulo(nome);
   $("nSub").textContent = cs ? `${cs.regional} · ${sitTxt(cs)}` : "";
-  $("nResumo").innerHTML = cs ? `<div><b>${fmtN(cs.ok)}</b><span>visitas no período</span></div><div><b>${cs.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs.cli)}</b><span>clientes</span></div><div><b>${fmtN(cs.atr)}</b><span>abertas em atraso</span></div>` : "";
+  $("nResumo").innerHTML = cs ? `<div><b>${fmtN(cs.ok)}</b><span>visitas no período</span></div><div><b>${cs.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs.cli)}</b><span>clientes</span></div><div><b>${fmtN(cs.ab)}</b><span>visitas planejadas</span></div>` : "";
   $("nTema").innerHTML = TEMAS.map((t, i) => `<button type="button" role="radio" data-v="${t}" aria-checked="${i === 0}">${t}</button>`).join("");
   $("nVisita").innerHTML = `<option value="">Nenhuma (comentário geral)</option>` + vis.map((v) => `<option value="${v.id}">${fmtDia(v.st === "ok" ? v.dia : v.diaPlan)} · ${esc(titulo(state.db.clientes.get(v.cid)?.nome))} · ${v.st === "ok" ? "realizada" : v.st === "cx" ? "cancelada" : "aberta"}</option>`).join("");
   $("nTexto").value = ""; $("nConta").textContent = "0/1000"; $("nErr").textContent = "";
@@ -2246,19 +2245,20 @@ function barrasCat(el, labels, vals, un) {
 /* =================== AGENDA =================== */
 function renderAgenda() {
   const { base, per } = recorte(), hoje = HOJE();
-  const ab = base.filter((v) => v.st === "ab"), atr = per.filter((v) => v.st === "nr");
+  const ab = base.filter((v) => v.st === "ab");
   const plan = base.filter((v) => v.diaPlan >= state.f.de && v.diaPlan <= state.f.ate);
   const mesmo = plan.filter((v) => v.st === "ok" && v.dia === v.diaPlan).length, depois = plan.filter((v) => v.st === "ok" && v.dia > v.diaPlan).length, antes = plan.filter((v) => v.st === "ok" && v.dia < v.diaPlan).length;
-  const pab = plan.filter((v) => v.st === "ab").length, pnr = plan.filter((v) => v.st === "nr").length, pcx = plan.filter((v) => v.st === "cx").length, pok = mesmo + depois + antes;
-  $("agKpis").innerHTML = kpi("Abertas a partir de hoje", fmtN(ab.length), ab.length ? `de ${fmtDia(hoje)} até ${fmtDia(Math.max(...ab.map((v) => v.diaPlan)))}` : "nenhuma na base carregada") +
-    kpi("Não realizadas", fmtN(atr.length), "no período: a data passou e a visita não aconteceu", atr.length ? "alert" : "") +
-    kpi("Taxa de realização", fmtP(pok + pnr ? pok / (pok + pnr) : 0), `realizadas ÷ (realizadas + não realizadas) planejadas no período`) +
+  const pab = plan.filter((v) => v.st === "ab").length, pcx = plan.filter((v) => v.st === "cx").length;
+  const semana = ab.filter((v) => v.diaPlan < hoje + 7).length;
+  $("agKpis").innerHTML = kpi("Visitas planejadas", fmtN(ab.length), ab.length ? `abertas de ${fmtDia(hoje)} até ${fmtDia(Math.max(...ab.map((v) => v.diaPlan)))}` : "nenhuma aberta de hoje em diante na base") +
+    kpi("Nos próximos 7 dias", fmtN(semana), "visitas abertas na agenda da equipe") +
+    kpi("Realizadas no período", fmtN(per.filter((v) => v.st === "ok").length), `de ${fmtDia(state.f.de)} a ${fmtDia(state.f.ate)}`) +
     kpi("Realizadas no dia planejado", fmtP(plan.length ? mesmo / plan.length : 0), `de <b>${fmtN(plan.length)}</b> planejadas no período`) +
     kpi("Canceladas", fmtN(per.filter((v) => v.st === "cx").length), "no período");
-  splitBar($("adSplit"), $("adLeg"), [{ l: "No dia planejado", n: mesmo, c: "c1" }, { l: "Depois do planejado", n: depois, c: "c3" }, { l: "Antes", n: antes, c: "c2" }, { l: "Não realizada", n: pnr, c: "cr" }, { l: "Aberta (ainda vai acontecer)", n: pab, c: "ca" }, { l: "Cancelada", n: pcx, c: "cn" }]);
-  $("adNota").innerHTML = `"Depois do planejado" costuma ser visita lançada no app dias após acontecer. Visita aberta com data de início anterior a hoje não tem mais como ser feita: o painel conta como <b>não realizada</b>, e não como aberta.`;
-  const rk = contar(atr, (v) => v.consultor).map(([n, a]) => ({ n, a, t: ab.filter((v) => v.consultor === n).length })).slice(0, 12);
-  $("rankAbertas").innerHTML = rankHtml(rk.map((x) => ({ l: titulo(x.n), n: x.a, fmt: `${fmtN(x.a)} não realizadas`, extra: x.t ? `${x.t} abertas a partir de hoje` : "", attr: `data-cons="${esc(x.n)}"` })), { vazio: "Nenhuma visita não realizada no período." });
+  splitBar($("adSplit"), $("adLeg"), [{ l: "No dia planejado", n: mesmo, c: "c1" }, { l: "Depois do planejado", n: depois, c: "c3" }, { l: "Antes", n: antes, c: "c2" }, { l: "Aberta (ainda vai acontecer)", n: pab, c: "ca" }, { l: "Cancelada", n: pcx, c: "cn" }]);
+  $("adNota").innerHTML = `"Depois do planejado" costuma ser visita lançada no app dias após acontecer. Visitas abertas com data de início anterior a hoje não aparecem no painel: não têm mais como ser feitas.`;
+  const rk = contar(ab, (v) => v.consultor).slice(0, 12);
+  $("rankAbertas").innerHTML = rankHtml(rk.map(([n, a]) => ({ l: titulo(n), n: a, fmt: `${fmtN(a)} planejadas`, attr: `data-cons="${esc(n)}"` })), { vazio: "Nenhuma visita aberta de hoje em diante." });
   if (state.cal == null) { const d = dDate(state.f.ate); state.cal = [d.getUTCFullYear(), d.getUTCMonth()]; }
   renderCal();
 }
@@ -2267,7 +2267,7 @@ function renderCal() {
   const ini = Math.floor(Date.UTC(ano, mes, 1) / 86400000), fim = Math.floor(Date.UTC(ano, mes + 1, 1) / 86400000) - 1;
   const mt = dDate(ini).toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" }); $("calMes").textContent = mt[0].toUpperCase() + mt.slice(1);
   const por = new Map();
-  for (const v of base) { const d = v.st === "ok" ? v.dia : v.diaPlan; if (d < ini - 7 || d > fim + 7) continue; const c = por.get(d) || { ok: 0, ab: 0, at: 0, cx: 0 }; if (v.st === "ok") c.ok++; else if (v.st === "cx") c.cx++; else if (v.st === "nr") c.at++; else c.ab++; por.set(d, c); }
+  for (const v of base) { const d = v.st === "ok" ? v.dia : v.diaPlan; if (d < ini - 7 || d > fim + 7) continue; const c = por.get(d) || { ok: 0, ab: 0, at: 0, cx: 0 }; if (v.st === "ok") c.ok++; else if (v.st === "cx") c.cx++; else c.ab++; por.set(d, c); }
   const start = ini - ((dow(ini) + 6) % 7);
   let h = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => `<span class="dow">${d}</span>`).join("");
   for (let d = start; d <= fim || (d - start) % 7; d++) {
@@ -2283,7 +2283,7 @@ function renderCalDia() {
   const hoje = HOJE(), vs = recorte().base.filter((v) => (v.st === "ok" ? v.dia : v.diaPlan) === d).sort((a, b) => ({ ab: 0, nr: 1, ok: 2, cx: 3 }[a.st] - { ab: 0, nr: 1, ok: 2, cx: 3 }[b.st]) || a.consultor.localeCompare(b.consultor));
   $("calDia").innerHTML = `<h3 class="label">${fmtDiaSem(d)} · ${plural(vs.length, "visita")}</h3><div class="tbl-wrap tall"><table><thead><tr><th>Status</th><th>Hora</th><th>Cliente</th><th>Consultor</th><th>Tipo</th></tr></thead><tbody>${vs.map((v) => `<tr class="clk" data-cli="${esc(v.cid)}" tabindex="0"><td>${chipStatus(v, hoje)}</td><td class="nw">${v.st === "ok" ? fmtHora(v.ck) : fmtHora(v.ini)}</td><td><b>${esc(titulo(state.db.clientes.get(v.cid)?.nome))}</b></td><td>${esc(titulo(v.consultor))}<span class="sub">${esc(v.regional)}</span></td><td>${esc(v.tipo)}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">Nenhuma visita neste dia.</td></tr>`}</tbody></table></div>`;
 }
-const chipStatus = (v) => v.st === "ok" ? `<span class="chip ch-info">Realizada</span>` : v.st === "cx" ? `<span class="chip ch-neu">Cancelada</span>` : v.st === "nr" ? `<span class="chip ch-red">Não realizada</span>` : `<span class="chip ch-amb">Aberta</span>`;
+const chipStatus = (v) => v.st === "ok" ? `<span class="chip ch-info">Realizada</span>` : v.st === "cx" ? `<span class="chip ch-neu">Cancelada</span>` : `<span class="chip ch-amb">Aberta</span>`;
 
 /* =================== INTELIGÊNCIA DE CAMPO =================== */
 /* =================== OPORTUNIDADES DE VENDA =================== */
@@ -2512,7 +2512,7 @@ function abrirConsultor(nome) {
   let cal = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => `<span class="dow">${d}</span>`).join("");
   for (let d = start; d <= state.f.ate || (d - start) % 7; d++) { const n = por.get(d) || 0, a = ab.get(d) || 0, w = dow(d); cal += `<div class="d ${d < state.f.de || d > state.f.ate ? "out" : ""} ${w === 0 || w === 6 ? "wk" : ""}" style="min-height:52px;cursor:default"><span class="dn">${dDate(d).getUTCDate()}</span>${n ? `<span class="pill ok"><span>feitas</span>${n}</span>` : ""}${a ? `<span class="pill ${d < HOJE() ? "at" : "ab"}"><span>abertas</span>${a}</span>` : ""}</div>`; }
   const clis = contar(ok, (v) => v.cid);
-  $("mConC").innerHTML = `<div class="m-kpis"><div><b>${fmtN(ok.length)}</b><span>visitas no período</span></div><div><b>${fmtN(cs?.cli || 0)}</b><span>clientes</span></div><div><b>${fmtN(cs?.dias || 0)}</b><span>dias em campo</span></div><div><b>${cs?.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs?.atr || 0)}</b><span>abertas em atraso</span></div><div><b>${fmtP(cs?.gps || 0)}</b><span>com GPS</span></div></div>
+  $("mConC").innerHTML = `<div class="m-kpis"><div><b>${fmtN(ok.length)}</b><span>visitas no período</span></div><div><b>${fmtN(cs?.cli || 0)}</b><span>clientes</span></div><div><b>${fmtN(cs?.dias || 0)}</b><span>dias em campo</span></div><div><b>${cs?.sem == null ? "—" : fmtN(cs.sem)}</b><span>dias sem visita</span></div><div><b>${fmtN(cs?.ab || 0)}</b><span>visitas planejadas</span></div><div><b>${fmtP(cs?.gps || 0)}</b><span>com GPS</span></div></div>
     <div><h3 class="label" style="margin-bottom:6px">Mês dia a dia</h3><div class="cal">${cal}</div></div>
     <div class="grid2" style="gap:16px"><div><h3 class="label">Clientes visitados</h3><ol class="rank" style="margin-top:8px">${rankHtml(clis.slice(0, 15).map(([cid, n]) => ({ l: titulo(state.db.clientes.get(cid)?.nome), n, attr: `data-cli="${esc(cid)}"` })))}</ol></div>
     <div><h3 class="label">Tipos e territórios</h3><ol class="rank" style="margin-top:8px">${rankHtml(contar(ok, (v) => v.sv ? v.sv.pesq : v.tipo).slice(0, 6).map(([l, n]) => ({ l, n })))}</ol><p class="note" style="margin-top:10px">Territórios: ${esc((cs?.terrs || []).map(titulo).join(", "))}</p></div></div>
@@ -2532,7 +2532,7 @@ function renderMetodo() {
     ["Correlação visita × questionário", `pelo <b>ID da visita</b>. ${fmtN(state.db.surveys.size)} questionários lidos; ${fmtN(state.db.orfaos)} são de visitas fora do relatório carregado e ficam só na contagem.`],
     ["Data de cada visita", "realizada = dia do check-in; aberta ou cancelada = dia planejado (início). O filtro De/Até usa essa data."],
     ["Data de referência", `fim do período escolhido, limitado ao dia da extração (${fmtDiaAno(m.extraido)}). "Dias sem visita" de consultor e de cliente contam até ela.`],
-    ["Abertas e não realizadas", `"Aberta" = status "Aberto" no C4C com data de início hoje ou depois: ainda pode acontecer. Se a data de início já passou, a visita não tem mais como ser feita e conta como <b>não realizada</b>: é o planejamento que não virou visita nem foi cancelado.`],
+    ["Visitas abertas", `status "Aberto" no C4C com data de início hoje ou depois: ainda podem acontecer. Visita aberta com data de início anterior a hoje não tem mais como ser feita e fica <b>fora do painel</b>.`],
     ["Situação do consultor", "Ativo = visitou nos últimos 6 dias; Atenção = 7 a 14 dias sem visita; Parado = 15 ou mais; Sem visita no período = nenhuma realizada entre De e Até. Só aparece quem tem pelo menos um registro na base carregada: para saber de quem nunca registrou nada, carregue meses seguidos ou o cadastro de equipe."],
     ["Regional / equipe", "derivada do código do território (V08, L39…), pela equipe de vendas mais frequente daquele código. Corrige os registros em que o C4C grava o nome do território no lugar da equipe."],
     ["Mapa", "a exportação traz só a latitude do check-in (as duas colunas são latitude). Cada visita é posicionada no município do seu território (base IBGE, kelvins/municipios-brasileiros); rotas e distritos usam o município mais próximo ou a sede da regional. Pedir ao time do C4C para incluir a longitude permite ligar o mapa ao ponto exato do check-in."],
