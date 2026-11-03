@@ -710,6 +710,16 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 .ms-n { flex: 1 1 100%; font-size: .76rem; color: var(--muted); }
 .ms-f .btn { margin-left: auto; }
 @media (max-width: 720px) { .ms-p { width: min(92vw, 340px); } .ms:nth-child(odd) .ms-p { left: auto; right: 0; } }
+.bi-nav { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--card); }
+.bi-nav .btn { border: 0; border-radius: 0; height: 34px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--brand); background: transparent; }
+.bi-nav .btn + .btn { border-left: 1px solid var(--line); }
+.bi-nav .btn span { font-size: 1.25rem; line-height: 1; margin-top: -2px; }
+.bi-nav .btn:hover:not(:disabled) { background: var(--info-bg); }
+.bi-nav .btn:disabled { color: var(--muted); opacity: .45; cursor: default; }
+.bi-eq-t th, .bi-eq-t td { padding: 5px 4px; }
+.bi-eq-t .cob i { width: 34px; }
+.bi-eq-t .bi-cn { max-width: 150px; }
+.bi { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -843,7 +853,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
     <div class="pane" id="pane-carteira" role="tabpanel" hidden>
       <div class="bi-top">
         <nav class="bi-trilha" id="biTrilha" aria-label="Seleção"></nav>
-        <div class="tbar"><button class="btn sm" type="button" id="biAnt" aria-label="Consultor anterior" title="Consultor anterior (←)">‹</button><button class="btn sm" type="button" id="biProx" aria-label="Próximo consultor" title="Próximo consultor (→)">›</button>
+        <div class="tbar"><div class="bi-nav" role="group" aria-label="Passar de consultor em consultor"><button class="btn sm" type="button" id="biAnt" title="Consultor anterior no quadro da equipe (tecla ←)"><span aria-hidden="true">‹</span> Anterior</button><button class="btn sm" type="button" id="biProx" title="Próximo consultor no quadro da equipe (tecla →)">Próximo <span aria-hidden="true">›</span></button></div>
           <button class="btn" type="button" id="biXlsx">Baixar Excel</button><button class="btn" type="button" id="biPrint" hidden>Imprimir / PDF</button></div>
       </div>
       <div class="bi">
@@ -1760,7 +1770,7 @@ function hierarquia() {
   const ultCli = new Map(), perCli = new Map(), abCli = new Map();
   for (const v of state.db.visits) {
     if (!visivel(v)) continue; const k = ck(v.cid);
-    if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k); if (!u || v.dia > u.dia) ultCli.set(k, { dia: v.dia, por: v.consultor, n: (u?.n || 0) + 1 }); else u.n++; }
+    if (v.st === "ok" && v.dia <= ref) { const u = ultCli.get(k), ts = v.ck ?? v.ini ?? v.dia * 1440; if (!u || ts > u.ts) ultCli.set(k, { dia: v.dia, ts, por: v.consultor, n: (u?.n || 0) + 1 }); else u.n++; }
     if (v.st === "ok" && noPeriodo(v) && casa(v, { grupo: 1, reg: 1, cons: 1, q: 1 })) { const p = perCli.get(k) || { n: 0, por: new Set(), q: false }; p.n++; p.por.add(v.consultor); if (v.sv) p.q = true; perCli.set(k, p); }
     if (v.st === "ab") { const a = abCli.get(k); if (a == null || v.diaPlan < a) abCli.set(k, v.diaPlan); }
   }
@@ -1775,13 +1785,13 @@ function hierarquia() {
     if (!dono || dono.vend !== v.consultor) { const f = n.foraM.get(k) || { k, cid: dono ? dono.cid : v.cid, nome: dono ? dono.nome : state.db.clientes.get(v.cid)?.nome || v.cid, dono: dono ? dono.vend : null, conta: dono?.conta, nVinc: dono?.nVinc || 1, nomes: dono?.nomes || [], n: 0 }; f.n++; n.foraM.set(k, f); }
   }
   for (const c of stats.values()) node(c.nome);
-  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, quest: p ? p.q : false, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
+  const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultTs: u ? u.ts : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, quest: p ? p.q : false, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
   const cons = [...nodes.values()].map((n) => {
     const st = stats.get(n.nome) || null, cl = n.cart.map(cli), vis = cl.filter((c) => c.nPer > 0), nao = cl.filter((c) => !c.nPer);
     const fora = [...n.foraM.values()].map((f) => ({ ...f, ...cli({ k: f.k }), nome: f.nome, cid: f.cid, dono: f.dono }));
     const diasCart = cl.map((c) => c.dias).filter((d) => d != null);
     return { tipo: "cons", nome: n.nome, regional: moda(n.cart.map((c) => c.regional)) || st?.regional || moda(n.regs) || "Sem território", gerente: moda(n.gers) || "",
-      carteira: cl.length, vis: vis.length, nao: nao.length, cob: cl.length ? vis.length / cl.length : null, fora: fora.length, visitas: n.visitas,
+      carteira: cl.length, vis: vis.length, nao: nao.length, cob: cl.length ? vis.length / cl.length : null, fora: fora.length, visitas: n.visitas, visCart: n.visitas - fora.reduce((s, f) => s + f.n, 0),
       porCons: n.visitas / uteis, ult: st?.ult ?? null, dias: st?.sem ?? null, diasCart: mediana(diasCart), nunca: cl.filter((c) => c.dias == null).length,
       sit: st?.sit || "sem", isento: st?.isento || null, atr: st?.atr || 0, quest: st?.quest || 0, gps: st?.gps || 0, okN: st?.ok || 0,
       clientes: { nao, vis, fora } };
@@ -1792,7 +1802,7 @@ function hierarquia() {
     const diasCart = lista.flatMap((c) => c.clientes.nao.concat(c.clientes.vis).map((x) => x.dias).filter((d) => d != null));
     const ults = lista.map((c) => c.ult).filter((x) => x != null);
     return { tipo, nome, grupo: state.db.regs.get(nome) || "", gerente: moda(lista.map((c) => c.gerente).filter(Boolean)) || "", carteira, vis, nao: carteira - vis, cob: carteira ? vis / carteira : null,
-      fora: lista.reduce((s, c) => s + c.fora, 0), visitas, porCons: ativos ? visitas / ativos / uteis : 0, ult: ults.length ? Math.max(...ults) : null, dias: mediana(diasCart),
+      fora: lista.reduce((s, c) => s + c.fora, 0), visitas, visCart: lista.reduce((s, c) => s + c.visCart, 0), porCons: ativos ? visitas / ativos / uteis : 0, ult: ults.length ? Math.max(...ults) : null, dias: mediana(diasCart),
       nunca: lista.reduce((s, c) => s + c.nunca, 0), ativos, total: cobr.length, parados: cobr.filter((c) => c.sit === "parado" || c.sit === "sem").length,
       atr: lista.reduce((s, c) => s + c.atr, 0), quest: okN ? wq / okN : 0, gps: okN ? wg / okN : 0, cons: lista };
   };
@@ -1874,7 +1884,13 @@ function biSelecao(H) {
   if (s.t === "reg") { const r = H.regs.find((x) => x.nome === s.n); if (r) return { node: r, cons: r.cons, reg: r }; }
   state.bi.sel = { t: "all", n: null }; return { node: H.total, cons: H.regs.flatMap((r) => r.cons), reg: null };
 }
-const biConsOrdem = (H) => H.regs.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).flatMap((r) => r.cons.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).map((c) => c.nome));
+function biEqSort(l) {
+  const eo = state.bi.eqOrd || (state.bi.eqOrd = { k: "nome", d: 1 });
+  const eVal = (x) => eo.k === "nome" ? norm(x.nome) : eo.k === "cob" ? (x.cob ?? -1) : (x[eo.k] ?? -1);
+  return [...l].sort((a, c) => { const p = eVal(a), q = eVal(c); return (typeof p === "string" ? p.localeCompare(q, "pt-BR") : p - q) * eo.d || norm(a.nome).localeCompare(norm(c.nome)); });
+}
+// ‹ › andam pelos consultores na MESMA ordem em que aparecem no quadro da equipe
+const biConsOrdem = (H) => biEqSort(H.regs).flatMap((r) => biEqSort(r.cons).map((c) => c.nome));
 const sinaisMemo = new Map();
 function sinaisConta(x) { const k = x.k + "|" + state.f.ate; if (!sinaisMemo.has(k)) { const cids = x.cids || [x.cid]; sinaisMemo.set(k, ultimosSinais(cids.flatMap((c) => state.db.clientes.get(c)?.vis || []).filter(visivel))); } return sinaisMemo.get(k); }
 function renderCarteira() {
@@ -1917,28 +1933,38 @@ function renderCarteira() {
     tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média");
   // equipe
   const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
-  const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td><td class="n">${fmtN(x.fora)}</td><td class="n">${fmtN(x.visitas)}</td>`;
-  const eo = b.eqOrd || (b.eqOrd = { k: "nome", d: 1 });
-  const eVal = (x) => eo.k === "nome" ? norm(x.nome) : eo.k === "cob" ? (x.cob ?? -1) : (x[eo.k] ?? -1);
-  const eSort = (l) => [...l].sort((a, c) => { const p = eVal(a), q = eVal(c); return (typeof p === "string" ? p.localeCompare(q, "pt-BR") : p - q) * eo.d || norm(a.nome).localeCompare(norm(c.nome)); });
+  const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td><td class="n">${fmtN(x.fora)}</td><td class="n">${temCart ? fmtN(x.visCart) : "—"}</td><td class="n">${fmtN(x.visitas)}</td>`;
+  const eo = b.eqOrd || (b.eqOrd = { k: "nome", d: 1 }), eSort = biEqSort;
+  // a regional da seleção abre uma vez quando a seleção muda; depois a setinha manda (abre e fecha de verdade)
+  const chaveSel = t.t + "|" + (t.n || "");
+  if (b.abriuSel !== chaveSel) { b.abriuSel = chaveSel;
+    if (b.autoAberta && b.autoAberta !== S.reg?.nome) b.abertos.delete(b.autoAberta);   // fecha a que o painel abriu sozinho na seleção anterior
+    if (S.reg && !b.abertos.has(S.reg.nome)) { b.abertos.add(S.reg.nome); b.autoAberta = S.reg.nome; } else if (!S.reg || b.autoAberta !== S.reg.nome) b.autoAberta = null; }
   const eth = (k, l, t) => `<th class="s ${k === "nome" ? "" : "n"}" data-eqord="${k}" tabindex="0" title="${t}" ${eo.k === k ? `aria-sort="${eo.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${eo.k === k ? ` <span class="ord">${eo.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
   const regs = eSort(H.regs);
-  let eq = `<thead><tr>${eth("nome", "Equipe", "Ordenar por nome")}${eth("carteira", "Clientes de<br>carteira", "Clientes na carteira (por conta crédito)")}${eth("vis", "Clientes<br>visitados", "Clientes da carteira com pelo menos uma visita no período")}${eth("nao", "Clientes não<br>visitados", "Clientes da carteira sem visita no período")}${eth("cob", "Taxa", "Clientes visitados ÷ clientes de carteira")}${eth("fora", "Clientes visitados<br>fora carteira", "Clientes visitados que não são da carteira")}${eth("visitas", "Qtd<br>visitas", "Visitas realizadas no período")}</tr></thead><tbody>`;
+  let eq = `<thead><tr>${eth("nome", "Equipe", "Ordenar por nome")}${eth("carteira", "Clientes de<br>carteira", "Clientes na carteira (por conta crédito)")}${eth("vis", "Clientes<br>visitados", "Clientes da carteira com pelo menos uma visita no período")}${eth("nao", "Clientes não<br>visitados", "Clientes da carteira sem visita no período")}${eth("cob", "Taxa", "Clientes visitados ÷ clientes de carteira")}${eth("fora", "Clientes visitados<br>fora carteira", "Clientes visitados que não são da carteira")}${eth("visCart", "Visitas<br>carteira", "Visitas realizadas a clientes da carteira do consultor")}${eth("visitas", "Visitas<br>total", "Todas as visitas realizadas no período (carteira + fora da carteira)")}</tr></thead><tbody>`;
   for (const r of regs) {
-    const ab = b.abertos.has(r.nome) || (S.reg && S.reg.nome === r.nome);
+    const ab = b.abertos.has(r.nome);
     eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bxb" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}" aria-expanded="${ab}">▸</button><b class="bi-cn" title="${esc(r.nome)}">${esc(r.nome)}</b></td>${cel(r)}</tr>`;
     if (ab) for (const c of eSort(r.cons))
       eq += `<tr class="bi-c ${t.t === "cons" && t.n === c.nome ? "sel" : ""}" data-bisel="cons" data-n="${esc(c.nome)}" tabindex="0"><td><span class="bi-cn" title="${esc(titulo(c.nome))}">${esc(titulo(c.nome))}</span>${c.sit === "isento" ? ` <span class="chip ch-info">${esc(c.isento)}</span>` : ""}</td>${cel(c)}</tr>`;
   }
   eq += `</tbody><tfoot><tr class="bi-t ${t.t === "all" ? "sel" : ""}" data-bisel="all" tabindex="0"><td><b>Total</b></td>${cel(H.total)}</tr></tfoot>`;
   $("biEquipe").innerHTML = eq;
-  const selRow = $("biEquipe").querySelector("tr.sel:not(.bi-t)"); if (selRow && b.rolar) { selRow.scrollIntoView({ block: "nearest" }); b.rolar = false; }
+  const selRow = $("biEquipe").querySelector("tr.sel:not(.bi-t)");
+  if (selRow && b.rolar) {   // rola só dentro do quadro, sem esconder a linha atrás do cabeçalho fixo; no consultor, mostra também a regional dele
+    const sc = $("biEquipe").parentElement, th = $("biEquipe").tHead.offsetHeight, tf = $("biEquipe").tFoot?.offsetHeight || 0, vis = sc.clientHeight - th - tf;
+    let regRow = selRow; if (selRow.classList.contains("bi-c")) { let p = selRow.previousElementSibling; while (p && !p.classList.contains("bi-r")) p = p.previousElementSibling; if (p) regRow = p; }
+    const topo = selRow.offsetTop + selRow.offsetHeight - regRow.offsetTop <= vis ? regRow.offsetTop : selRow.offsetTop;
+    if (selRow.offsetTop < sc.scrollTop + th || selRow.offsetTop + selRow.offsetHeight > sc.scrollTop + th + vis || regRow !== selRow) sc.scrollTo({ top: Math.max(0, topo - th), behavior: "smooth" });
+    b.rolar = false;
+  }
   renderBiDet(contas, fora, S.cons.length > 1);
 }
 function renderBiDet(contas, fora, multi) {
   const b = state.bi, q = norm(b.busca), o = b.ord, ref = REF();
   const casaB = (x) => !q || norm(x.nome).includes(q) || norm(x.local || "").includes(q) || String(x.conta || x.cid).includes(b.busca.trim()) || (x.nomes || []).some((n) => norm(n).includes(q));
-  const val = (x) => { const s = sinaisConta(x); return o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ult ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
+  const val = (x) => { const s = sinaisConta(x); return o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ultTs ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
   const ordena = (l) => [...l].sort((x, y) => { const p = val(x), r = val(y); return (typeof p === "string" ? p.localeCompare(r, "pt-BR") : p - r) * o.d || norm(x.nome).localeCompare(norm(y.nome)); });
   const cart = ordena(contas.filter((x) => (b.mostra === "todas" || x.st === b.mostra) && casaB(x))), fr = b.mostra === "todas" ? ordena(fora.filter(casaB)) : [];
   $("biDetLbl").textContent = `${fmtN(contas.length)} clientes na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitados · ${fmtN(fora.length)} fora da carteira`;
@@ -2239,7 +2265,7 @@ function renderTabCli(cli) {
   tabela("tCli", [
     { k: "nome", l: "Cliente", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub mono">${esc(c.cid)}</span>` },
     { k: "sem", l: "Dias sem visita", n: 1, v: (c) => (c.sem == null ? (c.faixa === 5 ? 99999 : 99998) : c.sem), h: (c) => (c.sem == null ? (c.faixa === 5 ? `<span class="chip ch-red">nunca visitado</span>` : `<span class="chip ch-neu">só visita aberta</span>`) : `<span class="chip ${["ch-ok", "ch-info", "ch-amb", "ch-red"][c.faixa]}">${fmtN(c.sem)} dias</span>`) },
-    { k: "ult", l: "Última visita", n: 1, v: (c) => c.ult?.dia, h: (c) => (c.ult ? `${fmtDiaAno(c.ult.dia)}<span class="sub">${esc(c.ult.tipo)}</span>` : "—") },
+    { k: "ult", l: "Última visita", n: 1, v: (c) => (c.ult ? c.ult.ck ?? c.ult.ini ?? c.ult.dia * 1440 : null), h: (c) => (c.ult ? `${fmtDiaAno(c.ult.dia)}<span class="sub">${esc(c.ult.tipo)}</span>` : "—") },
     { k: "consultor", l: "Consultor", h: (c) => `${esc(titulo(c.consultor))}<span class="sub">${esc(c.regional)}${state.db.cart ? (c.naCarteira ? " · da carteira" : " · fora de carteira") : ""}</span>` },
     { k: "nTot", l: "Visitas", n: 1, h: (c) => fmtN(c.nTot) },
     { k: "proxima", l: "Próxima planejada", n: 1, h: (c) => (c.proxima == null ? "—" : `${fmtDia(c.proxima)}${c.proxima < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}`) },
@@ -2470,7 +2496,7 @@ function renderVisitas() {
   const lin = linhasVisitas();
   $("visCount").textContent = plural(lin.length, "visita");
   tabela("tVis", [
-    { k: "dia", l: "Data", n: 1, h: (v) => `${fmtDiaAno(v.dia)}<span class="sub">${v.st === "ok" ? fmtHora(v.ck) : "plan. " + fmtHora(v.ini)}</span>` },
+    { k: "dia", l: "Data", n: 1, v: (v) => (v.st === "ok" ? v.ck ?? v.ini : v.ini) ?? v.dia * 1440, h: (v) => `${fmtDiaAno(v.dia)}<span class="sub">${v.st === "ok" ? fmtHora(v.ck) : "plan. " + fmtHora(v.ini)}</span>` },
     { k: "status", l: "Status", h: (v) => chipStatus(v) },
     { k: "cli", l: "Cliente", v: (v) => state.db.clientes.get(v.cid)?.nome, h: (v) => `<b>${esc(titulo(state.db.clientes.get(v.cid)?.nome))}</b><span class="sub">${esc(v.tipo)}${v.sv ? " · " + esc(v.sv.pesq) : ""}</span>` },
     { k: "consultor", l: "Consultor", h: (v) => `${esc(titulo(v.consultor))}<span class="sub">${esc(v.regional)} · ${esc(titulo(v.folha))}</span>` },
@@ -3301,7 +3327,7 @@ function ligarEventos() {
     b.sel = { t, n }; b.lim = { cart: 200, fora: 100 }; b.rolar = true; if (t === "reg" && n) b.abertos.add(n);
     if (state.f.cons.length && t !== "cons") aplicarFiltro("cons", ""); else if (state.f.cons.length && t === "cons") aplicarFiltro("cons", n); else renderCarteira(); };
   $("pane-carteira").addEventListener("click", (e) => {
-    const ab = e.target.closest("[data-biab]"); if (ab) { e.stopPropagation(); const s = state.bi.abertos, n = ab.dataset.biab; s.has(n) ? s.delete(n) : s.add(n); if (state.bi.sel.t !== "all" && !s.has(n) && state.bi.sel.n === n) state.bi.sel = { t: "all", n: null }; renderCarteira(); return; }
+    const ab = e.target.closest("[data-biab]"); if (ab) { e.stopPropagation(); const s = state.bi.abertos, n = ab.dataset.biab; s.has(n) ? s.delete(n) : s.add(n); if (state.bi.autoAberta === n) state.bi.autoAberta = null; if (state.bi.sel.t !== "all" && !s.has(n) && state.bi.sel.n === n) state.bi.sel = { t: "all", n: null }; renderCarteira(); return; }
     const cl = e.target.closest("[data-bicli]"); if (cl) { const s = state.bi.cliAbertos, n = cl.dataset.bicli; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
     const gp = e.target.closest("[data-bigrp]"); if (gp) { const s = state.bi.grpFechados, n = gp.dataset.bigrp; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
     const ms = e.target.closest("[data-bimais]"); if (ms) { state.bi.lim[ms.dataset.bimais] += 300; renderCarteira(); return; }
@@ -3313,7 +3339,7 @@ function ligarEventos() {
   });
   $("pane-carteira").addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-bisel], th[data-biord], th[data-eqord]")) { e.preventDefault(); e.target.click(); } });
   const irBi = (d) => { const H = semFiltroCons(hierarquia), l = biConsOrdem(H), b = state.bi; let i = b.sel.t === "cons" ? l.indexOf(b.sel.n) : -1;
-    if (i < 0) { const r = b.sel.t === "reg" ? H.regs.find((x) => x.nome === b.sel.n) : null; const n = r ? r.cons.map((c) => c.nome).sort((a, c) => a.localeCompare(c, "pt-BR"))[0] : l[0]; i = l.indexOf(n) - d; }
+    if (i < 0) { const r = b.sel.t === "reg" ? H.regs.find((x) => x.nome === b.sel.n) : null; const n = r ? biEqSort(r.cons).map((c) => c.nome)[d > 0 ? 0 : r.cons.length - 1] : d > 0 ? l[0] : l[l.length - 1]; i = l.indexOf(n) - d; }
     const n = l[i + d]; if (n) biSel("cons", n); };
   $("biAnt").addEventListener("click", () => irBi(-1)); $("biProx").addEventListener("click", () => irBi(1));
   document.addEventListener("keydown", (e) => { if (state.pane !== "carteira" || e.target.closest("input, select, textarea") || !$("mCli").hidden) return; if (e.key === "ArrowRight") irBi(1); if (e.key === "ArrowLeft") irBi(-1); });
