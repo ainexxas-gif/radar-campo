@@ -689,6 +689,27 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
   .filters:not(.open) { border-bottom-color: transparent; }
 }
 @media (max-width: 400px) { .hdr .logo { display: none; } .hdr .tit { border-left: 0; padding-left: 0; } }
+
+/* filtros com caixinhas de marcar */
+.ms { position: relative; min-width: 0; }
+.ms-b { width: 100%; height: 32px; text-align: left; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); padding: 5px 26px 5px 8px; font: inherit; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; position: relative; }
+.ms-b::after { content: ""; position: absolute; right: 10px; top: 50%; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-70%) rotate(45deg); opacity: .65; transition: transform .15s; }
+.ms-b[aria-expanded="true"]::after { transform: translateY(-25%) rotate(-135deg); }
+.ms-b span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.ms.on .ms-b { border-color: var(--brand); color: var(--brand); font-weight: 700; box-shadow: inset 0 0 0 1px var(--brand); }
+.ms-p { position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; width: max(100%, 310px); background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 34px rgba(0, 20, 50, .2); padding: 8px; display: grid; gap: 6px; }
+.ms-p.dir { left: auto; right: 0; }
+.ms-p[hidden] { display: none !important; }
+.ms-l { max-height: 290px; overflow: auto; display: grid; align-content: start; overscroll-behavior: contain; }
+.ms-o { display: flex; gap: 9px; align-items: center; padding: 6px 7px; border-radius: 6px; cursor: pointer; font-size: .88rem; color: var(--ink); line-height: 1.25; }
+.ms-o:hover { background: var(--surface); }
+.f-grid .ms-o input { width: 16px; height: 16px; padding: 0; margin: 0; flex: none; accent-color: var(--brand); }
+.ms-o input:checked + span { font-weight: 700; }
+.ms-v { padding: 8px; }
+.ms-f { display: flex; gap: 12px; align-items: center; border-top: 1px solid var(--line); padding-top: 7px; flex-wrap: wrap; }
+.ms-n { flex: 1 1 100%; font-size: .76rem; color: var(--muted); }
+.ms-f .btn { margin-left: auto; }
+@media (max-width: 720px) { .ms-p { width: min(92vw, 340px); } .ms:nth-child(odd) .ms-p { left: auto; right: 0; } }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -768,10 +789,10 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
           <input id="fDe" type="date" aria-label="De" title="Início do período"><span class="ate">a</span><input id="fAte" type="date" aria-label="Até" title="Fim do período">
           <div class="quick" id="quick" role="group" aria-label="Atalhos de período"><button type="button" data-q="mes" aria-pressed="true">Mês atual</button><button type="button" data-q="ant">Mês anterior</button><button type="button" data-q="7">7 dias</button><button type="button" data-q="tudo">Tudo</button></div>
         </div>
-        <select id="fGrupo" aria-label="Canal"><option value="">Todos os canais</option></select>
-        <select id="fReg" aria-label="Regional ou equipe"><option value="">Todas as regionais</option></select>
-        <select id="fCons" aria-label="Consultor"><option value="">Todos os consultores</option></select>
-        <select id="fTipo" aria-label="Tipo de visita"><option value="">Todos os tipos de visita</option></select>
+        <div class="ms" id="fGrupo"><button type="button" class="ms-b" aria-haspopup="listbox" aria-expanded="false" aria-label="Canal"><span>Todos os canais</span></button><div class="ms-p" hidden><input type="search" placeholder="Buscar" aria-label="Buscar canal"><div class="ms-l"></div><div class="ms-f"><span class="ms-n"></span><button type="button" class="linkbtn" data-ms="todos">Marcar todos</button><button type="button" class="linkbtn" data-ms="limpar">Limpar</button><button type="button" class="btn sm primary" data-ms="ok">Aplicar</button></div></div></div>
+        <div class="ms" id="fReg"><button type="button" class="ms-b" aria-haspopup="listbox" aria-expanded="false" aria-label="Regional ou equipe"><span>Todas as regionais</span></button><div class="ms-p" hidden><input type="search" placeholder="Buscar" aria-label="Buscar regional ou equipe"><div class="ms-l"></div><div class="ms-f"><span class="ms-n"></span><button type="button" class="linkbtn" data-ms="todos">Marcar todos</button><button type="button" class="linkbtn" data-ms="limpar">Limpar</button><button type="button" class="btn sm primary" data-ms="ok">Aplicar</button></div></div></div>
+        <div class="ms" id="fCons"><button type="button" class="ms-b" aria-haspopup="listbox" aria-expanded="false" aria-label="Consultor"><span>Todos os consultores</span></button><div class="ms-p" hidden><input type="search" placeholder="Buscar" aria-label="Buscar consultor"><div class="ms-l"></div><div class="ms-f"><span class="ms-n"></span><button type="button" class="linkbtn" data-ms="todos">Marcar todos</button><button type="button" class="linkbtn" data-ms="limpar">Limpar</button><button type="button" class="btn sm primary" data-ms="ok">Aplicar</button></div></div></div>
+        <div class="ms" id="fTipo"><button type="button" class="ms-b" aria-haspopup="listbox" aria-expanded="false" aria-label="Tipo de visita"><span>Todos os tipos de visita</span></button><div class="ms-p" hidden><input type="search" placeholder="Buscar" aria-label="Buscar tipo de visita"><div class="ms-l"></div><div class="ms-f"><span class="ms-n"></span><button type="button" class="linkbtn" data-ms="todos">Marcar todos</button><button type="button" class="linkbtn" data-ms="limpar">Limpar</button><button type="button" class="btn sm primary" data-ms="ok">Aplicar</button></div></div></div>
         <input id="fBusca" class="busca" type="search" placeholder="Buscar cliente" aria-label="Buscar cliente">
       </div>
       <div class="f-row2"><div class="chips" id="chips" aria-live="polite"></div><span class="ctx" id="ctx"></span><span class="refdata" id="refdata"></span></div>
@@ -1489,7 +1510,7 @@ function lerQuestionarios(wb) {
 }
 
 /* =================== estado, filtros e recortes =================== */
-const state = { db: null, conta: null, escopo: null, f: { de: null, ate: null, grupo: "", reg: "", cons: "", tipo: "", q: "" }, pane: "geral",
+const state = { db: null, conta: null, escopo: null, f: { de: null, ate: null, grupo: [], reg: [], cons: [], tipo: [], q: "" }, pane: "geral",
   mapa: { met: "vis", sel: null, vb: null }, cal: null, calSel: null, ord: {}, pag: { cli: 1, vis: 1 }, imp: { v: null, q: null } };
 
 function periodoTotal() { const ps = state.db.meta.periodos; return [Math.min(...ps.map((p) => p[0])), Math.max(...ps.map((p) => p[1]))]; }
@@ -1499,10 +1520,10 @@ const visivel = (v) => !state.escopo || state.escopo.has(v.regional);
 function casa(v, sem = {}) {
   const f = state.f;
   if (!visivel(v)) return false;
-  if (!sem.grupo && f.grupo && v.grupo !== f.grupo) return false;
-  if (!sem.reg && f.reg && v.regional !== f.reg) return false;
-  if (!sem.cons && f.cons && v.consultor !== f.cons) return false;
-  if (!sem.tipo && f.tipo && v.tipo !== f.tipo) return false;
+  if (!sem.grupo && f.grupo.length && !f.grupo.includes(v.grupo)) return false;
+  if (!sem.reg && f.reg.length && !f.reg.includes(v.regional)) return false;
+  if (!sem.cons && f.cons.length && !f.cons.includes(v.consultor)) return false;
+  if (!sem.tipo && f.tipo.length && !f.tipo.includes(v.tipo)) return false;
   if (!sem.q && f.q) { const q = norm(f.q); const c = state.db.clientes.get(v.cid); if (!norm(c?.nome).includes(q) && !String(v.cid).includes(f.q.trim())) return false; }
   return true;
 }
@@ -1727,8 +1748,8 @@ function renderGeral() {
   renderHier();
 }
 /* =================== CARTEIRA × VISITAS: Regional → Consultor → Clientes =================== */
-const casaCart = (c) => { const f = state.f; if (state.escopo && !state.escopo.has(c.regional)) return false; if (f.grupo && c.grupo !== f.grupo) return false;
-  if (f.reg && c.regional !== f.reg) return false; if (f.cons && c.vend !== f.cons) return false;
+const casaCart = (c) => { const f = state.f; if (state.escopo && !state.escopo.has(c.regional)) return false; if (f.grupo.length && !f.grupo.includes(c.grupo)) return false;
+  if (f.reg.length && !f.reg.includes(c.regional)) return false; if (f.cons.length && !f.cons.includes(c.vend)) return false;
   if (f.q) { const q = norm(f.q), t = f.q.trim(); if (!norm(c.nome).includes(q) && !c.nomes.some((n) => norm(n).includes(q)) && !c.cids.some((x) => String(x).includes(t)) && !String(c.conta).includes(t)) return false; } return true; };
 if (!state.hier) state.hier = { abertos: new Set(), consAbertos: new Set(), aba: new Map(), tudo: new Set(), busca: "", ord: { k: "nao", d: -1 } };
 function hierarquia() {
@@ -1831,7 +1852,7 @@ function renderHier() {
   html += `<tr class="h-tot"><td class="stk"><b>Total${state.escopo ? " da sua equipe" : ""}</b><span class="sub">${plural(H.regs.length, "regional", "regionais")} · ${plural(T.total, "consultor", "consultores")}</span></td>${hCelulas(T)}</tr>`;
   for (const r of regs) {
     const ab = aberto(r);
-    html += `<tr class="h-reg ${ab ? "aberto" : ""} ${state.f.reg === r.nome ? "sel" : ""}" data-hreg="${esc(r.nome)}" tabindex="0" aria-expanded="${ab}">
+    html += `<tr class="h-reg ${ab ? "aberto" : ""} ${state.f.reg.includes(r.nome) ? "sel" : ""}" data-hreg="${esc(r.nome)}" tabindex="0" aria-expanded="${ab}">
       <td class="stk"><span class="hx" aria-hidden="true">▸</span><b>${esc(r.nome)}</b><span class="sub">${esc(r.grupo)}${r.gerente ? ` · Gerente: ${esc(titulo(r.gerente))}` : ""} · <button type="button" class="linkbtn hf" data-filtra-reg="${esc(r.nome)}">${state.f.reg === r.nome ? "tirar filtro" : "filtrar o painel"}</button></span></td>${hCelulas(r)}</tr>`;
     if (!ab) continue;
     for (const c of hOrd(r.consV)) {
@@ -1846,7 +1867,7 @@ function renderHier() {
 }
 /* =================== CARTEIRA: painel no formato BI (números + equipe + detalhamento) =================== */
 if (!state.bi) state.bi = { sel: { t: "all", n: null }, abertos: new Set(), cliAbertos: new Set(), grpFechados: new Set(), mostra: "todas", ord: { k: "nome", d: 1 }, lim: { cart: 200, fora: 100 }, busca: "" };
-function semFiltroCons(fn) { const s = state.f.cons; state.f.cons = ""; invalidar(); try { return fn(); } finally { state.f.cons = s; invalidar(); } }
+function semFiltroCons(fn) { if (state.f.cons.length > 1) return fn(); const s = state.f.cons; state.f.cons = []; invalidar(); try { return fn(); } finally { state.f.cons = s; invalidar(); } }
 function biSelecao(H) {
   const s = state.bi.sel;
   if (s.t === "cons") { for (const r of H.regs) { const c = r.cons.find((x) => x.nome === s.n); if (c) return { node: c, cons: [c], reg: r }; } }
@@ -1858,7 +1879,7 @@ const sinaisMemo = new Map();
 function sinaisConta(x) { const k = x.k + "|" + state.f.ate; if (!sinaisMemo.has(k)) { const cids = x.cids || [x.cid]; sinaisMemo.set(k, ultimosSinais(cids.flatMap((c) => state.db.clientes.get(c)?.vis || []).filter(visivel))); } return sinaisMemo.get(k); }
 function renderCarteira() {
   const b = state.bi;
-  if (state.f.cons) b.sel = { t: "cons", n: state.f.cons }; else if (state.f.reg && b.sel.t === "all") b.sel = { t: "reg", n: state.f.reg };
+  if (state.f.cons.length === 1) b.sel = { t: "cons", n: state.f.cons[0] }; else if (state.f.reg.length === 1 && b.sel.t === "all") b.sel = { t: "reg", n: state.f.reg[0] };
   const H = semFiltroCons(hierarquia), S = biSelecao(H), N = S.node, temCart = !!state.db.cart, ref = REF();
   // período anterior de mesmo tamanho, para comparar a taxa de visitadas
   let ant = null;
@@ -3081,29 +3102,85 @@ function aplicarPeriodo(q, inicial) {
   if ($("fDe")) { $("fDe").value = isoDia(de); $("fAte").value = isoDia(ate); }
   marcarQuick(q);
 }
+/* ---------- filtros com caixinhas de marcar (vários valores por filtro) ---------- */
+const MS = {
+  grupo: { id: "fGrupo", todos: "Todos os canais", um: "canal", varios: "canais", rot: "Canal" },
+  reg: { id: "fReg", todos: "Todas as regionais", um: "regional", varios: "regionais", rot: "Regional" },
+  cons: { id: "fCons", todos: "Todos os consultores", um: "consultor", varios: "consultores", rot: "Consultor" },
+  tipo: { id: "fTipo", todos: "Todos os tipos de visita", um: "tipo", varios: "tipos", rot: "Tipo" },
+};
+const msOpcoes = {};
+const soEsse = (k, x) => state.f[k].length === 1 && state.f[k][0] === x;
 function preencherFiltros() {
-  const vis = state.db.visits.filter(visivel);
-  const opt = (el, arr, todos) => { const atual = el.value; el.innerHTML = `<option value="">${todos}</option>` + arr.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(""); el.value = arr.some(([v]) => v === atual) ? atual : ""; };
-  const f = state.f;
-  opt($("fGrupo"), ORDEM_GRUPO.filter((g) => vis.some((v) => v.grupo === g)).map((g) => [g, g]), "Todos os canais");
-  opt($("fReg"), [...new Set(vis.filter((v) => !f.grupo || v.grupo === f.grupo).map((v) => v.regional))].sort().map((r) => [r, r]), "Todas as regionais");
-  opt($("fCons"), [...new Set(vis.filter((v) => (!f.grupo || v.grupo === f.grupo) && (!f.reg || v.regional === f.reg)).map((v) => v.consultor))].sort().map((c) => [c, titulo(c)]), "Todos os consultores");
-  opt($("fTipo"), [...new Set(vis.map((v) => v.tipo))].sort().map((t) => [t, t]), "Todos os tipos de visita");
-  f.grupo = $("fGrupo").value; f.reg = $("fReg").value; f.cons = $("fCons").value; f.tipo = $("fTipo").value;
+  const vis = state.db.visits.filter(visivel), f = state.f;
+  const tem = (k, x) => !f[k].length || f[k].includes(x);
+  msOpcoes.grupo = ORDEM_GRUPO.filter((g) => vis.some((v) => v.grupo === g)).map((g) => [g, g]);
+  msOpcoes.reg = [...new Set(vis.filter((v) => tem("grupo", v.grupo)).map((v) => v.regional))].sort().map((r) => [r, r]);
+  msOpcoes.cons = [...new Set(vis.filter((v) => tem("grupo", v.grupo) && tem("reg", v.regional)).map((v) => v.consultor))].sort().map((c) => [c, titulo(c)]);
+  msOpcoes.tipo = [...new Set(vis.map((v) => v.tipo))].sort().map((t) => [t, t]);
+  for (const k of Object.keys(MS)) { const ok = new Set(msOpcoes[k].map(([v]) => v)); f[k] = f[k].filter((x) => ok.has(x)); msRotulo(k); }
   const [a, b] = periodoTotal(); $("fDe").min = $("fAte").min = isoDia(Math.min(a, hojeSP()) - 400); $("fDe").max = $("fAte").max = isoDia(Math.max(b, hojeSP()) + 90);
   $("fDe").value = isoDia(f.de); $("fAte").value = isoDia(f.ate);
+}
+function msRotulo(k) {
+  const c = MS[k], sel = state.f[k], el = $(c.id), lbl = new Map(msOpcoes[k] || []);
+  const t = !sel.length ? c.todos : sel.length === 1 ? (lbl.get(sel[0]) || sel[0]) : `${sel.length} ${c.varios}`;
+  el.querySelector(".ms-b span").textContent = t; el.classList.toggle("on", sel.length > 0);
+  el.querySelector(".ms-b").title = sel.length > 1 ? sel.map((x) => lbl.get(x) || x).join(" · ") : t;
+}
+let msAberto = null;
+function msAbrir(k) {
+  if (msAberto && msAberto.k !== k) msFechar(true);
+  const c = MS[k], el = $(c.id), p = el.querySelector(".ms-p");
+  msAberto = { k, sel: new Set(state.f[k]) };
+  p.querySelector("input").value = ""; msLista(); p.hidden = false; el.querySelector(".ms-b").setAttribute("aria-expanded", "true");
+  const r = el.getBoundingClientRect(); p.classList.toggle("dir", r.left + 300 > innerWidth);
+  setTimeout(() => p.querySelector("input").focus(), 0);
+}
+function msLista() {
+  const { k, sel } = msAberto, c = MS[k], p = $(c.id).querySelector(".ms-p"), q = norm(p.querySelector("input").value);
+  const l = (msOpcoes[k] || []).filter(([, t]) => !q || norm(t).includes(q));
+  p.querySelector(".ms-l").innerHTML = l.map(([v, t]) => `<label class="ms-o"><input type="checkbox" value="${esc(v)}" ${sel.has(v) ? "checked" : ""}><span>${esc(t)}</span></label>`).join("") || `<p class="note ms-v">Nada encontrado.</p>`;
+  p.querySelector(".ms-n").textContent = sel.size ? `${sel.size} ${sel.size === 1 ? c.um : c.varios} marcad${c.um === "regional" ? "a" : "o"}${sel.size === 1 ? "" : "s"}` : c.todos;
+  p.querySelector('[data-ms="todos"]').textContent = q ? "Marcar os da busca" : "Marcar todos";
+}
+function msFechar(aplicar) {
+  if (!msAberto) return;
+  const { k, sel } = msAberto, c = MS[k], el = $(c.id); msAberto = null;
+  el.querySelector(".ms-p").hidden = true; el.querySelector(".ms-b").setAttribute("aria-expanded", "false");
+  if (!aplicar) return;
+  const nova = (msOpcoes[k] || []).map(([v]) => v).filter((v) => sel.has(v));
+  if (nova.length === state.f[k].length && nova.every((x) => state.f[k].includes(x))) return;
+  aplicarFiltro(k, nova.length === (msOpcoes[k] || []).length ? [] : nova);
+}
+function ligarMS() {
+  for (const [k, c] of Object.entries(MS)) {
+    const el = $(c.id), p = el.querySelector(".ms-p");
+    el.querySelector(".ms-b").addEventListener("click", () => (msAberto?.k === k ? msFechar(true) : msAbrir(k)));
+    p.querySelector("input").addEventListener("input", msLista);
+    p.addEventListener("change", (e) => { const cb = e.target.closest("input[type=checkbox]"); if (!cb) return; cb.checked ? msAberto.sel.add(cb.value) : msAberto.sel.delete(cb.value); msLista(); });
+    p.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-ms]"); if (!b) return;
+      if (b.dataset.ms === "limpar") { msAberto.sel.clear(); msLista(); }
+      else if (b.dataset.ms === "todos") { p.querySelectorAll(".ms-l input").forEach((i) => msAberto.sel.add(i.value)); msLista(); }
+      else msFechar(true);
+    });
+    p.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); msFechar(false); el.querySelector(".ms-b").focus(); } if (e.key === "Enter" && e.target.matches("input[type=search]")) { e.preventDefault(); msFechar(true); } });
+  }
+  document.addEventListener("mousedown", (e) => { if (msAberto && !$(MS[msAberto.k].id).contains(e.target)) msFechar(true); });
 }
 function marcarQuick(q) { $("quick").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.q === q))); }
 function renderChips() {
   const f = state.f, c = [];
-  if (f.grupo) c.push(["grupo", "Canal", f.grupo]); if (f.reg) c.push(["reg", "Regional", f.reg]); if (f.cons) c.push(["cons", "Consultor", titulo(f.cons)]); if (f.tipo) c.push(["tipo", "Tipo", f.tipo]); if (f.q) c.push(["q", "Cliente", f.q]);
+  for (const [k, m] of Object.entries(MS)) if (f[k].length) { const lbl = new Map(msOpcoes[k] || []); const nomes = f[k].map((x) => lbl.get(x) || (k === "cons" ? titulo(x) : x)); c.push([k, m.rot, nomes.length > 2 ? `${nomes.slice(0, 2).join(", ")} +${nomes.length - 2}` : nomes.join(", "), nomes.join(" · ")]); }
+  if (f.q) c.push(["q", "Cliente", f.q, f.q]);
   $("fCount").textContent = c.length || "";
-  $("chips").innerHTML = c.map(([k, l, v]) => `<button type="button" class="fchip" data-limpa="${k}">${l}: <span>${esc(v)}</span><i aria-hidden="true">✕</i></button>`).join("") + (c.length > 1 ? `<button type="button" class="linkbtn" data-limpa="tudo">Limpar filtros</button>` : "");
+  $("chips").innerHTML = c.map(([k, l, v, t]) => `<button type="button" class="fchip" data-limpa="${k}" title="${esc(t)}">${l}: <span>${esc(v)}</span><i aria-hidden="true">✕</i></button>`).join("") + (c.length > 1 ? `<button type="button" class="linkbtn" data-limpa="tudo">Limpar filtros</button>` : "");
 }
 function aplicarFiltro(k, v) {
-  state.f[k] = v; if (k === "grupo") { state.f.reg = ""; state.f.cons = ""; } if (k === "reg") state.f.cons = "";
-  const map = { grupo: "fGrupo", reg: "fReg", cons: "fCons", tipo: "fTipo", q: "fBusca" }; if (map[k]) $(map[k]).value = v;
-  preencherFiltros(); $(map[k]) && ($(map[k]).value = v); state.f[k] = v; state.pag = { cli: 1, vis: 1 }; state.mapa.sel = null; render();
+  state.f[k] = k === "q" ? v : Array.isArray(v) ? v : v ? [v] : [];
+  if (k === "q") $("fBusca").value = v;
+  preencherFiltros(); state.pag = { cli: 1, vis: 1 }; state.mapa.sel = null; invalidar(); render();
 }
 const registro = {};
 setInterval(() => { if (state.conta && !state.conta.trocar && document.visibilityState === "visible" && !$("app").hidden) API.registrar("ativo"); }, 300000);
@@ -3153,13 +3230,12 @@ function ligarEventos() {
   $("tabs").addEventListener("click", (e) => { const t = e.target.closest(".tab"); if (t) selPane(t.dataset.pane); });
   window.addEventListener("hashchange", () => { const p = location.hash.slice(1); if (p && p !== state.pane && state.conta) selPane(p); });
   // filtros
-  const fx = { fGrupo: "grupo", fReg: "reg", fCons: "cons", fTipo: "tipo" };
-  for (const [id, k] of Object.entries(fx)) $(id).addEventListener("change", (e) => aplicarFiltro(k, e.target.value));
+  ligarMS();
   let tBusca; $("fBusca").addEventListener("input", (e) => { clearTimeout(tBusca); tBusca = setTimeout(() => { state.f.q = e.target.value.trim(); state.pag = { cli: 1, vis: 1 }; render(); }, 250); });
   const datas = () => { const de = diaIso($("fDe").value), ate = diaIso($("fAte").value); if (de == null || ate == null || de > ate) return; state.f.de = de; state.f.ate = ate; marcarQuick(""); state.cal = null; render(); };
   $("fDe").addEventListener("change", datas); $("fAte").addEventListener("change", datas);
   $("quick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; aplicarPeriodo(b.dataset.q); render(); });
-  $("chips").addEventListener("click", (e) => { const b = e.target.closest("[data-limpa]"); if (!b) return; const k = b.dataset.limpa; if (k === "tudo") { Object.assign(state.f, { grupo: "", reg: "", cons: "", tipo: "", q: "" }); $("fBusca").value = ""; preencherFiltros(); render(); } else { if (k === "q") $("fBusca").value = ""; aplicarFiltro(k, ""); } });
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest("[data-limpa]"); if (!b) return; const k = b.dataset.limpa; if (k === "tudo") { Object.assign(state.f, { grupo: [], reg: [], cons: [], tipo: [], q: "" }); $("fBusca").value = ""; preencherFiltros(); invalidar(); render(); } else { if (k === "q") $("fBusca").value = ""; aplicarFiltro(k, ""); } });
   /* filtros: somem ao rolar para baixo e voltam ao rolar para cima (ou pelo botão Filtros) */
   let ultY = 0;
   const sticky = () => {
@@ -3173,14 +3249,14 @@ function ligarEventos() {
   // cliques que abrem detalhes / filtram
   document.addEventListener("click", (e) => {
     const go = e.target.closest("[data-go]"); if (go) { selPane(go.dataset.go); if (go.dataset.hierfoco) setTimeout(() => $("hierPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 50); else scrollTo({ top: 0 }); return; }
-    const fr = e.target.closest("[data-filtra-reg]"); if (fr) { e.stopPropagation(); aplicarFiltro("reg", state.f.reg === fr.dataset.filtraReg ? "" : fr.dataset.filtraReg); return; }
+    const fr = e.target.closest("[data-filtra-reg]"); if (fr) { e.stopPropagation(); aplicarFiltro("reg", soEsse("reg", fr.dataset.filtraReg) ? "" : fr.dataset.filtraReg); return; }
     const ie = e.target.closest("[data-isentar]"); if (ie) { e.preventDefault(); e.stopPropagation(); abrirIsentar(ie.dataset.isentar); return; }
     const ix = e.target.closest("[data-isentar-x]"); if (ix) { e.preventDefault(); e.stopPropagation(); desisentar(ix.dataset.isentarX); return; }
     const nb = e.target.closest("[data-nota]"); if (nb) { e.preventDefault(); e.stopPropagation(); abrirNotas(nb.dataset.nota); return; }
     const nx = e.target.closest("[data-nota-x]"); if (nx) { excluirNota(nx.dataset.notaX, nx); return; }
     const cli = e.target.closest("[data-cli]"); if (cli) { e.preventDefault(); abrirCliente(cli.dataset.cli); return; }
     const con = e.target.closest("[data-cons]"); if (con) { e.preventDefault(); abrirConsultor(con.dataset.cons); return; }
-    const reg = e.target.closest("tr[data-reg]"); if (reg) { if (state.f.reg === reg.dataset.reg) aplicarFiltro("reg", ""); else { aplicarFiltro("grupo", ""); aplicarFiltro("reg", reg.dataset.reg); } return; }
+    const reg = e.target.closest("tr[data-reg]"); if (reg) { if (soEsse("reg", reg.dataset.reg)) aplicarFiltro("reg", ""); else { aplicarFiltro("grupo", ""); aplicarFiltro("reg", reg.dataset.reg); } return; }
     const mun = e.target.closest("[data-mun]"); if (mun && $("pane-mapa").contains(mun)) { state.mapa.sel = mun.dataset.mun && mun.dataset.mun !== state.mapa.sel ? mun.dataset.mun : null; desenharMapa(state.mapa.pts, state.mapa.lbl); detalheMapa(state.mapa.pts.find((g) => g.k === state.mapa.sel), state.mapa.lbl); return; }
     const z = e.target.closest("[data-z]"); if (z) { zoomMapa(+z.dataset.z); return; }
     if (e.target.closest("[data-fechar]") || e.target.classList.contains("modal")) { e.target.closest(".modal").hidden = true; return; }
@@ -3223,7 +3299,7 @@ function ligarEventos() {
   // aba Carteira (formato BI)
   const biSel = (t, n) => { const b = state.bi; if (b.sel.t === t && b.sel.n === n && t !== "all") { t = t === "cons" ? "reg" : "all"; n = t === "reg" ? (semFiltroCons(hierarquia).regs.find((r) => r.cons.some((c) => c.nome === b.sel.n)) || {}).nome : null; }
     b.sel = { t, n }; b.lim = { cart: 200, fora: 100 }; b.rolar = true; if (t === "reg" && n) b.abertos.add(n);
-    if (state.f.cons && t !== "cons") aplicarFiltro("cons", ""); else if (state.f.cons && t === "cons") aplicarFiltro("cons", n); else renderCarteira(); };
+    if (state.f.cons.length && t !== "cons") aplicarFiltro("cons", ""); else if (state.f.cons.length && t === "cons") aplicarFiltro("cons", n); else renderCarteira(); };
   $("pane-carteira").addEventListener("click", (e) => {
     const ab = e.target.closest("[data-biab]"); if (ab) { e.stopPropagation(); const s = state.bi.abertos, n = ab.dataset.biab; s.has(n) ? s.delete(n) : s.add(n); if (state.bi.sel.t !== "all" && !s.has(n) && state.bi.sel.n === n) state.bi.sel = { t: "all", n: null }; renderCarteira(); return; }
     const cl = e.target.closest("[data-bicli]"); if (cl) { const s = state.bi.cliAbertos, n = cl.dataset.bicli; s.has(n) ? s.delete(n) : s.add(n); renderCarteira(); return; }
@@ -3284,7 +3360,7 @@ function ligarEventos() {
   $("opOrd").addEventListener("change", (e) => { state.op.ord = e.target.value; reOp(); });
   $("opBoard").addEventListener("click", (e) => { const b = e.target.closest("[data-mais]"); if (!b) return; state.op.mais.add(b.dataset.mais); reOp(); });
   $("opRankProd").addEventListener("click", (e) => { const li = e.target.closest("[data-opprod]"); if (!li) return; const s = state.op.prod, p = li.dataset.opprod; s.has(p) ? s.delete(p) : s.add(p); reOp(); $("opBoard").scrollIntoView({ behavior: "smooth", block: "start" }); });
-  $("opRankReg").addEventListener("click", (e) => { const li = e.target.closest("[data-opreg]"); if (!li) return; aplicarFiltro("reg", state.f.reg === li.dataset.opreg ? "" : li.dataset.opreg); });
+  $("opRankReg").addEventListener("click", (e) => { const li = e.target.closest("[data-opreg]"); if (!li) return; aplicarFiltro("reg", soEsse("reg", li.dataset.opreg) ? "" : li.dataset.opreg); });
   $("opCopiar").addEventListener("click", copiarOp);
   $("nForm").addEventListener("submit", salvarNota);
   $("nTexto").addEventListener("input", () => { $("nConta").textContent = `${$("nTexto").value.length}/1000`; $("nErr").textContent = ""; });
