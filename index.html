@@ -721,6 +721,33 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 .bi-eq-t .bi-cn { max-width: 150px; }
 .bi { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .cart-sv { margin-top: 8px; font-size: .86rem; } .cart-sv summary { cursor: pointer; color: var(--brand); } .cart-sv p { margin: 6px 0 0; line-height: 1.5; }
+/* evolução mês a mês */
+.evo-g svg { width: 100%; height: auto; max-height: 220px; display: block; }
+.evo-g .evo-ax { stroke: var(--line); }
+.evo-g .evo-v { font-size: 12px; font-weight: 800; fill: var(--ink); }
+.evo-g .evo-m { font-size: 11px; fill: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.evo-d { font-size: 11px; font-weight: 700; fill: var(--muted); color: var(--muted); white-space: nowrap; }
+.evo-d.up { fill: var(--ok-ink); color: var(--ok-ink); } .evo-d.dn { fill: var(--red); color: var(--red); }
+.evo-t td.evo-c { background: color-mix(in srgb, var(--brand) calc(var(--a, 0) * 70%), transparent); }
+.evo-t td.evo-c span { font-weight: 700; }
+.evo-t td.evo-c[style*="--a:0.6"] span, .evo-t td.evo-c[style*="--a:0.7"] span, .evo-t td.evo-c[style*="--a:0.8"] span, .evo-t td.evo-c[style*="--a:0.9"] span, .evo-t td.evo-c[style*="--a:1.0"] span { color: #fff; }
+.evo-t tr.evo-r { cursor: pointer; } .evo-t tr.evo-r:hover td:first-child { color: var(--brand); text-decoration: underline; }
+.evo-t tfoot td { font-weight: 800; border-top: 2px solid var(--line); }
+.pot { color: var(--brand); font-size: 1rem; }
+#tParados td:first-child { min-width: 220px; } #tParados .sit-btn, #tParados td:nth-child(2) { white-space: nowrap; }
+/* aviso do dia */
+.hoje-av { position: fixed; right: 20px; bottom: 20px; z-index: 80; width: min(380px, calc(100vw - 32px)); display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: start; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-left: 5px solid var(--brand); border-radius: 12px; box-shadow: 0 18px 44px rgba(0, 25, 60, .25); padding: 14px 12px 14px 14px; opacity: 0; transform: translateY(14px); transition: opacity .25s, transform .25s; }
+.hoje-av.on { opacity: 1; transform: none; }
+.hoje-av[hidden] { display: none; }
+.hoje-av svg { width: 40px; height: 40px; padding: 8px; border-radius: 10px; background: var(--info-bg); fill: none; stroke: var(--brand); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.hoje-av b { font-size: .95rem; }
+.hoje-av p { margin: 3px 0 0; font-size: .9rem; line-height: 1.4; }
+.hoje-av strong { color: var(--brand); }
+.hoje-av .ha-2 { color: var(--muted); font-size: .84rem; }
+.hoje-av .ha-b { display: flex; gap: 14px; align-items: center; margin-top: 10px; }
+.hoje-av .ha-x { border: 0; background: none; color: var(--muted); font-size: 1rem; cursor: pointer; padding: 2px 4px; line-height: 1; }
+.hoje-av .ha-x:hover { color: var(--ink); }
+@media (max-width: 720px) { .hoje-av { right: 16px; left: 16px; bottom: 16px; width: auto; } }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -867,6 +894,13 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <div class="tbar"><input type="search" id="biBusca" placeholder="Buscar cliente, conta crédito ou município" aria-label="Buscar no detalhamento"><span class="legend"><span><i class="sw cg"></i>até 7 dias</span><span><i class="sw ca"></i>8 a 30</span><span><i class="sw cr"></i>mais de 30 ou nunca</span></span></div>
         <div class="tbl-wrap bi-det-w"><table class="bi-det-t" id="biDet"></table></div>
         <p class="note">Um cliente por linha, pela conta crédito (os vínculos já vêm juntos). A setinha ▸ abre as últimas visitas com o texto do consultor; clicar no nome abre o histórico completo. Questionário = pelo menos uma visita do período com questionário respondido. Intenção e área vêm do último questionário do cliente.</p>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h2>Evolução mês a mês</h2><div class="tbar"><span class="label" id="biEvoLbl"></span>
+          <div class="seg2" id="biEvoMet" role="group" aria-label="Medida"><button type="button" data-evo="cob" aria-pressed="true">Taxa de cobertura</button><button type="button" data-evo="vis">Clientes visitados</button><button type="button" data-evo="visitas">Visitas</button></div></div></div>
+        <div class="evo-g" id="biEvoGraf"></div>
+        <div class="tbl-wrap"><table class="evo-t" id="biEvoTab"></table></div>
+        <p class="note" id="biEvoNota"></p>
       </section>
     </div>
 
@@ -1198,6 +1232,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
   </div>
 </div>
 <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+<div class="hoje-av" id="hojeAviso" hidden role="status" aria-live="polite"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -1718,7 +1753,7 @@ function tabela(id, cols, linhas, opts = {}) {
   const ord = [...linhas].sort((a, b) => { const x = val(a), y = val(b); if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (typeof x === "string" ? x.localeCompare(y) : x - y) * o.d; });
   const pag = opts.pag ? state.pag[opts.pag] || 1 : 1, por = opts.por || 100000;
   const vis = ord.slice((pag - 1) * por, pag * por);
-  el.innerHTML = `<thead><tr>${cols.map((x) => `<th class="s ${x.n ? "n" : ""}" data-k="${x.k}" tabindex="0" ${x.k === o.k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${x.l} <span class="ord">${x.k === o.k ? (o.d > 0 ? "▲" : "▼") : ""}</span></th>`).join("")}</tr></thead>
+  el.innerHTML = `<thead><tr>${cols.map((x) => `<th class="s ${x.n ? "n" : ""}" data-k="${x.k}" tabindex="0" ${x.t ? `title="${esc(x.t)}"` : ""} ${x.k === o.k ? `aria-sort="${o.d > 0 ? "ascending" : "descending"}"` : ""}>${x.l} <span class="ord">${x.k === o.k ? (o.d > 0 ? "▲" : "▼") : ""}</span></th>`).join("")}</tr></thead>
     <tbody>${vis.map((r) => `<tr class="${opts.clk ? "clk" : ""} ${opts.cls ? opts.cls(r) : ""}" ${opts.clk ? opts.clk(r) : ""} ${opts.clk ? 'tabindex="0"' : ""}>${cols.map((x) => `<td class="${x.n ? "n" : ""} ${x.nw ? "nw" : ""}">${x.h ? x.h(r) : esc(r[x.k] ?? "—")}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${opts.vazio || "Nada neste recorte."}</td></tr>`}</tbody>`;
   el.querySelectorAll("th.s").forEach((th) => {
     const go = () => { const k = th.dataset.k; state.ord[id] = { k, d: o.k === k ? -o.d : (cols.find((x) => x.k === k).n ? -1 : 1) }; if (opts.pag) state.pag[opts.pag] = 1; opts.redo ? opts.redo() : tabela(id, cols, linhas, opts); };
@@ -1985,6 +2020,62 @@ function renderCarteira() {
     b.rolar = false;
   }
   renderBiDet(contas, fora, S.cons.length > 1);
+  renderBiEvo(H, S);
+}
+/* ---------- evolução mês a mês (segue a seleção: todas › regional › consultor) ---------- */
+const MES_ABR = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const mesIdx = (d) => { const x = dDate(d); return x.getUTCFullYear() * 12 + x.getUTCMonth(); };
+const mesLbl = (m) => `${MES_ABR[m % 12]}/${String(Math.floor(m / 12)).slice(2)}`;
+function renderBiEvo(H, S) {
+  const b = state.bi, cart = state.db.cart, sel = b.sel, met = b.evoMet || "cob";
+  const visOk = state.db.visits.filter((v) => v.st === "ok" && v.dia <= REF() && visivel(v));
+  // visitado no mês = pelo menos uma visita realizada por qualquer consultor (mesma regra do resto do painel)
+  const visMes = new Map();
+  for (const v of visOk) { const m = mesIdx(v.dia); (visMes.get(m) || visMes.set(m, new Set()).get(m)).add(ck(v.cid)); }
+  const meses = [...visMes.keys()].sort((a, c) => a - c).slice(-12);
+  const doEscopo = visOk.filter((v) => casa(v, { q: 1, cons: sel.t === "all" ? 0 : 1, reg: sel.t === "all" ? 0 : 1 }));
+  const cartRows = cart ? [...cart.map.values()].filter(casaCart) : [];
+  // linhas: em "todas" as regionais; numa regional os consultores dela; no consultor, só ele
+  const filhos = sel.t === "all" ? H.regs.map((r) => ({ t: "reg", nome: r.nome, cart: (c) => c.regional === r.nome, vis: (v) => v.regional === r.nome }))
+    : sel.t === "reg" ? (S.reg?.cons || []).map((c) => ({ t: "cons", nome: c.nome, sub: true, cart: (x) => x.vend === c.nome, vis: (v) => v.consultor === c.nome }))
+    : [{ t: "cons", nome: sel.n, cart: (x) => x.vend === sel.n, vis: (v) => v.consultor === sel.n }];
+  const escopo = sel.t === "all" ? { cart: () => true, vis: () => true } : sel.t === "reg" ? { cart: (c) => c.regional === sel.n, vis: (v) => v.regional === sel.n } : filhos[0];
+  const serie = (e) => {
+    const cl = cartRows.filter(e.cart), contas = new Set(cl.map((c) => c.k)), vs = doEscopo.filter(e.vis);
+    return meses.map((m) => {
+      const vm = visMes.get(m), vis = cl.filter((c) => vm.has(c.k)).length, doMes = vs.filter((v) => mesIdx(v.dia) === m);
+      return { m, carteira: cl.length, vis, cob: cl.length ? vis / cl.length : null, visitas: doMes.length, fora: new Set(doMes.map((v) => ck(v.cid)).filter((k) => !contas.has(k))).size };
+    });
+  };
+  const nomeEsc = sel.t === "all" ? "Todas as regionais" : sel.t === "reg" ? sel.n : titulo(sel.n);
+  $("biEvoLbl").textContent = meses.length ? `${nomeEsc} · ${mesLbl(meses[0])} a ${mesLbl(meses[meses.length - 1])}` : nomeEsc;
+  if (!meses.length) { $("biEvoGraf").innerHTML = ""; $("biEvoTab").innerHTML = `<tbody><tr><td class="note">Sem visitas realizadas nas bases carregadas.</td></tr></tbody>`; return; }
+  const tot = serie(escopo), temCart = cartRows.length > 0;
+  const metV = (p) => met === "cob" ? p.cob : met === "vis" ? p.vis : p.visitas;
+  const metF = (p) => met === "cob" ? (p.cob == null ? "—" : fmtP(p.cob)) : fmtN(metV(p) || 0);
+  // gráfico de colunas do escopo selecionado
+  const W = 760, Hh = 190, pad = 34, n = meses.length, bw = Math.min(56, (W - pad * 2) / n * 0.62), mx = Math.max(met === "cob" ? 1 : 1, ...tot.map((p) => metV(p) || 0));
+  const x = (i) => pad + (i + 0.5) * ((W - pad * 2) / n), y = (v) => Hh - 34 - (v / mx) * (Hh - 70);
+  const barras = tot.map((p, i) => { const v = metV(p) || 0, cor = met === "cob" ? (p.cob == null ? "var(--line)" : `var(--${corCob(p.cob) === "ok" ? "ok" : corCob(p.cob) === "amb" ? "amb" : "red"})`) : "var(--brand)";
+    const ant = tot[i - 1], dlt = ant && metV(ant) != null && metV(p) != null ? metV(p) - metV(ant) : null;
+    return `<g><title>${mesLbl(p.m)}: ${metF(p)}${met === "cob" ? ` (${fmtN(p.vis)} de ${fmtN(p.carteira)} clientes)` : ""} · ${fmtN(p.visitas)} visitas</title>
+      <rect x="${(x(i) - bw / 2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(Hh - 34 - y(v)).toFixed(1)}" rx="4" fill="${cor}"/>
+      <text x="${x(i).toFixed(1)}" y="${(y(v) - 7).toFixed(1)}" text-anchor="middle" class="evo-v">${metF(p)}</text>
+      <text x="${x(i).toFixed(1)}" y="${Hh - 16}" text-anchor="middle" class="evo-m">${mesLbl(p.m)}</text>
+      ${dlt != null && Math.abs(dlt) > (met === "cob" ? 0.0005 : 0) ? `<text x="${x(i).toFixed(1)}" y="${Hh - 2}" text-anchor="middle" class="evo-d ${dlt > 0 ? "up" : "dn"}">${dlt > 0 ? "▲" : "▼"} ${met === "cob" ? fmtN(Math.round(Math.abs(dlt) * 100)) + " p.p." : fmtN(Math.abs(dlt))}</text>` : ""}</g>`; }).join("");
+  $("biEvoGraf").innerHTML = (met === "cob" && !temCart) ? `<p class="note">Carregue a base da carteira para ver a taxa de cobertura mês a mês.</p>` : `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Evolução mensal de ${nomeEsc}"><line x1="${pad}" x2="${W - pad}" y1="${Hh - 34}" y2="${Hh - 34}" class="evo-ax"/>${barras}</svg>`;
+  // matriz: uma linha por regional/consultor, uma coluna por mês
+  const linhas = filhos.map((f) => ({ ...f, s: serie(f) })).filter((f) => f.s.some((p) => p.carteira || p.visitas));
+  const ordem = linhas.sort((a, c) => (metV(c.s[n - 1]) ?? -1) - (metV(a.s[n - 1]) ?? -1) || a.nome.localeCompare(c.nome, "pt-BR"));
+  const cel = (p) => { const v = metV(p); if (v == null) return `<td class="n evo-c">—</td>`; const a = met === "cob" ? v : mx ? 0 : 0;
+    return met === "cob" ? `<td class="n evo-c" style="--a:${Math.min(1, v).toFixed(2)}" title="${fmtN(p.vis)} de ${fmtN(p.carteira)} clientes · ${fmtN(p.visitas)} visitas · ${fmtN(p.fora)} fora da carteira"><span>${fmtP(v)}</span></td>` : `<td class="n">${fmtN(v)}</td>`; };
+  const dCel = (s) => { const a = s[n - 2], c = s[n - 1]; if (!a || metV(a) == null || metV(c) == null) return `<td class="n note">—</td>`; const d = metV(c) - metV(a);
+    return `<td class="n"><span class="evo-d ${d > 0 ? "up" : d < 0 ? "dn" : ""}">${d > 0 ? "▲" : d < 0 ? "▼" : "="} ${met === "cob" ? fmtN(Math.round(Math.abs(d) * 100)) + " p.p." : fmtN(Math.abs(d))}</span></td>`; };
+  const rot = sel.t === "all" ? "Regional" : "Consultor";
+  $("biEvoTab").innerHTML = `<thead><tr><th>${rot}</th>${meses.map((m) => `<th class="n">${mesLbl(m)}</th>`).join("")}<th class="n" title="Último mês comparado com o anterior">Variação</th></tr></thead>
+    <tbody>${ordem.map((f) => `<tr ${sel.t === "cons" ? "" : `class="evo-r" data-bisel="${f.t}" data-n="${esc(f.nome)}" tabindex="0" title="Ver ${esc(f.t === "reg" ? f.nome : titulo(f.nome))}"`}><td><b>${esc(f.t === "reg" ? f.nome : titulo(f.nome))}</b></td>${f.s.map(cel).join("")}${dCel(f.s)}</tr>`).join("") || `<tr><td class="note" colspan="${n + 2}">Nada para mostrar nesta seleção.</td></tr>`}</tbody>
+    ${sel.t === "cons" ? "" : `<tfoot><tr><td>Total</td>${tot.map(cel).join("")}${dCel(tot)}</tr></tfoot>`}`;
+  $("biEvoNota").textContent = `${met === "cob" ? "Taxa = clientes da carteira com pelo menos uma visita realizada no mês (por qualquer consultor) ÷ clientes da carteira." : met === "vis" ? "Clientes da carteira com pelo menos uma visita realizada no mês." : "Visitas realizadas no mês pela equipe selecionada."} A carteira usada é a atual (a última carregada) em todos os meses.${sel.t === "cons" ? "" : " Clique numa linha para descer um nível."}`;
 }
 function renderBiDet(contas, fora, multi) {
   const b = state.bi, q = norm(b.busca), o = b.ord, ref = REF();
@@ -2091,17 +2182,25 @@ function clienteEmRisco(s) {
 /* =================== EQUIPES =================== */
 function renderEquipes() {
   const cons = statsConsultores(), ref = REF();
+  // potencial de visita = clientes da carteira do consultor ainda sem visita no período
+  const H = state.db.cart ? hierarquia() : null, pot = new Map(), temCartP = !!(H && H.temCart);
+  if (H) for (const r of H.regs) for (const c of r.cons) if (c.carteira) pot.set(c.nome, { cart: c.carteira, nao: c.nao, n30: c.clientes.nao.filter((x) => x.dias == null || x.dias > 30).length });
   const parados = cons.filter((c) => c.sit !== "ativo" && c.sit !== "isento").sort((a, b) => ORD_SIT[a.sit] - ORD_SIT[b.sit] || (b.sem ?? 999) - (a.sem ?? 999));
   const nIsentos = cons.filter((c) => c.sit === "isento").length;
   const nSem = cons.filter((c) => c.sit === "sem").length, nPar = cons.filter((c) => c.sit === "parado").length, nAt = cons.filter((c) => c.sit === "atencao").length;
   $("paradosLbl").textContent = `até ${fmtDiaAno(ref)}`;
-  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita).${nIsentos ? ` <b>${fmtN(nIsentos)}</b> pessoa(s) fora da cobrança (gestores, internos) não entram nesta lista.` : ""}${statsConsultores.semCart ? ` <b>${fmtN(statsConsultores.semCart)}</b> pessoa(s) sem carteira e sem visita no período (por exemplo, quem saiu da empresa) também ficam de fora.` : ""}${state.conta?.perfil === "admin" ? " Gestor ou pessoa que não faz visita? Clique em <b>não cobrar</b> na linha dela." : ""}`;
+  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita).${nIsentos ? ` <b>${fmtN(nIsentos)}</b> pessoa(s) fora da cobrança (gestores, internos) não entram nesta lista.` : ""}${temCartP && parados.some((c) => pot.get(c.nome)?.nao) ? ` Juntos, eles têm <b>${fmtN(parados.reduce((t, c) => t + (pot.get(c.nome)?.nao || 0), 0))}</b> clientes da carteira esperando visita no período.` : ""}${statsConsultores.semCart ? ` <b>${fmtN(statsConsultores.semCart)}</b> pessoa(s) sem carteira e sem visita no período (por exemplo, quem saiu da empresa) também ficam de fora.` : ""}${state.conta?.perfil === "admin" ? " Gestor ou pessoa que não faz visita? Clique em <b>não cobrar</b> na linha dela." : ""}`;
   tabela("tParados", [
     { k: "nome", l: "Consultor", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(c.regional)}</span>` },
     { k: "sit", l: "Situação", v: (c) => ORD_SIT[c.sit], h: (c) => `${sitChip(c)} ${btnIsentar(c)}` },
     { k: "sem", l: "Dias sem visita", n: 1, h: (c) => (c.sem == null ? "nunca" : fmtN(c.sem)) },
     { k: "ult", l: "Última visita", n: 1, h: (c) => fmtDiaAno(c.ult) },
-    { k: "ok", l: "Realizadas no período", n: 1, h: (c) => fmtN(c.ok) },
+    ...(temCartP ? [
+      { k: "pCart", l: "Carteira", t: "Clientes (contas crédito) na carteira do consultor", n: 1, v: (c) => pot.get(c.nome)?.cart ?? -1, h: (c) => (pot.has(c.nome) ? fmtN(pot.get(c.nome).cart) : `<span class="note">sem carteira</span>`) },
+      { k: "pNao", l: "Potencial<br>a visitar", t: "Clientes da carteira dele ainda sem visita no período", n: 1, v: (c) => pot.get(c.nome)?.nao ?? -1, h: (c) => { const p = pot.get(c.nome); return p ? `<b class="pot">${fmtN(p.nao)}</b><span class="sub">${p.cart ? fmtP(p.nao / p.cart) : "—"} da carteira</span>` : "—"; } },
+      { k: "p30", l: "Sem visita<br>30+ dias", t: "Clientes da carteira sem visita há mais de 30 dias (ou nunca visitados)", n: 1, v: (c) => pot.get(c.nome)?.n30 ?? -1, h: (c) => { const p = pot.get(c.nome); return p ? (p.n30 ? `<span class="hn">${fmtN(p.n30)}</span>` : "0") : "—"; } },
+    ] : []),
+    { k: "ok", l: "Realizadas<br>no período", n: 1, h: (c) => fmtN(c.ok) },
     { k: "ab", l: "Abertas", n: 1, h: (c) => fmtN(c.ab) },
     colNota,
   ], parados, { ord: { k: "sit", d: 1 }, clk: (c) => `data-cons="${esc(c.nome)}"`, vazio: "Todos os consultores visitaram nos últimos 7 dias." });
@@ -2352,7 +2451,7 @@ function renderCal() {
 }
 function renderCalDia() {
   const d = state.calSel; if (d == null) { $("calDia").innerHTML = `<p class="note">Clique num dia para ver as visitas dele.</p>`; return; }
-  const hoje = HOJE(), vs = recorte().base.filter((v) => (v.st === "ok" ? v.dia : v.diaPlan) === d).sort((a, b) => ({ ab: 0, nr: 1, ok: 2, cx: 3 }[a.st] - { ab: 0, nr: 1, ok: 2, cx: 3 }[b.st]) || a.consultor.localeCompare(b.consultor));
+  const hoje = HOJE(), vs = recorte().base.filter((v) => (v.st === "ok" ? v.dia : v.diaPlan) === d).sort((a, b) => ({ ab: 0, nr: 1, ok: 2, cx: 3 }[a.st] - { ab: 0, nr: 1, ok: 2, cx: 3 }[b.st]) || ((a.st === "ok" ? a.ck ?? a.ini : a.ini) ?? 0) - ((b.st === "ok" ? b.ck ?? b.ini : b.ini) ?? 0) || a.consultor.localeCompare(b.consultor));
   $("calDia").innerHTML = `<h3 class="label">${fmtDiaSem(d)} · ${plural(vs.length, "visita")}</h3><div class="tbl-wrap tall"><table><thead><tr><th>Status</th><th>Hora</th><th>Cliente</th><th>Consultor</th><th>Tipo</th></tr></thead><tbody>${vs.map((v) => `<tr class="clk" data-cli="${esc(v.cid)}" tabindex="0"><td>${chipStatus(v, hoje)}</td><td class="nw">${v.st === "ok" ? fmtHora(v.ck) : fmtHora(v.ini)}</td><td><b>${esc(titulo(state.db.clientes.get(v.cid)?.nome))}</b></td><td>${esc(titulo(v.consultor))}<span class="sub">${esc(v.regional)}</span></td><td>${esc(v.tipo)}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">Nenhuma visita neste dia.</td></tr>`}</tbody></table></div>`;
 }
 const chipStatus = (v) => v.st === "ok" ? `<span class="chip ch-info">Realizada</span>` : v.st === "cx" ? `<span class="chip ch-neu">Cancelada</span>` : `<span class="chip ch-amb">Aberta</span>`;
@@ -3105,7 +3204,28 @@ async function entrou(conta) {
   carregarBase(state.raw);
   telas("app"); selPane(location.hash.slice(1) || "geral");
   if (conta.perfil === "gerente" && !conta.regionais.length) toast("Nenhuma regional liberada", "Peça ao administrador para atribuir as regionais da sua equipe.");
-  if (!store.get("rc_tour_" + conta.id, false)) setTimeout(mostrarCoach, 900);
+  if (!store.get("rc_tour_" + conta.id, false)) setTimeout(mostrarCoach, 900); else setTimeout(mostrarHoje, 700);
+}
+/* ---------- aviso do dia: visitas abertas para hoje (1x por dia por usuário, só com base fresca) ---------- */
+function mostrarHoje(forcar) {
+  const h = hojeSP(), conta = state.conta, k = "rc_hoje_" + conta.id;
+  if (!forcar && (state.db.meta.extraido < h - 1 || store.get(k, null) === h)) return;   // base de mais de 1 dia atrás pode estar desatualizada
+  const ab = state.db.visits.filter((v) => visivel(v) && v.st === "ab" && v.diaPlan === h);
+  if (!ab.length) return;
+  store.set(k, h);
+  const nCons = new Set(ab.map((v) => v.consultor)).size;
+  const sem7 = cobrados(statsConsultores()).filter((c) => c.sem != null && c.sem >= 7).length;
+  const quem = conta.perfil === "gerente" ? "sua equipe tem" : "a equipe tem";
+  $("hojeAviso").innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>
+    <div><b>Bom dia${conta.nome ? ", " + esc(conta.nome.split(" ")[0]) : ""}!</b><p>Hoje ${quem} <strong>${fmtN(ab.length)} ${ab.length === 1 ? "visita planejada" : "visitas planejadas"}</strong> em ${plural(nCons, "consultor", "consultores")}.</p>${sem7 ? `<p class="ha-2">${plural(sem7, "consultor está", "consultores estão")} há 7 dias ou mais sem visita.</p>` : ""}
+    <div class="ha-b"><button type="button" class="btn sm primary" id="haAgenda">Ver na agenda</button>${sem7 ? `<button type="button" class="linkbtn" id="haEquipe">Ver quem</button>` : ""}</div></div>
+    <button type="button" class="ha-x" id="haFechar" aria-label="Fechar aviso">✕</button>`;
+  const el = $("hojeAviso"); el.hidden = false; requestAnimationFrame(() => el.classList.add("on"));
+  const fechar = () => { el.classList.remove("on"); clearTimeout(mostrarHoje.t); setTimeout(() => (el.hidden = true), 250); };
+  $("haFechar").onclick = fechar;
+  $("haAgenda").onclick = () => { fechar(); state.calSel = h; state.cal = null; selPane("agenda"); setTimeout(() => $("calDia").scrollIntoView({ behavior: "smooth", block: "center" }), 80); };
+  if (sem7) $("haEquipe").onclick = () => { fechar(); selPane("equipes"); scrollTo({ top: 0 }); };
+  clearTimeout(mostrarHoje.t); mostrarHoje.t = setTimeout(fechar, 25000);
 }
 /* ---------- primeiro acesso: aponta para o botão do vídeo (uma vez por usuário, por navegador) ---------- */
 function posicionarCoach() {
@@ -3124,6 +3244,7 @@ function fecharCoach(assistir) {
   if ($("coach").hidden) return;
   $("coach").hidden = true; removeEventListener("resize", posicionarCoach);
   if (state.conta) store.set("rc_tour_" + state.conta.id, true);
+  if (!assistir) setTimeout(mostrarHoje, 500);
   if (assistir) $("btnAjuda").click();
 }
 function carregarBase(raw) {
@@ -3362,6 +3483,7 @@ function ligarEventos() {
     if (e.target.closest("[data-cli]")) return;
     const s = e.target.closest("[data-bisel]"); if (s) biSel(s.dataset.bisel, s.dataset.n || null);
   });
+  $("biEvoMet").addEventListener("click", (e) => { const b = e.target.closest("[data-evo]"); if (!b) return; state.bi.evoMet = b.dataset.evo; $("biEvoMet").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderCarteira(); });
   $("pane-carteira").addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-bisel], th[data-biord], th[data-eqord]")) { e.preventDefault(); e.target.click(); } });
   const irBi = (d) => { const H = semFiltroCons(hierarquia), l = biConsOrdem(H), b = state.bi; let i = b.sel.t === "cons" ? l.indexOf(b.sel.n) : -1;
     if (i < 0) { const r = b.sel.t === "reg" ? H.regs.find((x) => x.nome === b.sel.n) : null; const n = r ? biEqSort(r.cons).map((c) => c.nome)[d > 0 ? 0 : r.cons.length - 1] : d > 0 ? l[0] : l[l.length - 1]; i = l.indexOf(n) - d; }
