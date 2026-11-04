@@ -3207,6 +3207,8 @@ async function entrou(conta) {
   if (!store.get("rc_tour_" + conta.id, false)) setTimeout(mostrarCoach, 900); else setTimeout(mostrarHoje, 700);
 }
 /* ---------- aviso do dia: visitas abertas para hoje (1x por dia por usuário, só com base fresca) ---------- */
+// saudação pelo relógio de São Paulo: bom dia até 11:59, boa tarde até 17:59, boa noite depois
+const saudacao = () => { const h = new Date(Date.now() - 3 * 3600000).getUTCHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; };
 function mostrarHoje(forcar) {
   const h = hojeSP(), conta = state.conta, k = "rc_hoje_" + conta.id;
   if (!forcar && (state.db.meta.extraido < h - 1 || store.get(k, null) === h)) return;   // base de mais de 1 dia atrás pode estar desatualizada
@@ -3217,7 +3219,7 @@ function mostrarHoje(forcar) {
   const sem7 = cobrados(statsConsultores()).filter((c) => c.sem != null && c.sem >= 7).length;
   const quem = conta.perfil === "gerente" ? "sua equipe tem" : "a equipe tem";
   $("hojeAviso").innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>
-    <div><b>Bom dia${conta.nome ? ", " + esc(conta.nome.split(" ")[0]) : ""}!</b><p>Hoje ${quem} <strong>${fmtN(ab.length)} ${ab.length === 1 ? "visita planejada" : "visitas planejadas"}</strong> em ${plural(nCons, "consultor", "consultores")}.</p>${sem7 ? `<p class="ha-2">${plural(sem7, "consultor está", "consultores estão")} há 7 dias ou mais sem visita.</p>` : ""}
+    <div><b>${saudacao()}${conta.nome ? ", " + esc(conta.nome.split(" ")[0]) : ""}!</b><p>Hoje ${quem} <strong>${fmtN(ab.length)} ${ab.length === 1 ? "visita planejada" : "visitas planejadas"}</strong> em ${plural(nCons, "consultor", "consultores")}.</p>${sem7 ? `<p class="ha-2">${plural(sem7, "consultor está", "consultores estão")} há 7 dias ou mais sem visita.</p>` : ""}
     <div class="ha-b"><button type="button" class="btn sm primary" id="haAgenda">Ver na agenda</button>${sem7 ? `<button type="button" class="linkbtn" id="haEquipe">Ver quem</button>` : ""}</div></div>
     <button type="button" class="ha-x" id="haFechar" aria-label="Fechar aviso">✕</button>`;
   const el = $("hojeAviso"); el.hidden = false; requestAnimationFrame(() => el.classList.add("on"));
