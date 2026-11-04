@@ -720,6 +720,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 .bi-eq-t .cob i { width: 34px; }
 .bi-eq-t .bi-cn { max-width: 150px; }
 .bi { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+.cart-sv { margin-top: 8px; font-size: .86rem; } .cart-sv summary { cursor: pointer; color: var(--brand); } .cart-sv p { margin: 6px 0 0; line-height: 1.5; }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -1085,7 +1086,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       <section class="panel">
         <div class="panel-head"><h2>Carteira de clientes</h2><span class="label" id="cartLbl"></span></div>
         <p class="lead">A base com todos os clientes de carteira e o vendedor responsável. É ela que permite ver clientes visitados e não visitados por consultor. Cada carga <b>substitui</b> a carteira anterior. O painel guarda só o necessário (código CRM, nome, vendedor, território, local, UF e gerente); CPF, RG, telefone e e-mail da planilha não são gravados.</p>
-        <div class="imp"><label class="drop" id="dropC" for="fileC"><b>Base da carteira</b><span class="note" id="dropCtxt">Planilha com Código CRM, Nome Vendedor e Código do território</span><input id="fileC" type="file" accept=".xlsx,.xls,.csv"></label><div id="cartRes" class="cart-res"></div></div>
+        <div class="imp"><label class="drop" id="dropC" for="fileC"><b>Base da carteira</b><span class="note" id="dropCtxt">Planilha com Cliente C4 (ou Código CRM), Cta.créd., Nome Vendedor e Código do território</span><input id="fileC" type="file" accept=".xlsx,.xls,.csv"></label><div id="cartRes" class="cart-res"></div></div>
         <div class="m-pe"><span style="flex:1"></span><button class="btn primary" type="button" id="cartAplicar" disabled>Substituir a carteira</button></div>
       </section>
       <section class="panel">
@@ -1392,10 +1393,26 @@ function montarBase(rawV, rawA, meta, cartRaw) {
 /* =================== CARTEIRA DE CLIENTES =================== */
 /* chave de cliente: o C4C exporta "10581807" nas visitas e "0010581807" na carteira */
 const kc = (x) => String(x ?? "").trim().replace(/\.0+$/, "").replace(/^0+/, "");
+function canonNome(x) {
+  let w = norm(x).toUpperCase().split(" ").filter(Boolean).filter((p, i, a) => p !== a[i - 1]);
+  for (let L = Math.floor(w.length / 2); L > 0; L--) if (w.slice(0, L).join(" ") === w.slice(L, 2 * L).join(" ")) { w = w.slice(L); break; }
+  return w.join(" ").replace(/Z/g, "S").replace(/Y/g, "I").replace(/W/g, "V").replace(/PH/g, "F").replace(/(.)\1/g, "$1");
+}
+// devolve fn(nomeDaCarteira) → nome do consultor como está nas visitas (ou o próprio nome, se não achar); fn.achou(nome) diz se casou
+function casadorVend(visits) {
+  const nomes = new Map(), canon = new Map(), cache = new Map();
+  for (const v of visits) { nomes.set(norm(v.consultor), v.consultor); const c = canonNome(v.consultor); if (!canon.has(c)) canon.set(c, v.consultor); }
+  const achar = (x) => { const n = norm(x); if (cache.has(n)) return cache.get(n);
+    let r = nomes.get(n); if (!r) { const c = canonNome(x); r = canon.get(c); if (!r && c.length >= 28) { const p = [...canon.entries()].filter(([k]) => k.startsWith(c)); if (p.length === 1) r = p[0][1]; } }
+    cache.set(n, r || null); return r || null; };
+  const fn = (x) => (!x ? "Sem vendedor" : achar(x) || String(x).trim().toUpperCase());
+  fn.achou = (x) => !!(x && achar(x)); return fn;
+}
 function montarCarteira(raw, db) {
   if (!raw || !raw.rows || !raw.rows.length) return null;
   // nome do vendedor da carteira → nome do consultor como aparece nas visitas
-  const nomes = new Map(); for (const v of db.visits) nomes.set(norm(v.consultor), v.consultor);
+  // o SAP corta nomes em 35 letras e às vezes repete palavras ("JUNIOR JUNIOR") ou troca S/Z: casa pelo nome "canônico"
+  const casaVend = casadorVend(db.visits);
   const porCid = new Map(), geo = new Map();
   for (const v of db.visits) { const k = kc(v.cid); if (!porCid.has(k)) porCid.set(k, v.cid); }
   // vínculos: vários clientes (código CRM) dentro de uma mesma conta crédito; a unidade de cobertura é a conta
@@ -1409,7 +1426,7 @@ function montarCarteira(raw, db) {
   for (const [conta, rows] of grupos) {
     vinculos += rows.length;
     const pri = rows.find((r) => kc(r.sap) === conta) || rows.find((r) => porCid.has(r.k)) || rows[0];
-    const vend = moda(rows.map((r) => nomes.get(norm(r.vend)) || (r.vend ? String(r.vend).trim().toUpperCase() : "Sem vendedor")));
+    const vend = moda(rows.map((r) => casaVend(r.vend)));
     const regional = moda(rows.map((r) => NOME_ANTIGO[r.regional] || r.regional || regionalDe(r.terr, db.codMap)));
     { const oc = state.ocultas || new Set(), gr = db.regs.get(regional) || (regional === "Telemarketing" ? "Telemarketing" : grupoDe(pri.terr)); if (!db.regsTodas.has(regional)) db.regsTodas.set(regional, gr); if (oc.has(regional) || oc.has(gr)) continue; }
     if (!db.regs.has(regional)) db.regs.set(regional, regional === "Sem território" ? "Sem território" : grupoDe(pri.terr));
@@ -1426,7 +1443,8 @@ function montarCarteira(raw, db) {
       nome: pri.nome || priCid, nVinc: rows.length, vend, regional, grupo: db.regs.get(regional), terr: pri.terr || "", local: pri.local || "", uf: pri.uf || "", gerente: moda(rows.map((r) => r.gerente).filter(Boolean)) || "", munK });
   }
   const vendSemVisita = new Set([...map.values()].map((c) => c.vend).filter((n) => !db.visits.some((v) => v.consultor === n))).size;
-  return { map, contaDe, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita, vinculos };
+  const vends = new Set([...map.values()].map((c) => c.vend));
+  return { map, contaDe, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita, vinculos, vends };
 }
 /* demonstração: carteira de exemplo montada a partir das próprias visitas (cada cliente fica com o consultor que mais o visitou) */
 function carteiraExemplo(rawV) {
@@ -1439,17 +1457,19 @@ function carteiraExemplo(rawV) {
 function lerCarteira(wb) {
   const sh = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sh, { header: 1, raw: false, defval: "" });
-  const hi = rows.findIndex((r) => r && r.some((c) => /c[oó]digo crm/i.test(String(c))) && r.some((c) => /vendedor/i.test(String(c))));
-  if (hi < 0) throw new Error('Não achei a linha de títulos com "Código CRM" e "Nome Vendedor". Confira se é a base de carteira.');
+  const hi = rows.findIndex((r) => r && r.some((c) => /c[oó]digo crm|^cliente c4$/i.test(String(c).trim())) && r.some((c) => /vendedor/i.test(String(c))));
+  if (hi < 0) throw new Error('Não achei a linha de títulos com "Cliente C4" (ou "Código CRM") e "Nome Vendedor". Confira se é a base de carteira.');
   const H = rows[hi].map((h) => norm(h)), dados = rows.slice(hi + 1).filter((r) => r.some((c) => String(c).trim()));
   const col = (...nomes) => { for (const n of nomes) { const i = H.indexOf(norm(n)); if (i >= 0) return i; } return -1; };
-  const C = { cid: col("Código CRM", "Codigo CRM", "ID do cliente"), sap: col("Código SAP"), conta: col("Cta.créd.", "Cta.cred.", "Cta créd", "Conta crédito", "Conta credito", "Conta de crédito"), vend: col("Nome Vendedor", "Nome do vendedor", "Vendedor"),
+  const C = { cid: col("Código CRM", "Codigo CRM", "Cliente C4", "ID do cliente"), sap: col("Código SAP"), conta: col("Cta.créd.", "Cta.cred.", "Cta créd", "Conta crédito", "Conta credito", "Conta de crédito"), vend: col("Nome Vendedor", "Nome do vendedor", "Vendedor"),
     terr: col("Código do território - Integração C/4", "Código do território", "Território de vendas"), local: col("Local", "Cidade", "Município"),
     gerente: col("Nome Gerente", "Nome do gerente"), uf: col("UF", "Estado", "Rg") };
   // a coluna com o nome do cliente: a primeira candidata que tem texto (no C4C ela às vezes vem como "Nº cliente")
   const textual = (i) => i >= 0 && dados.slice(0, 50).filter((r) => /[A-Za-zÀ-ú]{3}/.test(String(r[i]))).length >= Math.min(10, dados.length) * 0.6;
+  // "Cliente" numérico = código SAP do cliente (usado para achar o cliente principal da conta crédito)
+  if (C.sap < 0) { const i = col("Cliente"); if (i >= 0 && dados.slice(0, 50).every((r) => /^\d*$/.test(String(r[i]).trim()))) C.sap = i; }
   C.nome = [col("Nome do cliente"), col("Nome cliente"), col("Razão social"), col("Cliente"), col("Nº cliente"), col("N cliente")].find(textual) ?? -1;
-  const falta = [["cid", "Código CRM"], ["vend", "Nome Vendedor"], ["terr", "Código do território"]].filter(([k]) => C[k] < 0).map(([, n]) => n);
+  const falta = [["cid", "Cliente C4 (código CRM)"], ["vend", "Nome Vendedor"], ["terr", "Código do território"]].filter(([k]) => C[k] < 0).map(([, n]) => n);
   if (falta.length) throw new Error("Colunas não encontradas: " + falta.join(", "));
   const g = (r, k) => (C[k] >= 0 ? String(r[C[k]] ?? "").trim() : "");
   const out = dados.map((r) => ({ cid: kc(g(r, "cid")), conta: kc(g(r, "conta")), sap: kc(g(r, "sap")), nome: g(r, "nome"), vend: g(r, "vend"), terr: g(r, "terr"), local: titulo(g(r, "local")),
@@ -1557,7 +1577,12 @@ function statsConsultores() {
   for (const v of base) { const c = get(v.consultor); c.todas.push(v); c.regs.push(v.regional); c.terrs.push(v.folha); }
   for (const v of per) get(v.consultor).vis.push(v);
   const uteis = diasUteis(state.f.de, ref);
-  return [...m.values()].map((c) => {
+  // com a carteira real carregada, quem não tem carteira e não visitou no período (ex.: saiu da empresa) não é cobrado nem listado
+  const cart = state.db.cart, vends = cart && !cart.exemplo ? cart.vends : null;
+  let semCart = 0;
+  const lista = [...m.values()].filter((c) => { if (!vends || vends.has(c.nome) || c.vis.some((v) => v.st === "ok")) return true; semCart++; return false; });
+  statsConsultores.semCart = semCart;
+  return lista.map((c) => {
     const ok = c.vis.filter((v) => v.st === "ok");
     const okAte = c.todas.filter((v) => v.st === "ok" && v.dia <= ref);
     const ult = okAte.length ? Math.max(...okAte.map((v) => v.dia)) : null;
@@ -2070,7 +2095,7 @@ function renderEquipes() {
   const nIsentos = cons.filter((c) => c.sit === "isento").length;
   const nSem = cons.filter((c) => c.sit === "sem").length, nPar = cons.filter((c) => c.sit === "parado").length, nAt = cons.filter((c) => c.sit === "atencao").length;
   $("paradosLbl").textContent = `até ${fmtDiaAno(ref)}`;
-  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita).${nIsentos ? ` <b>${fmtN(nIsentos)}</b> pessoa(s) fora da cobrança (gestores, internos) não entram nesta lista.` : ""}${state.conta?.perfil === "admin" ? " Gestor ou pessoa que não faz visita? Clique em <b>não cobrar</b> na linha dela." : ""}`;
+  $("paradosLead").innerHTML = `<b>${fmtN(nSem)}</b> consultor(es) sem nenhuma visita realizada no período, <b>${fmtN(nPar)}</b> parados há 15 dias ou mais e <b>${fmtN(nAt)}</b> em atenção (7 a 14 dias sem visita).${nIsentos ? ` <b>${fmtN(nIsentos)}</b> pessoa(s) fora da cobrança (gestores, internos) não entram nesta lista.` : ""}${statsConsultores.semCart ? ` <b>${fmtN(statsConsultores.semCart)}</b> pessoa(s) sem carteira e sem visita no período (por exemplo, quem saiu da empresa) também ficam de fora.` : ""}${state.conta?.perfil === "admin" ? " Gestor ou pessoa que não faz visita? Clique em <b>não cobrar</b> na linha dela." : ""}`;
   tabela("tParados", [
     { k: "nome", l: "Consultor", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(c.regional)}</span>` },
     { k: "sit", l: "Situação", v: (c) => ORD_SIT[c.sit], h: (c) => `${sitChip(c)} ${btnIsentar(c)}` },
@@ -3009,12 +3034,12 @@ async function lerCarteiraArquivo(file) {
   try {
     const wb = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: false });
     const rows = lerCarteira(wb);
-    const ids = new Set(state.db.visits.map((v) => kc(v.cid))), vend = new Set(state.db.visits.map((v) => norm(v.consultor)));
+    const ids = new Set(state.db.visits.map((v) => kc(v.cid))), casa = casadorVend(state.db.visits);
     const contaDe = (r) => r.conta || r.cid, contas = new Set(rows.map(contaDe)), contasVis = new Set(rows.filter((r) => ids.has(r.cid)).map(contaDe));
-    const vends = [...new Set(rows.map((r) => r.vend).filter(Boolean))], vCasa = vends.filter((v) => vend.has(norm(v))).length, semConta = rows.filter((r) => !r.conta).length;
+    const vends = [...new Set(rows.map((r) => r.vend).filter(Boolean))], semVis = vends.filter((v) => !casa.achou(v)).sort(), vCasa = vends.length - semVis.length, ajust = vends.filter((v) => casa.achou(v) && norm(casa(v)) !== norm(v)), semConta = rows.filter((r) => !r.conta).length;
     state.imp.c = { rows, arquivo: file.name };
     txt.textContent = `${file.name} · ${fmtN(contas.size)} contas crédito (${fmtN(rows.length)} clientes vinculados) · ${fmtN(vends.length)} vendedores`; el.classList.add("ok");
-    $("cartRes").innerHTML = `<p class="banner info">A carteira é contada por <b>conta crédito</b>: ${fmtN(contas.size)} contas reúnem ${fmtN(rows.length)} clientes vinculados. <b>${fmtN(contasVis.size)}</b> contas (${fmtP(contasVis.size / Math.max(1, contas.size), 1)}) já têm visita na base em algum vínculo.${semConta ? ` ${fmtN(semConta)} linha(s) sem Cta.créd. contam como conta própria.` : ""} <b>${fmtN(vCasa)}</b> de ${fmtN(vends.length)} vendedores foram reconhecidos nas visitas pelo nome.${vends.length - vCasa ? ` Os outros ${fmtN(vends.length - vCasa)} aparecem no painel com a carteira, mas sem visitas: confira se o nome está igual ao do C4C.` : ""}</p>`;
+    $("cartRes").innerHTML = `<p class="banner info">A carteira é contada por <b>conta crédito</b>: ${fmtN(contas.size)} contas reúnem ${fmtN(rows.length)} clientes vinculados. <b>${fmtN(contasVis.size)}</b> contas (${fmtP(contasVis.size / Math.max(1, contas.size), 1)}) já têm visita na base em algum vínculo.${semConta ? ` ${fmtN(semConta)} linha(s) sem Cta.créd. contam como conta própria.` : ""} <b>${fmtN(vCasa)}</b> de ${fmtN(vends.length)} vendedores foram reconhecidos nas visitas pelo nome.${ajust.length ? ` ${fmtN(ajust.length)} com nome escrito diferente foram casados automaticamente (${ajust.slice(0, 4).map((v) => `${esc(titulo(v))} → ${esc(titulo(casa(v)))}`).join("; ")}${ajust.length > 4 ? "…" : ""}).` : ""}</p>${semVis.length ? `<details class="cart-sv"><summary><b>${fmtN(semVis.length)}</b> vendedores da carteira sem nenhuma visita nas bases carregadas (consultor novo, que não usa o app ou com nome diferente no C4C)</summary><p class="note">${semVis.map((v) => esc(titulo(v))).join(" · ")}</p></details>` : ""}`;
     $("cartAplicar").disabled = false;
   } catch (e) { el.classList.remove("ok"); txt.textContent = e.message; }
 }
@@ -3023,7 +3048,7 @@ async function aplicarCarteira() {
   const b = $("cartAplicar"); b.disabled = true; b.textContent = "Carregando…";
   try {
     await API.importarCarteira(c.rows, { arquivo: c.arquivo });
-    carregarBase(state.raw); state.imp.c = null; $("dropC").classList.remove("ok"); $("dropCtxt").textContent = "Planilha com Código CRM, Nome Vendedor e Código do território";
+    carregarBase(state.raw); state.imp.c = null; $("dropC").classList.remove("ok"); $("dropCtxt").textContent = "Planilha com Cliente C4 (ou Código CRM), Cta.créd., Nome Vendedor e Código do território";
     toast("Carteira atualizada", `${fmtN(state.db.cart?.map.size || 0)} contas crédito na carteira.${API === DemoAPI ? " Na demonstração, a carga vale até recarregar a página." : ""}`); render();
   } catch (e) { toast("Não consegui carregar a carteira", e.message); b.disabled = false; } finally { b.textContent = "Substituir a carteira"; }
 }
