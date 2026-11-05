@@ -748,6 +748,20 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 .hoje-av .ha-x { border: 0; background: none; color: var(--muted); font-size: 1rem; cursor: pointer; padding: 2px 4px; line-height: 1; }
 .hoje-av .ha-x:hover { color: var(--ink); }
 @media (max-width: 720px) { .hoje-av { right: 16px; left: 16px; bottom: 16px; width: auto; } }
+/* curva ABC */
+.abc { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px; font-weight: 800; font-size: .78rem; letter-spacing: .02em; }
+.abc-A { background: var(--brand); color: #fff; }
+.abc-B { background: var(--info-bg); color: var(--brand); }
+.abc-C { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.abc-S { background: transparent; color: var(--muted); font-weight: 600; font-size: .72rem; border: 1px dashed var(--line); }
+.abc-t { color: var(--brand); }
+.ca-v { font-weight: 700; } .ca-v small { color: var(--muted); font-weight: 500; }
+.abc-res { display: flex; gap: 12px; flex-wrap: wrap; margin: 8px 0; }
+.abc-res > div { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.abc-res .note { margin-left: 4px; }
+table.mini { width: 100%; font-size: .84rem; margin-top: 6px; } table.mini td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
+td.nw { white-space: nowrap; }
+.bi-eq-t tfoot .ca-v small { color: inherit; opacity: .75; }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -890,7 +904,7 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
       </div>
       <section class="panel bi-det">
         <div class="panel-head"><h2>Detalhamento de clientes</h2><div class="tbar"><span class="label" id="biDetLbl"></span>
-          <div class="seg2" id="biMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Não visitados</button><button type="button" data-m="vis">Visitados</button></div></div></div>
+          <div class="seg2" id="biMostra" role="group" aria-label="Mostrar"><button type="button" data-m="todas" aria-pressed="true">Todas</button><button type="button" data-m="nao">Não visitados</button><button type="button" data-m="vis">Visitados</button><button type="button" data-m="A" id="biMostraA" hidden>Curva A</button></div></div></div>
         <div class="tbar"><input type="search" id="biBusca" placeholder="Buscar cliente, conta crédito ou município" aria-label="Buscar no detalhamento"><span class="legend"><span><i class="sw cg"></i>até 7 dias</span><span><i class="sw ca"></i>8 a 30</span><span><i class="sw cr"></i>mais de 30 ou nunca</span></span></div>
         <div class="tbl-wrap bi-det-w"><table class="bi-det-t" id="biDet"></table></div>
         <p class="note">Um cliente por linha, pela conta crédito (os vínculos já vêm juntos). A setinha ▸ abre as últimas visitas com o texto do consultor; clicar no nome abre o histórico completo. Questionário = pelo menos uma visita do período com questionário respondido. Intenção e área vêm do último questionário do cliente.</p>
@@ -1124,6 +1138,12 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
         <div class="m-pe"><span style="flex:1"></span><button class="btn primary" type="button" id="cartAplicar" disabled>Substituir a carteira</button></div>
       </section>
       <section class="panel">
+        <div class="panel-head"><h2>Faturamento (curva ABC)</h2><span class="label" id="fatLbl"></span></div>
+        <p class="lead">A base de faturamento do SAP (o CSV separado por ponto e vírgula) gera a <b>curva ABC</b> por conta crédito: <b>A</b> são os clientes que somam 80% do faturamento, <b>B</b> os próximos 15% e <b>C</b> os 5% finais. O painel guarda <b>só o total de cada conta</b> (valor, nº de notas e última compra): nada de CPF, CNPJ, produto ou nota a nota. Cada carga substitui a anterior.</p>
+        <div class="imp"><label class="drop" id="dropF" for="fileF"><b>Base de faturamento</b><span class="note" id="dropFtxt">CSV do SAP separado por ponto e vírgula (Conta de crédito, VlrTotal, Data Fat.)</span><input id="fileF" type="file" accept=".csv,.txt"></label><div id="fatRes" class="cart-res"></div></div>
+        <div class="m-pe"><span style="flex:1"></span><button class="btn primary" type="button" id="fatAplicar" disabled>Substituir o faturamento</button></div>
+      </section>
+      <section class="panel">
         <div class="panel-head"><h2>Atualizar as bases</h2><span class="label" id="impLbl"></span></div>
         <p class="lead">Solte aqui as duas exportações do C4C, no mesmo formato de setembro. As visitas são casadas com os questionários pelo <b>ID da visita</b>; uma visita que já existe é atualizada (status, check-in, notas), e as novas entram.</p>
         <div class="imp">
@@ -1246,6 +1266,7 @@ const SENHA_PADRAO = "Araguaia159*";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtN = (n, d = 0) => Number(n || 0).toLocaleString("pt-BR", { maximumFractionDigits: d, minimumFractionDigits: d });
+const fmtR = (x) => { const a = Math.abs(x || 0), s = x < 0 ? "-" : ""; return a >= 1e9 ? `${s}R$ ${fmtN(a / 1e9, 1)} bi` : a >= 1e6 ? `${s}R$ ${fmtN(a / 1e6, 1)} mi` : a >= 1e3 ? `${s}R$ ${fmtN(a / 1e3, 0)} mil` : `${s}R$ ${fmtN(a, 0)}`; };
 const fmtP = (x, d = 0) => (isFinite(x) ? fmtN(x * 100, d) : "0") + "%";
 /* todas as datas são "relógio de São Paulo" gravadas como minutos desde 1970 (sem fuso), igual ao Excel do C4C */
 const dayOf = (m) => (m == null ? null : Math.floor(m / DIA_MIN));
@@ -1474,12 +1495,29 @@ function montarCarteira(raw, db) {
     const comVisita = cids.filter((c) => db.clientes.get(c)?.vis.length);
     if (comVisita.length) casados++;
     const priCid = porCid.get(pri.k) || pri.cid;
-    map.set(conta, { k: conta, conta, cid: comVisita.includes(priCid) ? priCid : comVisita[0] || priCid, cids, nomes: [...new Set(rows.map((r) => r.nome).filter(Boolean))],
+    const F = state.fatMap ? state.fatMap.get(conta) : null;
+    map.set(conta, { k: conta, conta, fat: F ? F.valor : 0, curva: state.fatMap ? (F ? F.curva : "S") : null, fatUlt: F ? F.ultima : null, cid: comVisita.includes(priCid) ? priCid : comVisita[0] || priCid, cids, nomes: [...new Set(rows.map((r) => r.nome).filter(Boolean))],
       nome: pri.nome || priCid, nVinc: rows.length, vend, regional, grupo: db.regs.get(regional), terr: pri.terr || "", local: pri.local || "", uf: pri.uf || "", gerente: moda(rows.map((r) => r.gerente).filter(Boolean)) || "", munK });
   }
   const vendSemVisita = new Set([...map.values()].map((c) => c.vend).filter((n) => !db.visits.some((v) => v.consultor === n))).size;
   const vends = new Set([...map.values()].map((c) => c.vend));
-  return { map, contaDe, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita, vinculos, vends };
+  return { map, contaDe, meta: raw.meta || {}, exemplo: !!raw.exemplo, casados, vendSemVisita, vinculos, vends, temFat: !!(state.fatMap && state.fatMap.size) };
+}
+/* ---------- faturamento → curva ABC por conta crédito ----------
+   A = clientes que somam os primeiros 80% do faturamento, B = os próximos 15%, C = os 5% finais. S = sem compra no período. */
+function curvaABC(rows) {
+  const l = rows.filter((r) => r.valor > 0).sort((a, b) => b.valor - a.valor), tot = l.reduce((s, r) => s + r.valor, 0);
+  let ac = 0; for (const r of l) { const antes = tot ? ac / tot : 1; r.curva = antes < 0.8 ? "A" : antes < 0.95 ? "B" : "C"; ac += r.valor; }
+  for (const r of rows) if (!(r.valor > 0)) r.curva = "S";
+  return rows;
+}
+// demonstração: faturamento inventado (determinístico) para os clientes da carteira de exemplo
+function faturamentoExemplo(cartRows) {
+  const contas = new Map(); for (const r of cartRows) { const k = kc(r.conta || r.cid); if (!contas.has(k)) contas.set(k, r.nome); }
+  const rnd = (s) => { let h = 2166136261; for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return ((h >>> 0) % 100000) / 100000; };
+  const rows = [...contas].map(([k, nome]) => { const u = rnd(k), v = rnd(k + "v"); const z = Math.sqrt(-2 * Math.log(u || 1e-6)) * Math.cos(2 * Math.PI * v);
+    return { conta: k, nome, valor: v < 0.12 ? 0 : Math.round(Math.exp(10.2 + 1.7 * z)), notas: 1 + Math.floor(rnd(k + "n") * 40), ultima: Math.floor(Date.UTC(2026, 9, 31) / 86400000) - Math.floor(rnd(k + "u") * 280) }; });
+  return { exemplo: true, rows: curvaABC(rows), meta: { arquivo: "faturamento de exemplo (valores inventados)", ini: Math.floor(Date.UTC(2026, 0, 1) / 86400000), fim: Math.floor(Date.UTC(2026, 9, 31) / 86400000) } };
 }
 /* demonstração: carteira de exemplo montada a partir das próprias visitas (cada cliente fica com o consultor que mais o visitou) */
 function carteiraExemplo(rawV) {
@@ -1793,7 +1831,9 @@ function renderGeral() {
     sinal(parados ? "crit" : "ok", parados, "consultores parados", `+${fmtN(atencao)} em atenção (7–14 dias)`, "equipes") +
     (state.db.cart ? (() => { const T = hierarquia().total; return sinal(T.nao ? "crit" : "ok", T.nao, "da carteira sem visita", `${fmtN(T.nunca)} nunca visitados`, "geral", 'data-hierfoco="1"'); })()
       : sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")) +
-    (state.db.cart ? sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")
+    (state.db.cart?.temFat ? (() => { const l = hierarquia().regs.flatMap((r) => r.cons.flatMap((c) => c.clientes.nao)).filter((x) => x.curva === "A"), l30 = l.filter((x) => x.dias == null || x.dias > 30);
+        return sinal(l.length ? "crit" : "ok", l.length, "clientes curva A sem visita", `${fmtN(l30.length)} há mais de 30 dias · ${fmtR(l.reduce((s, x) => s + (x.fat || 0), 0))} faturados`, "carteira", 'data-abc="1"'); })()
+      : state.db.cart ? sinal(cli30 ? "crit" : "ok", cli30 + cli15, "clientes sem visita 16+ dias", `${fmtN(cli30)} há mais de 30 dias`, "clientes")
       : sinal(abFut.length ? "" : "ok", abFut.length, "visitas planejadas", "abertas de hoje em diante", "agenda")) +
     sinal(vencidas ? "" : "ok", quentes, "intenção de compra alta", `${fmtN(vencidas)} com previsão vencida`, "intel") +
     sinal(risco ? "" : "ok", risco, "clientes pedem ação", "risco, SAC ou pendência", "intel");
@@ -1848,12 +1888,13 @@ function hierarquia() {
   const cli = (c) => { const u = ultCli.get(c.k), p = perCli.get(c.k); return { ...c, ult: u ? u.dia : null, ultTs: u ? u.ts : null, ultPor: u ? u.por : null, dias: u ? ref - u.dia : null, nTot: u ? u.n : 0, nPer: p ? p.n : 0, quest: p ? p.q : false, por: p ? [...p.por] : [], prox: abCli.get(c.k) ?? null }; };
   const cons = [...nodes.values()].map((n) => {
     const st = stats.get(n.nome) || null, cl = n.cart.map(cli), vis = cl.filter((c) => c.nPer > 0), nao = cl.filter((c) => !c.nPer);
-    const fora = [...n.foraM.values()].map((f) => ({ ...f, ...cli({ k: f.k }), nome: f.nome, cid: f.cid, dono: f.dono }));
+    const fora = [...n.foraM.values()].map((f) => { const F = state.fatMap?.get(f.k); return { ...f, ...cli({ k: f.k }), nome: f.nome, cid: f.cid, dono: f.dono, fat: F ? F.valor : 0, curva: state.fatMap ? (F ? F.curva : "S") : null }; });
     const diasCart = cl.map((c) => c.dias).filter((d) => d != null);
     return { tipo: "cons", nome: n.nome, regional: moda(n.cart.map((c) => c.regional)) || st?.regional || moda(n.regs) || "Sem território", gerente: moda(n.gers) || "",
       carteira: cl.length, vis: vis.length, nao: nao.length, cob: cl.length ? vis.length / cl.length : null, fora: fora.length, visitas: n.visitas, visCart: n.visitas - fora.reduce((s, f) => s + f.n, 0),
       porCons: n.visitas / uteis, ult: st?.ult ?? null, dias: st?.sem ?? null, diasCart: mediana(diasCart), nunca: cl.filter((c) => c.dias == null).length,
       sit: st?.sit || "sem", isento: st?.isento || null, atr: st?.atr || 0, quest: st?.quest || 0, gps: st?.gps || 0, okN: st?.ok || 0,
+      nA: cl.filter((c) => c.curva === "A").length, visA: vis.filter((c) => c.curva === "A").length, cobA: cl.some((c) => c.curva === "A") ? vis.filter((c) => c.curva === "A").length / cl.filter((c) => c.curva === "A").length : null, fat: cl.reduce((s, c) => s + (c.fat || 0), 0), fatVis: vis.reduce((s, c) => s + (c.fat || 0), 0),
       clientes: { nao, vis, fora } };
   }).filter((c) => c.carteira || c.visitas || c.atr || stats.has(c.nome));
   const agrega = (tipo, nome, lista) => {
@@ -1864,12 +1905,13 @@ function hierarquia() {
     return { tipo, nome, grupo: state.db.regs.get(nome) || "", gerente: moda(lista.map((c) => c.gerente).filter(Boolean)) || "", carteira, vis, nao: carteira - vis, cob: carteira ? vis / carteira : null,
       fora: lista.reduce((s, c) => s + c.fora, 0), visitas, visCart: lista.reduce((s, c) => s + c.visCart, 0), porCons: ativos ? visitas / ativos / uteis : 0, ult: ults.length ? Math.max(...ults) : null, dias: mediana(diasCart),
       nunca: lista.reduce((s, c) => s + c.nunca, 0), ativos, total: cobr.length, parados: cobr.filter((c) => c.sit === "parado" || c.sit === "sem").length,
-      atr: lista.reduce((s, c) => s + c.atr, 0), quest: okN ? wq / okN : 0, gps: okN ? wg / okN : 0, cons: lista };
+      atr: lista.reduce((s, c) => s + c.atr, 0), quest: okN ? wq / okN : 0, gps: okN ? wg / okN : 0, cons: lista,
+      nA: lista.reduce((s, c) => s + c.nA, 0), visA: lista.reduce((s, c) => s + c.visA, 0), cobA: (() => { const a = lista.reduce((s, c) => s + c.nA, 0); return a ? lista.reduce((s, c) => s + c.visA, 0) / a : null; })(), fat: lista.reduce((s, c) => s + c.fat, 0), fatVis: lista.reduce((s, c) => s + c.fatVis, 0) };
   };
   const porReg = new Map(); for (const c of cons) { const a = porReg.get(c.regional) || []; a.push(c); porReg.set(c.regional, a); }
   const regs = [...porReg.entries()].map(([r, l]) => agrega("reg", r, l));
   const total = agrega("total", "Total", cons);
-  const out = { regs, total, temCart: !!cart, exemplo: !!cart?.exemplo };
+  const out = { regs, total, temCart: !!cart, exemplo: !!cart?.exemplo, temFat: !!cart?.temFat };
   if (CACHE) CACHE.hier = out;
   return out;
 }
@@ -1987,13 +2029,15 @@ function renderCarteira() {
       tile("Clientes não visitados", fmtN(N.nao), `${fmtN(N.nunca)} nunca visitados`, N.nao ? "red" : "") +
       tile("Taxa de clientes visitados", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
       : tile("Clientes da carteira", "—", "carteira não carregada")) +
+    (H.temFat && temCart ? tile("Faturamento visitado", fmtP(N.fat ? N.fatVis / N.fat : 0), `${fmtR(N.fatVis)} de ${fmtR(N.fat)} faturados pela carteira`, corCob(N.fat ? N.fatVis / N.fat : 0) === "ok" ? "ok" : corCob(N.fat ? N.fatVis / N.fat : 0) === "amb" ? "amb" : "red") +
+      tile("Clientes curva A visitados", `${fmtN(N.visA)} <small>de ${fmtN(N.nA)}</small>`, N.nA - N.visA ? `<b>${fmtN(N.nA - N.visA)}</b> clientes A ainda sem visita no período` : "todos os clientes A visitados", N.nA - N.visA ? "red" : "ok") : "") +
     tile("Visitas fora da carteira", fmtN(visFora), "visitas a clientes de outras carteiras") +
     tile("Clientes fora da carteira", fmtN(N.fora), "visitados, mas da carteira de outro consultor ou sem carteira") +
     tile("Intenção de compra alta", fmtN(quentes.length), "clientes, pelo último questionário", quentes.length ? "ok" : "") +
     tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média");
   // equipe
   const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
-  const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td><td class="n">${fmtN(x.fora)}</td><td class="n">${temCart ? fmtN(x.visCart) : "—"}</td><td class="n">${fmtN(x.visitas)}</td>`;
+  const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td>${H.temFat ? `<td class="n">${x.nA ? `<span class="ca-v" title="${fmtN(x.visA)} de ${fmtN(x.nA)} clientes curva A visitados">${fmtN(x.visA)}<small>/${fmtN(x.nA)}</small></span>` : "—"}</td>` : ""}<td class="n">${fmtN(x.fora)}</td><td class="n">${temCart ? fmtN(x.visCart) : "—"}</td><td class="n">${fmtN(x.visitas)}</td>`;
   const eo = b.eqOrd || (b.eqOrd = { k: "nome", d: 1 }), eSort = biEqSort;
   // a regional da seleção abre uma vez quando a seleção muda; depois a setinha manda (abre e fecha de verdade)
   const chaveSel = t.t + "|" + (t.n || "");
@@ -2002,7 +2046,7 @@ function renderCarteira() {
     if (S.reg && !b.abertos.has(S.reg.nome)) { b.abertos.add(S.reg.nome); b.autoAberta = S.reg.nome; } else if (!S.reg || b.autoAberta !== S.reg.nome) b.autoAberta = null; }
   const eth = (k, l, t) => `<th class="s ${k === "nome" ? "" : "n"}" data-eqord="${k}" tabindex="0" title="${t}" ${eo.k === k ? `aria-sort="${eo.d > 0 ? "ascending" : "descending"}"` : ""}>${l}${eo.k === k ? ` <span class="ord">${eo.d > 0 ? "▲" : "▼"}</span>` : ""}</th>`;
   const regs = eSort(H.regs);
-  let eq = `<thead><tr>${eth("nome", "Equipe", "Ordenar por nome")}${eth("carteira", "Clientes de<br>carteira", "Clientes na carteira (por conta crédito)")}${eth("vis", "Clientes<br>visitados", "Clientes da carteira com pelo menos uma visita no período")}${eth("nao", "Clientes não<br>visitados", "Clientes da carteira sem visita no período")}${eth("cob", "Taxa", "Clientes visitados ÷ clientes de carteira")}${eth("fora", "Clientes visitados<br>fora carteira", "Clientes visitados que não são da carteira")}${eth("visCart", "Visitas<br>carteira", "Visitas realizadas a clientes da carteira do consultor")}${eth("visitas", "Visitas<br>total", "Todas as visitas realizadas no período (carteira + fora da carteira)")}</tr></thead><tbody>`;
+  let eq = `<thead><tr>${eth("nome", "Equipe", "Ordenar por nome")}${eth("carteira", "Clientes de<br>carteira", "Clientes na carteira (por conta crédito)")}${eth("vis", "Clientes<br>visitados", "Clientes da carteira com pelo menos uma visita no período")}${eth("nao", "Clientes não<br>visitados", "Clientes da carteira sem visita no período")}${eth("cob", "Taxa", "Clientes visitados ÷ clientes de carteira")}${H.temFat ? eth("cobA", "Curva A<br>visitados", "Clientes curva A da carteira com visita no período (ordena pela proporção)") : ""}${eth("fora", "Clientes visitados<br>fora carteira", "Clientes visitados que não são da carteira")}${eth("visCart", "Visitas<br>carteira", "Visitas realizadas a clientes da carteira do consultor")}${eth("visitas", "Visitas<br>total", "Todas as visitas realizadas no período (carteira + fora da carteira)")}</tr></thead><tbody>`;
   for (const r of regs) {
     const ab = b.abertos.has(r.nome);
     eq += `<tr class="bi-r ${t.t === "reg" && t.n === r.nome ? "sel" : ""}" data-bisel="reg" data-n="${esc(r.nome)}" tabindex="0"><td><button type="button" class="bxb" data-biab="${esc(r.nome)}" aria-label="${ab ? "Recolher" : "Abrir"} ${esc(r.nome)}" aria-expanded="${ab}">▸</button><b class="bi-cn" title="${esc(r.nome)}">${esc(r.nome)}</b></td>${cel(r)}</tr>`;
@@ -2077,22 +2121,26 @@ function renderBiEvo(H, S) {
     ${sel.t === "cons" ? "" : `<tfoot><tr><td>Total</td>${tot.map(cel).join("")}${dCel(tot)}</tr></tfoot>`}`;
   $("biEvoNota").textContent = `${met === "cob" ? "Taxa = clientes da carteira com pelo menos uma visita realizada no mês (por qualquer consultor) ÷ clientes da carteira." : met === "vis" ? "Clientes da carteira com pelo menos uma visita realizada no mês." : "Visitas realizadas no mês pela equipe selecionada."} A carteira usada é a atual (a última carregada) em todos os meses.${sel.t === "cons" ? "" : " Clique numa linha para descer um nível."}`;
 }
+const curvaChip = (c) => c && c !== "S" ? `<span class="abc abc-${c}" title="Curva ${c}">${c}</span>` : c === "S" ? `<span class="abc abc-S" title="Sem compra no período do faturamento">sem compra</span>` : "—";
 function renderBiDet(contas, fora, multi) {
   const b = state.bi, q = norm(b.busca), o = b.ord, ref = REF();
   const casaB = (x) => !q || norm(x.nome).includes(q) || norm(x.local || "").includes(q) || String(x.conta || x.cid).includes(b.busca.trim()) || (x.nomes || []).some((n) => norm(n).includes(q));
-  const val = (x) => { const s = sinaisConta(x); return o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ultTs ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
+  const tf = !!state.db.cart?.temFat;
+  const val = (x) => { const s = sinaisConta(x); return o.k === "curva" ? ({ A: 3, B: 2, C: 1 }[x.curva] || 0) * 1e12 + (x.fat || 0) : o.k === "fat" ? (x.fat || 0) : o.k === "nome" ? norm(x.nome) : o.k === "st" ? (x.st === "vis" ? 1 : 0) : o.k === "quest" ? (x.quest ? 1 : 0) : o.k === "dias" ? (x.dias ?? 1e6) : o.k === "ult" ? (x.ultTs ?? -1) : o.k === "int" ? ({ Alta: 3, Média: 2, Baixa: 1 }[s.intencao] || 0) : o.k === "area" ? (s.area || 0) : o.k === "cons" ? norm(x.consultor) : (x[o.k] ?? -1); };
   const ordena = (l) => [...l].sort((x, y) => { const p = val(x), r = val(y); return (typeof p === "string" ? p.localeCompare(r, "pt-BR") : p - r) * o.d || norm(x.nome).localeCompare(norm(y.nome)); });
-  const cart = ordena(contas.filter((x) => (b.mostra === "todas" || x.st === b.mostra) && casaB(x))), fr = b.mostra === "todas" ? ordena(fora.filter(casaB)) : [];
+  const passa = (x) => b.mostra === "todas" || (b.mostra === "A" ? x.curva === "A" : x.st === b.mostra);
+  const cart = ordena(contas.filter((x) => passa(x) && casaB(x))), fr = b.mostra === "todas" || b.mostra === "A" ? ordena(fora.filter((x) => passa(x) && casaB(x))) : [];
+  $("biMostraA").hidden = !tf; if (!tf && b.mostra === "A") b.mostra = "todas";
   $("biDetLbl").textContent = `${fmtN(contas.length)} clientes na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitados · ${fmtN(fora.length)} fora da carteira`;
   $("biMostra").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.m === b.mostra)));
-  const cols = [["nome", "Cliente"], ["st", "Visitado"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
+  const cols = [["nome", "Cliente"], ...(tf ? [["curva", "Curva"], ["fat", "Faturamento"]] : []), ["st", "Visitado"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
   const nc = cols.length;
   const ok = (v) => v ? `<span class="ck ok" aria-label="sim">✓</span>` : `<span class="ck no" aria-label="não">✕</span>`;
   const diasCls = (x) => x.dias == null || x.dias > 30 ? "d-red" : x.dias > 7 ? "d-amb" : "d-ok";
   const linha = (x) => {
     const s = sinaisConta(x), aberto = b.cliAbertos.has(x.k + x.st);
     let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bxb" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas" aria-expanded="${aberto}">▸</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
-      <td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
+      ${tf ? `<td class="n">${curvaChip(x.curva)}</td><td class="n nw">${x.fat ? fmtR(x.fat) : "—"}</td>` : ""}<td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
       <td class="n ${diasCls(x)}">${x.dias == null ? "nunca" : fmtN(x.dias)}</td><td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
       <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td class="n">${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
     if (aberto) {
@@ -2184,7 +2232,7 @@ function renderEquipes() {
   const cons = statsConsultores(), ref = REF();
   // potencial de visita = clientes da carteira do consultor ainda sem visita no período
   const H = state.db.cart ? hierarquia() : null, pot = new Map(), temCartP = !!(H && H.temCart);
-  if (H) for (const r of H.regs) for (const c of r.cons) if (c.carteira) pot.set(c.nome, { cart: c.carteira, nao: c.nao, n30: c.clientes.nao.filter((x) => x.dias == null || x.dias > 30).length });
+  if (H) for (const r of H.regs) for (const c of r.cons) if (c.carteira) pot.set(c.nome, { cart: c.carteira, nao: c.nao, n30: c.clientes.nao.filter((x) => x.dias == null || x.dias > 30).length, a: c.clientes.nao.filter((x) => x.curva === "A").length });
   const parados = cons.filter((c) => c.sit !== "ativo" && c.sit !== "isento").sort((a, b) => ORD_SIT[a.sit] - ORD_SIT[b.sit] || (b.sem ?? 999) - (a.sem ?? 999));
   const nIsentos = cons.filter((c) => c.sit === "isento").length;
   const nSem = cons.filter((c) => c.sit === "sem").length, nPar = cons.filter((c) => c.sit === "parado").length, nAt = cons.filter((c) => c.sit === "atencao").length;
@@ -2197,7 +2245,7 @@ function renderEquipes() {
     { k: "ult", l: "Última visita", n: 1, h: (c) => fmtDiaAno(c.ult) },
     ...(temCartP ? [
       { k: "pCart", l: "Carteira", t: "Clientes (contas crédito) na carteira do consultor", n: 1, v: (c) => pot.get(c.nome)?.cart ?? -1, h: (c) => (pot.has(c.nome) ? fmtN(pot.get(c.nome).cart) : `<span class="note">sem carteira</span>`) },
-      { k: "pNao", l: "Potencial<br>a visitar", t: "Clientes da carteira dele ainda sem visita no período", n: 1, v: (c) => pot.get(c.nome)?.nao ?? -1, h: (c) => { const p = pot.get(c.nome); return p ? `<b class="pot">${fmtN(p.nao)}</b><span class="sub">${p.cart ? fmtP(p.nao / p.cart) : "—"} da carteira</span>` : "—"; } },
+      { k: "pNao", l: "Potencial<br>a visitar", t: "Clientes da carteira dele ainda sem visita no período", n: 1, v: (c) => pot.get(c.nome)?.nao ?? -1, h: (c) => { const p = pot.get(c.nome); return p ? `<b class="pot">${fmtN(p.nao)}</b><span class="sub">${p.cart ? fmtP(p.nao / p.cart) : "—"} da carteira${p.a ? ` · <b class="abc-t">${fmtN(p.a)} curva A</b>` : ""}</span>` : "—"; } },
       { k: "p30", l: "Sem visita<br>30+ dias", t: "Clientes da carteira sem visita há mais de 30 dias (ou nunca visitados)", n: 1, v: (c) => pot.get(c.nome)?.n30 ?? -1, h: (c) => { const p = pot.get(c.nome); return p ? (p.n30 ? `<span class="hn">${fmtN(p.n30)}</span>` : "0") : "—"; } },
     ] : []),
     { k: "ok", l: "Realizadas<br>no período", n: 1, h: (c) => fmtN(c.ok) },
@@ -2703,6 +2751,7 @@ function renderMetodo() {
     ["Correlação visita × questionário", `pelo <b>ID da visita</b>. ${fmtN(state.db.surveys.size)} questionários lidos; ${fmtN(state.db.orfaos)} são de visitas fora do relatório carregado e ficam só na contagem.`],
     ["Data de cada visita", "realizada = dia do check-in; aberta ou cancelada = dia planejado (início). O filtro De/Até usa essa data."],
     ["Data de referência", `fim do período escolhido, limitado ao dia da extração (${fmtDiaAno(m.extraido)}). "Dias sem visita" de consultor e de cliente contam até ela.`],
+    ["Curva ABC", `vem da base de faturamento do SAP, somada por <b>conta crédito</b> (sem "Cliente ocasional"). Ordenando do maior para o menor faturamento, <b>A</b> são os clientes que somam os primeiros 80%, <b>B</b> os próximos 15% e <b>C</b> os 5% finais; <b>sem compra</b> = cliente da carteira sem faturamento no período da base. A curva é calculada uma vez, com a empresa toda, e vale igual para todos os gestores. "Faturamento visitado" = faturamento dos clientes da carteira visitados no período ÷ faturamento da carteira.`],
     ["Visitas abertas", `status "Aberto" no C4C com data de início hoje ou depois: ainda podem acontecer. Visita aberta com data de início anterior a hoje não tem mais como ser feita e fica <b>fora do painel</b>.`],
     ["Situação do consultor", "Ativo = visitou nos últimos 6 dias; Atenção = 7 a 14 dias sem visita; Parado = 15 ou mais; Sem visita no período = nenhuma realizada entre De e Até. Só aparece quem tem pelo menos um registro na base carregada: para saber de quem nunca registrou nada, carregue meses seguidos ou o cadastro de equipe."],
     ["Regional / equipe", "derivada do código do território (V08, L39…), pela equipe de vendas mais frequente daquele código. Corrige os registros em que o C4C grava o nome do território no lugar da equipe."],
@@ -2798,7 +2847,8 @@ const DemoAPI = {
   async excluirNota(id) { store.set("rc_notas", store.get("rc_notas", []).filter((n) => n.id !== id)); },
   async resetar(id) { const u = this.usuarios.find((x) => x.id === id); u.h = await hash(SENHA_PADRAO); u.trocar = true; this.salvarTodos(); },
   async definirRegionais(mapa) { for (const [id, regs] of Object.entries(mapa)) { const u = this.usuarios.find((x) => x.id === id); if (u) u.regionais = regs; } this.salvarTodos(); },
-  async dados() { if (!EMBUTIDO) throw new Error("Sem dados de demonstração nesta versão."); const d = decodificar(EMBUTIDO); d.cart = carteiraExemplo(d.rawV); return d; },
+  async dados() { if (!EMBUTIDO) throw new Error("Sem dados de demonstração nesta versão."); const d = decodificar(EMBUTIDO); d.cart = carteiraExemplo(d.rawV); d.fat = faturamentoExemplo(d.cart.rows); return d; },
+  async importarFaturamento(rows, meta) { state.raw.fat = { rows, meta: { ...meta, quando: Date.now(), por: state.conta.nome } }; },
   async importarCarteira(rows, meta) { state.raw.cart = { rows, meta }; },
   async importar(rawV, rawA, meta) {
     const atual = state.raw;
@@ -2899,7 +2949,13 @@ const SupaAPI = {
       rows.forEach((r) => { r.sap = r.cod_sap; });
       if (rows.length) cart = { rows, meta: info ? { arquivo: info.arquivo, linhas: info.linhas, quando: Date.parse(info.atualizado_em), por: info.por_nome } : {} };
     } catch (e) { console.warn("carteira:", e.message); }
-    return { rawV, rawA, meta, cart };
+    let fat = null;
+    try {
+      const [rows, info] = await Promise.all([this.todos("faturamento", "conta,nome,valor,notas,ultima,curva", "conta"), this.sb.from("faturamento_info").select("arquivo,ini,fim,linhas,total,por_nome,atualizado_em").eq("id", 1).maybeSingle().then((r) => r.data)]);
+      rows.forEach((r) => { r.valor = Number(r.valor); });
+      if (rows.length) fat = { rows, meta: info ? { arquivo: info.arquivo, ini: info.ini, fim: info.fim, linhas: info.linhas, total: Number(info.total), quando: Date.parse(info.atualizado_em), por: info.por_nome } : {} };
+    } catch (e) { console.warn("faturamento:", e.message); }
+    return { rawV, rawA, meta, cart, fat };
   },
   async importarCarteira(rows, meta) {
     const codMap = mapaCodigos(state.raw.rawV);
@@ -2910,6 +2966,15 @@ const SupaAPI = {
     for (let i = 0; i < unicas.length; i += 1000) { const { error } = await this.sb.from("carteira").insert(unicas.slice(i, i + 1000)); if (error) throw falha(error); }
     await this.sb.from("carteira_info").upsert({ id: 1, arquivo: meta.arquivo, linhas: unicas.length, por_nome: state.conta.nome, atualizado_em: new Date().toISOString() });
     state.raw.cart = { rows: unicas, meta: { ...meta, linhas: unicas.length, quando: Date.now(), por: state.conta.nome } };
+  },
+  async importarFaturamento(rows, meta) {
+    const codMap = mapaCodigos(state.raw.rawV), cart = state.db.cart;
+    const falha = (e) => new Error(/does not exist|could not find the table/i.test(e.message) ? "Falta rodar o faturamento.sql no Supabase." : "Faturamento: " + e.message);
+    const linhas = rows.map((r) => ({ conta: r.conta, nome: r.nome, valor: Math.round(r.valor * 100) / 100, notas: r.notas, ultima: r.ultima, curva: r.curva, regional: cart?.map.get(r.conta)?.regional || regionalDe(r.terr, codMap) }));
+    { const { error } = await this.sb.from("faturamento").delete().neq("conta", ""); if (error) throw falha(error); }
+    for (let i = 0; i < linhas.length; i += 1000) { const { error } = await this.sb.from("faturamento").insert(linhas.slice(i, i + 1000)); if (error) throw falha(error); }
+    await this.sb.from("faturamento_info").upsert({ id: 1, arquivo: meta.arquivo, ini: meta.ini, fim: meta.fim, linhas: meta.linhas, total: meta.total, por_nome: state.conta.nome, atualizado_em: new Date().toISOString() });
+    state.raw.fat = { rows, meta: { ...meta, quando: Date.now(), por: state.conta.nome } };
   },
   async importar(rawV, rawA, meta) {
     const codMap = mapaCodigos(state.raw.rawV.concat(rawV));
@@ -3119,7 +3184,13 @@ function renderImportacao() {
   $("impLbl").textContent = `${plural(m.periodos.length, "carga")} · ${fmtN(state.db.visits.length)} visitas · ${fmtN(state.db.surveys.size)} questionários`;
 }
 /* ---------- carteira ---------- */
+function renderFatInfo() {
+  const f = state.raw.fat, m = f?.meta || {};
+  $("fatLbl").textContent = f ? `${fmtN(f.rows.length)} contas · ${fmtR(m.total ?? f.rows.reduce((s, r) => s + r.valor, 0))}${f.exemplo ? " · exemplo" : ""}` : "não carregado";
+  if (!state.imp.f) $("fatRes").innerHTML = `<p class="note">${!f ? "Nenhum faturamento carregado ainda. Sem ele, o painel não mostra a curva ABC." : f.exemplo ? "Faturamento <b>de exemplo</b>, com valores inventados, só para mostrar a curva ABC." : `Atual: <b>${esc(m.arquivo || "faturamento")}</b>${m.ini != null ? `, de ${fmtDiaAno(m.ini)} a ${fmtDiaAno(m.fim)}` : ""}${m.quando ? ` · carregado em ${new Date(m.quando).toLocaleDateString("pt-BR")}${m.por ? " por " + esc(m.por) : ""}` : ""}.`}</p>`;
+}
 function renderCarteiraInfo() {
+  renderFatInfo();
   const c = state.db.cart;
   if (!c) { $("cartLbl").textContent = "não carregada"; $("cartRes").innerHTML = `<p class="note">Nenhuma carteira carregada ainda.</p>`; return; }
   const m = c.meta || {}, n = c.map.size;
@@ -3141,6 +3212,66 @@ async function lerCarteiraArquivo(file) {
     $("cartRes").innerHTML = `<p class="banner info">A carteira é contada por <b>conta crédito</b>: ${fmtN(contas.size)} contas reúnem ${fmtN(rows.length)} clientes vinculados. <b>${fmtN(contasVis.size)}</b> contas (${fmtP(contasVis.size / Math.max(1, contas.size), 1)}) já têm visita na base em algum vínculo.${semConta ? ` ${fmtN(semConta)} linha(s) sem Cta.créd. contam como conta própria.` : ""} <b>${fmtN(vCasa)}</b> de ${fmtN(vends.length)} vendedores foram reconhecidos nas visitas pelo nome.${ajust.length ? ` ${fmtN(ajust.length)} com nome escrito diferente foram casados automaticamente (${ajust.slice(0, 4).map((v) => `${esc(titulo(v))} → ${esc(titulo(casa(v)))}`).join("; ")}${ajust.length > 4 ? "…" : ""}).` : ""}</p>${semVis.length ? `<details class="cart-sv"><summary><b>${fmtN(semVis.length)}</b> vendedores da carteira sem nenhuma visita nas bases carregadas (consultor novo, que não usa o app ou com nome diferente no C4C)</summary><p class="note">${semVis.map((v) => esc(titulo(v))).join(" · ")}</p></details>` : ""}`;
     $("cartAplicar").disabled = false;
   } catch (e) { el.classList.remove("ok"); txt.textContent = e.message; }
+}
+/* ---------- base de faturamento (CSV do SAP, separado por ";") → total por conta crédito e curva ABC ----------
+   Lê o arquivo em pedaços (aguenta arquivos grandes) e guarda só o total por conta: nada de CPF, CNPJ, nota a nota ou produto. */
+async function lerFaturamento(file, prog) {
+  const cab = new Uint8Array(await file.slice(0, 3).arrayBuffer()), utf8 = cab[0] === 0xef && cab[1] === 0xbb && cab[2] === 0xbf;
+  const dec = new TextDecoder(utf8 ? "utf-8" : "windows-1252"), rd = file.stream().getReader();
+  let resto = "", H = null, I = {}, lidos = 0, linhas = 0, ini = Infinity, fim = -Infinity, total = 0, ocas = 0;
+  const contas = new Map(), tipos = new Map();
+  const num = (s) => { s = String(s || "").trim(); if (!s) return 0; const neg = /^-|-$/.test(s); const v = parseFloat(s.replace(/[-\s]/g, "").replace(/\./g, "").replace(",", ".")); return isFinite(v) ? (neg ? -v : v) : 0; };
+  const dia = (s) => { const m = /^(\d{2})\.(\d{2})\.(\d{4})/.exec(String(s || "").trim()) || /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(s || "").trim()); return m ? Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 86400000) : null; };
+  const linha = (l) => {
+    if (!l.trim()) return;
+    const c = l.split(";");
+    if (!H) {
+      H = c.map((h) => norm(h)); const ach = (...n) => { for (const x of n) { const i = H.indexOf(norm(x)); if (i >= 0) return i; } return -1; };
+      I = { conta: ach("Conta de crédito", "Conta de credito", "Cta.créd."), nome: ach("Nome Conta Crédito", "Nome Conta Credito"), valor: ach("VlrTotal", "Valor Total"), data: ach("Data Fat.", "Data Faturamento"), doc: ach("Faturamento"),
+        tipo: ach("Tipo Doc.", "Tipo Doc"), terr: ach("Território Vendas", "Territorio Vendas"), emissor: ach("Emissor Ordem"), nEmissor: ach("Nome Emissor Ordem") };
+      if (I.valor < 0 || (I.conta < 0 && I.emissor < 0)) throw new Error('Não achei as colunas "Conta de crédito" e "VlrTotal". Confira se é a base de faturamento do SAP (CSV separado por ponto e vírgula).');
+      return;
+    }
+    linhas++;
+    const conta = kc(c[I.conta] || c[I.emissor] || ""), nome = (c[I.nome] || c[I.nEmissor] || "").trim(), v = num(c[I.valor]), d = dia(c[I.data]), tp = (c[I.tipo] || "—").trim();
+    const t = tipos.get(tp) || tipos.set(tp, { n: 0, v: 0 }).get(tp); t.n++; t.v += v;
+    if (!conta || /CLIENTE OCASIONAL/i.test(nome) || conta === "10000") { ocas += v; return; }
+    total += v; if (d != null) { if (d < ini) ini = d; if (d > fim) fim = d; }
+    let a = contas.get(conta); if (!a) contas.set(conta, (a = { conta, nome, valor: 0, docs: new Set(), ultima: null, terr: c[I.terr] || "" }));
+    a.valor += v; if (c[I.doc]) a.docs.add(c[I.doc]); if (d != null && v > 0 && (a.ultima == null || d > a.ultima)) a.ultima = d; if (!a.nome && nome) a.nome = nome;
+  };
+  for (;;) {
+    const { value, done } = await rd.read();
+    if (value) { lidos += value.length; resto += dec.decode(value, { stream: true }); const ls = resto.split(/\r?\n/); resto = ls.pop(); for (const l of ls) linha(l); prog && prog(lidos / file.size); }
+    if (done) { resto += dec.decode(); if (resto) linha(resto); break; }
+  }
+  if (!H) throw new Error("O arquivo está vazio.");
+  const rows = curvaABC([...contas.values()].map((a) => ({ conta: a.conta, nome: a.nome, valor: a.valor, notas: a.docs.size, ultima: a.ultima, terr: a.terr })));
+  return { rows, meta: { arquivo: file.name, linhas, ini: isFinite(ini) ? ini : null, fim: isFinite(fim) ? fim : null, total, ocas }, tipos: [...tipos.entries()].sort((a, b) => Math.abs(b[1].v) - Math.abs(a[1].v)) };
+}
+async function lerFaturamentoArquivo(file) {
+  if (!file) return;
+  const txt = $("dropFtxt"); state.imp.f = null; $("fatAplicar").disabled = true; $("fatRes").innerHTML = "";
+  try {
+    const r = await lerFaturamento(file, (p) => (txt.textContent = `Lendo ${file.name}… ${fmtP(Math.min(p, 1))}`));
+    const cart = state.db.cart, ab = (c) => r.rows.filter((x) => x.curva === c), soma = (l) => l.reduce((s, x) => s + x.valor, 0);
+    const naCart = cart && !cart.exemplo ? r.rows.filter((x) => cart.map.has(x.conta)) : [], cartCom = naCart.filter((x) => x.valor > 0).length;
+    state.imp.f = r; $("dropF").classList.add("ok"); txt.textContent = `${file.name} · ${fmtN(r.meta.linhas)} linhas`;
+    $("fatRes").innerHTML = `<p><b>${fmtR(r.meta.total)}</b> faturados de ${r.meta.ini != null ? fmtDiaAno(r.meta.ini) : "?"} a ${r.meta.fim != null ? fmtDiaAno(r.meta.fim) : "?"}, em <b>${fmtN(r.rows.length)}</b> contas crédito${r.meta.ocas ? ` (fora ${fmtR(r.meta.ocas)} de "Cliente ocasional", que não entra)` : ""}.</p>
+      <div class="abc-res">${["A", "B", "C"].map((c) => `<div><span class="abc abc-${c}">${c}</span><b>${fmtN(ab(c).length)}</b> contas<span class="note">${fmtP(r.meta.total ? soma(ab(c)) / r.meta.total : 0)} do faturamento</span></div>`).join("")}</div>
+      ${cart && !cart.exemplo ? `<p>Da carteira atual, <b>${fmtN(cartCom)}</b> de ${fmtN(cart.map.size)} clientes compraram no período; os outros aparecem como <b>sem compra</b>.</p>` : `<p class="note">Carregue a carteira real para cruzar o faturamento com os consultores.</p>`}
+      <details class="cart-sv"><summary>Faturamento por tipo de documento (confira se as devoluções estão vindo negativas)</summary><table class="mini"><tbody>${r.tipos.slice(0, 15).map(([t, x]) => `<tr><td>${esc(t)}</td><td class="n">${fmtN(x.n)} linhas</td><td class="n ${x.v < 0 ? "hn" : ""}">${fmtR(x.v)}</td></tr>`).join("")}</tbody></table></details>`;
+    $("fatAplicar").disabled = false;
+  } catch (e) { $("dropF").classList.remove("ok"); txt.textContent = e.message; }
+}
+async function aplicarFaturamento() {
+  const f = state.imp.f; if (!f) return;
+  const b = $("fatAplicar"); b.disabled = true; b.textContent = "Carregando…";
+  try {
+    await API.importarFaturamento(f.rows, f.meta);
+    carregarBase(state.raw); state.imp.f = null; $("dropF").classList.remove("ok"); $("dropFtxt").textContent = "CSV do SAP separado por ponto e vírgula (Conta de crédito, VlrTotal, Data Fat.)"; $("fatRes").innerHTML = "";
+    toast("Faturamento atualizado", `Curva ABC de ${fmtN(f.rows.length)} contas crédito.${API === DemoAPI ? " Na demonstração, a carga vale até recarregar a página." : ""}`); render();
+  } catch (e) { toast("Não consegui carregar o faturamento", e.message); b.disabled = false; } finally { b.textContent = "Substituir o faturamento"; }
 }
 async function aplicarCarteira() {
   const c = state.imp.c; if (!c) return;
@@ -3250,6 +3381,7 @@ function fecharCoach(assistir) {
   if (assistir) $("btnAjuda").click();
 }
 function carregarBase(raw) {
+  state.fatMap = raw.fat?.rows?.length ? new Map(raw.fat.rows.map((r) => [kc(r.conta), r])) : null;
   state.db = montarBase(raw.rawV, raw.rawA, raw.meta, raw.cart);
   state.cal = null; aplicarPeriodo("mes", true); preencherFiltros(); invalidar();
 }
@@ -3422,7 +3554,7 @@ function ligarEventos() {
   addEventListener("scroll", sticky, { passive: true }); addEventListener("resize", sticky); setTimeout(sticky, 0);
   // cliques que abrem detalhes / filtram
   document.addEventListener("click", (e) => {
-    const go = e.target.closest("[data-go]"); if (go) { selPane(go.dataset.go); if (go.dataset.hierfoco) setTimeout(() => $("hierPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 50); else scrollTo({ top: 0 }); return; }
+    const go = e.target.closest("[data-go]"); if (go) { if (go.dataset.abc) { state.bi.mostra = "A"; state.bi.sel = { t: "all" }; } selPane(go.dataset.go); if (go.dataset.hierfoco) setTimeout(() => $("hierPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 50); else scrollTo({ top: 0 }); return; }
     const fr = e.target.closest("[data-filtra-reg]"); if (fr) { e.stopPropagation(); aplicarFiltro("reg", soEsse("reg", fr.dataset.filtraReg) ? "" : fr.dataset.filtraReg); return; }
     const ie = e.target.closest("[data-isentar]"); if (ie) { e.preventDefault(); e.stopPropagation(); abrirIsentar(ie.dataset.isentar); return; }
     const ix = e.target.closest("[data-isentar-x]"); if (ix) { e.preventDefault(); e.stopPropagation(); desisentar(ix.dataset.isentarX); return; }
@@ -3468,8 +3600,11 @@ function ligarEventos() {
   for (const [id, t] of [["dropV", "v"], ["dropQ", "q"]]) { const el = $(id); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerArquivo(t, e.dataTransfer.files[0]); }); }
   $("impAplicar").addEventListener("click", aplicarImportacao);
   $("fileC").addEventListener("change", (e) => lerCarteiraArquivo(e.target.files[0]));
+  { const el = $("dropF"); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerFaturamentoArquivo(e.dataTransfer.files[0]); }); }
   { const el = $("dropC"); el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("over"); }); el.addEventListener("dragleave", () => el.classList.remove("over")); el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("over"); lerCarteiraArquivo(e.dataTransfer.files[0]); }); }
   $("cartAplicar").addEventListener("click", aplicarCarteira);
+  $("fileF").addEventListener("change", (e) => lerFaturamentoArquivo(e.target.files[0]));
+  $("fatAplicar").addEventListener("click", aplicarFaturamento);
   // aba Carteira (formato BI)
   const biSel = (t, n) => { const b = state.bi; if (b.sel.t === t && b.sel.n === n && t !== "all") { t = t === "cons" ? "reg" : "all"; n = t === "reg" ? (semFiltroCons(hierarquia).regs.find((r) => r.cons.some((c) => c.nome === b.sel.n)) || {}).nome : null; }
     b.sel = { t, n }; b.lim = { cart: 200, fora: 100 }; b.rolar = true; if (t === "reg" && n) b.abertos.add(n);
