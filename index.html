@@ -762,6 +762,24 @@ body.f-oculto .filters { transform: translateY(calc(-100% - 8px)); box-shadow: n
 table.mini { width: 100%; font-size: .84rem; margin-top: 6px; } table.mini td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
 td.nw { white-space: nowrap; }
 .bi-eq-t tfoot .ca-v small { color: inherit; opacity: .75; }
+/* cards do BI compactos, lado a lado com o quadro da equipe (2 linhas, colunas conforme o nº de cards) */
+.bi-kpis { grid-template-columns: repeat(var(--nc, 4), minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; align-content: stretch; }
+.bk { min-height: 0; padding: 8px 10px 9px; gap: 3px; align-content: start; }
+.bk .label { font-size: .6rem; min-height: 2.5em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bk b { font-size: 1.4rem; }
+.bk b small { font-size: .78rem; }
+.bk .s { font-size: .7rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bk .s b { font-size: inherit; color: inherit; font-weight: 800; }
+.bi { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+@media (min-width: 1101px) {
+  .bi-eq { position: relative; min-height: 270px; }
+  .bi-eq .tbl-wrap { position: absolute; inset: 0; max-height: none; height: auto; }
+}
+/* avatar do consultor no detalhamento */
+.cons-av { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; margin-left: 6px; background: var(--info-bg); color: var(--brand); font-size: .6rem; font-weight: 800; letter-spacing: .02em; vertical-align: middle; position: relative; cursor: default; }
+.cons-av.fora { background: var(--amb-bg, #fff3d6); color: var(--amb-ink, #8a5a00); }
+.cons-av:hover::after, .cons-av:focus::after { content: attr(data-tip); position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); background: var(--ink); color: var(--card); padding: 5px 9px; border-radius: 6px; white-space: nowrap; font-size: .76rem; font-weight: 600; letter-spacing: 0; z-index: 6; box-shadow: 0 6px 16px rgba(0,0,0,.2); pointer-events: none; }
+.cons-av:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -2029,12 +2047,13 @@ function renderCarteira() {
       tile("Clientes não visitados", fmtN(N.nao), `${fmtN(N.nunca)} nunca visitados`, N.nao ? "red" : "") +
       tile("Taxa de clientes visitados", fmtP(N.cob || 0, 1), delta == null ? "período anterior não carregado para comparar" : `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "▲" : "▼"} ${fmtN(Math.abs(delta * 100), 1)} p.p.</span> vs ${fmtP(ant.cob, 1)} no período anterior`, corCob(N.cob) === "ok" ? "ok" : corCob(N.cob) === "amb" ? "amb" : "red")
       : tile("Clientes da carteira", "—", "carteira não carregada")) +
-    (H.temFat && temCart ? tile("Faturamento visitado", fmtP(N.fat ? N.fatVis / N.fat : 0), `${fmtR(N.fatVis)} de ${fmtR(N.fat)} faturados pela carteira`, corCob(N.fat ? N.fatVis / N.fat : 0) === "ok" ? "ok" : corCob(N.fat ? N.fatVis / N.fat : 0) === "amb" ? "amb" : "red") +
-      tile("Clientes curva A visitados", `${fmtN(N.visA)} <small>de ${fmtN(N.nA)}</small>`, N.nA - N.visA ? `<b>${fmtN(N.nA - N.visA)}</b> clientes A ainda sem visita no período` : "todos os clientes A visitados", N.nA - N.visA ? "red" : "ok") : "") +
+    (H.temFat && temCart ? tile("Faturamento visitado", fmtP(N.fat ? N.fatVis / N.fat : 0), `${fmtR(N.fatVis)} de ${fmtR(N.fat)} da carteira`, corCob(N.fat ? N.fatVis / N.fat : 0) === "ok" ? "ok" : corCob(N.fat ? N.fatVis / N.fat : 0) === "amb" ? "amb" : "red") +
+      tile("Clientes curva A visitados", `${fmtN(N.visA)} <small>de ${fmtN(N.nA)}</small>`, N.nA - N.visA ? `<b>${fmtN(N.nA - N.visA)}</b> ainda sem visita no período` : "todos visitados", N.nA - N.visA ? "red" : "ok") : "") +
     tile("Visitas fora da carteira", fmtN(visFora), "visitas a clientes de outras carteiras") +
-    tile("Clientes fora da carteira", fmtN(N.fora), "visitados, mas da carteira de outro consultor ou sem carteira") +
+    tile("Clientes fora da carteira", fmtN(N.fora), "de outras carteiras ou sem carteira") +
     tile("Intenção de compra alta", fmtN(quentes.length), "clientes, pelo último questionário", quentes.length ? "ok" : "") +
     tile("Área em oportunidade", `${fmtN(areaOp)} <small>ha</small>`, "intenção alta ou média");
+  { const n = $("biKpis").children.length; $("biKpis").style.setProperty("--nc", Math.ceil(n / 2)); }
   // equipe
   const dot = (x) => x == null ? "" : `<i class="dot ${corCob(x)}" aria-hidden="true"></i>`;
   const cel = (x) => `<td class="n">${temCart ? fmtN(x.carteira) : "—"}</td><td class="n">${temCart ? fmtN(x.vis) : "—"}</td><td class="n">${temCart ? (x.nao ? `<span class="hn">${fmtN(x.nao)}</span>` : "0") : "—"}</td><td class="n">${temCart ? cobCel(x.cob) : "—"}</td>${H.temFat ? `<td class="n">${x.nA ? `<span class="ca-v" title="${fmtN(x.visA)} de ${fmtN(x.nA)} clientes curva A visitados">${fmtN(x.visA)}<small>/${fmtN(x.nA)}</small></span>` : "—"}</td>` : ""}<td class="n">${fmtN(x.fora)}</td><td class="n">${temCart ? fmtN(x.visCart) : "—"}</td><td class="n">${fmtN(x.visitas)}</td>`;
@@ -2121,6 +2140,10 @@ function renderBiEvo(H, S) {
     ${sel.t === "cons" ? "" : `<tfoot><tr><td>Total</td>${tot.map(cel).join("")}${dCel(tot)}</tr></tfoot>`}`;
   $("biEvoNota").textContent = `${met === "cob" ? "Taxa = clientes da carteira com pelo menos uma visita realizada no mês (por qualquer consultor) ÷ clientes da carteira." : met === "vis" ? "Clientes da carteira com pelo menos uma visita realizada no mês." : "Visitas realizadas no mês pela equipe selecionada."} A carteira usada é a atual (a última carregada) em todos os meses.${sel.t === "cons" ? "" : " Clique numa linha para descer um nível."}`;
 }
+// consultor da linha num "avatar" com as iniciais: o nome completo aparece ao passar o mouse (sem coluna extra, sem rolar para o lado)
+const consAv = (x) => { const n = titulo(x.consultor || ""), p = n.split(" ").filter((w) => w.length > 2 || /^[A-Z]/.test(w)), ini = ((p[0] || "?")[0] + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
+  const tip = x.st === "fora" ? `Visitado por ${n}${x.dono ? ` · carteira de ${titulo(x.dono)}` : " · sem carteira"}` : `Consultor: ${n}`;
+  return ` <span class="cons-av${x.st === "fora" ? " fora" : ""}" data-tip="${esc(tip)}" aria-label="${esc(tip)}" tabindex="0">${esc(ini)}</span>`; };
 const curvaChip = (c) => c && c !== "S" ? `<span class="abc abc-${c}" title="Curva ${c}">${c}</span>` : c === "S" ? `<span class="abc abc-S" title="Sem compra no período do faturamento">sem compra</span>` : "—";
 function renderBiDet(contas, fora, multi) {
   const b = state.bi, q = norm(b.busca), o = b.ord, ref = REF();
@@ -2133,16 +2156,16 @@ function renderBiDet(contas, fora, multi) {
   $("biMostraA").hidden = !tf; if (!tf && b.mostra === "A") b.mostra = "todas";
   $("biDetLbl").textContent = `${fmtN(contas.length)} clientes na carteira · ${fmtN(contas.filter((x) => x.st === "vis").length)} visitados · ${fmtN(fora.length)} fora da carteira`;
   $("biMostra").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.m === b.mostra)));
-  const cols = [["nome", "Cliente"], ...(tf ? [["curva", "Curva"], ["fat", "Faturamento"]] : []), ["st", "Visitado"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]].concat(multi ? [["cons", "Consultor"]] : []);
+  const cols = [["nome", "Cliente"], ...(tf ? [["fat", "Faturamento"], ["curva", "Curva"]] : []), ["st", "Visitado"], ["quest", "Questionário"], ["nPer", "Visitas no período"], ["nTot", "Visitas no total"], ["ult", "Última visita"], ["dias", "Dias sem visita"], ["prox", "Próxima planejada"], ["int", "Intenção de compra"], ["area", "Área (ha)"]];
   const nc = cols.length;
   const ok = (v) => v ? `<span class="ck ok" aria-label="sim">✓</span>` : `<span class="ck no" aria-label="não">✕</span>`;
   const diasCls = (x) => x.dias == null || x.dias > 30 ? "d-red" : x.dias > 7 ? "d-amb" : "d-ok";
   const linha = (x) => {
     const s = sinaisConta(x), aberto = b.cliAbertos.has(x.k + x.st);
-    let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bxb" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas" aria-expanded="${aberto}">▸</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
-      ${tf ? `<td class="n">${curvaChip(x.curva)}</td><td class="n nw">${x.fat ? fmtR(x.fat) : "—"}</td>` : ""}<td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
+    let h = `<tr class="bi-cli ${x.st}"><td><button type="button" class="bxb" data-bicli="${esc(x.k + x.st)}" aria-label="Ver últimas visitas" aria-expanded="${aberto}">▸</button><a href="#" class="bi-nome" data-cli="${esc(x.cid)}">${esc(titulo(x.nome))}</a>${x.nVinc > 1 ? ` <span class="vinc" title="${esc((x.nomes || []).map(titulo).join("\n"))}">+${x.nVinc - 1}</span>` : ""}${multi ? consAv(x) : ""}<span class="subi">${esc(x.conta || x.cid)}${x.local ? " · " + esc(x.local) : ""}</span></td>
+      ${tf ? `<td class="n nw">${x.fat ? fmtR(x.fat) : "—"}</td><td class="n">${curvaChip(x.curva)}</td>` : ""}<td class="n">${ok(x.nPer > 0)}</td><td class="n">${ok(x.quest)}</td><td class="n">${fmtN(x.nPer)}</td><td class="n">${fmtN(x.nTot)}</td><td class="n">${x.ult != null ? fmtDiaAno(x.ult) : "—"}</td>
       <td class="n ${diasCls(x)}">${x.dias == null ? "nunca" : fmtN(x.dias)}</td><td class="n">${x.prox != null ? `${fmtDia(x.prox)}${x.prox < HOJE() ? ` <span class="chip ch-red">atrasada</span>` : ""}` : "—"}</td>
-      <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td>${multi ? `<td class="n">${esc(titulo(x.consultor))}${x.st === "fora" && x.dono ? `<span class="subi">carteira de ${esc(titulo(x.dono).split(" ")[0])}</span>` : ""}</td>` : ""}</tr>`;
+      <td class="n">${s.intencao ? `<span class="chip ${s.intencao === "Alta" ? "ch-ok" : s.intencao === "Média" ? "ch-info" : "ch-neu"}">${esc(s.intencao)}</span>` : "—"}</td><td class="n">${s.area ? fmtN(s.area) : "—"}</td></tr>`;
     if (aberto) {
       const vis = (x.cids || [x.cid]).flatMap((c) => state.db.clientes.get(c)?.vis || []).filter((v) => visivel(v) && v.st === "ok").sort((a, c) => c.dia - a.dia).slice(0, 3);
       h += `<tr class="bi-exp"><td colspan="${nc}">${x.nVinc > 1 ? `<p class="note"><b>Vínculos:</b> ${esc((x.nomes || []).map(titulo).join(" · "))}</p>` : ""}${vis.length ? vis.map((v) => `<div class="bi-v"><span class="q">${fmtDiaAno(v.dia)}</span><b>${esc(v.sv ? v.sv.pesq : v.tipo)}</b><span class="note">${esc(titulo(v.consultor))}${x.nVinc > 1 ? " · " + esc(titulo(state.db.clientes.get(v.cid)?.nome || "")) : ""}</span>${v.notas || v.sv?.k.desc ? `<p class="txt">${esc((v.notas || v.sv.k.desc).slice(0, 420))}${(v.notas || v.sv.k.desc).length > 420 ? "…" : ""}</p>` : ""}</div>`).join("") : `<p class="note">Nenhuma visita realizada nas planilhas carregadas.</p>`}<a href="#" class="linkbtn" data-cli="${esc(x.cid)}">Abrir o histórico completo →</a></td></tr>`;
