@@ -780,6 +780,7 @@ td.nw { white-space: nowrap; }
 .cons-av.fora { background: var(--amb-bg, #fff3d6); color: var(--amb-ink, #8a5a00); }
 .cons-av:hover::after, .cons-av:focus::after { content: attr(data-tip); position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); background: var(--ink); color: var(--card); padding: 5px 9px; border-radius: 6px; white-space: nowrap; font-size: .76rem; font-weight: 600; letter-spacing: 0; z-index: 6; box-shadow: 0 6px 16px rgba(0,0,0,.2); pointer-events: none; }
 .cons-av:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.tbl-max { max-height: 440px; overflow: auto; }
 </style>
 </head><body><div id="login" class="login-wrap" hidden>
   <div class="login">
@@ -1029,6 +1030,11 @@ td.nw { white-space: nowrap; }
           <p class="note" id="adNota"></p>
         </section>
       </div>
+      <section class="panel">
+        <div class="panel-head"><h2>Quem planeja com antecedência</h2><span class="label" id="antLbl"></span></div>
+        <p class="lead">Visita <b>planejada com antecedência</b> = criada no C4C pelo menos um dia antes do dia em que foi realizada. Visita criada e feita no mesmo dia não conta: é a visita "em cima da hora". Clique no consultor para ver o mês dele.</p>
+        <div class="tbl-wrap tbl-max"><table id="tAnt"></table></div>
+      </section>
     </div>
 
     <!-- ===== INTELIGÊNCIA ===== -->
@@ -2492,11 +2498,25 @@ function renderAgenda() {
   const mesmo = plan.filter((v) => v.st === "ok" && v.dia === v.diaPlan).length, depois = plan.filter((v) => v.st === "ok" && v.dia > v.diaPlan).length, antes = plan.filter((v) => v.st === "ok" && v.dia < v.diaPlan).length;
   const pab = plan.filter((v) => v.st === "ab").length, pcx = plan.filter((v) => v.st === "cx").length;
   const semana = ab.filter((v) => v.diaPlan < hoje + 7).length;
+  const okP = per.filter((v) => v.st === "ok" && v.criado != null), antec = okP.filter((v) => dayOf(v.criado) < v.dia);
   $("agKpis").innerHTML = kpi("Visitas planejadas", fmtN(ab.length), ab.length ? `abertas de ${fmtDia(hoje)} até ${fmtDia(Math.max(...ab.map((v) => v.diaPlan)))}` : "nenhuma aberta de hoje em diante na base") +
     kpi("Nos próximos 7 dias", fmtN(semana), "visitas abertas na agenda da equipe") +
     kpi("Realizadas no período", fmtN(per.filter((v) => v.st === "ok").length), `de ${fmtDia(state.f.de)} a ${fmtDia(state.f.ate)}`) +
     kpi("Realizadas no dia planejado", fmtP(plan.length ? mesmo / plan.length : 0), `de <b>${fmtN(plan.length)}</b> planejadas no período`) +
+    kpi("Planejadas com antecedência", fmtP(okP.length ? antec.length / okP.length : 0, 1), `<b>${fmtN(antec.length)}</b> de ${fmtN(okP.length)} realizadas foram criadas pelo menos 1 dia antes; o resto foi criado no próprio dia`, okP.length && antec.length / okP.length < 0.3 ? "alert" : "") +
     kpi("Canceladas", fmtN(per.filter((v) => v.st === "cx").length), "no período");
+  // quem planeja com antecedência: visita criada no C4C antes do dia em que foi realizada (criada e feita no mesmo dia não conta)
+  const porC = new Map(); for (const v of okP) { const c = porC.get(v.consultor) || porC.set(v.consultor, { nome: v.consultor, regional: v.regional, n: 0, a: 0, dias: [] }).get(v.consultor); c.n++; const d = v.dia - dayOf(v.criado); if (d > 0) { c.a++; c.dias.push(d); } }
+  const lAnt = [...porC.values()].map((c) => ({ ...c, p: c.a / c.n, med: c.dias.length ? mediana(c.dias) : null }));
+  $("antLbl").textContent = `${fmtN(lAnt.length)} consultores · ${fmtN(okP.length)} visitas realizadas`;
+  tabela("tAnt", [
+    { k: "nome", l: "Consultor", h: (c) => `<b>${esc(titulo(c.nome))}</b><span class="sub">${esc(c.regional)}</span>`, v: (c) => norm(c.nome) },
+    { k: "n", l: "Realizadas", n: 1, h: (c) => fmtN(c.n) },
+    { k: "a", l: "Planejadas com<br>antecedência", n: 1, h: (c) => fmtN(c.a) },
+    { k: "p", l: "% com<br>antecedência", n: 1, h: (c) => cobCel(c.p) },
+    { k: "nd", l: "Criadas no<br>próprio dia", n: 1, v: (c) => c.n - c.a, h: (c) => fmtN(c.n - c.a) },
+    { k: "med", l: "Antecedência<br>típica", t: "Mediana de dias entre criar a visita e realizá-la, entre as planejadas com antecedência", n: 1, h: (c) => (c.med == null ? "—" : `${fmtN(c.med)} ${c.med === 1 ? "dia" : "dias"}`) },
+  ], lAnt, { ord: { k: "p", d: -1 }, clk: (c) => `data-cons="${esc(c.nome)}"` });
   splitBar($("adSplit"), $("adLeg"), [{ l: "No dia planejado", n: mesmo, c: "c1" }, { l: "Depois do planejado", n: depois, c: "c3" }, { l: "Antes", n: antes, c: "c2" }, { l: "Aberta (ainda vai acontecer)", n: pab, c: "ca" }, { l: "Cancelada", n: pcx, c: "cn" }]);
   $("adNota").innerHTML = `"Depois do planejado" costuma ser visita lançada no app dias após acontecer. Visitas abertas com data de início anterior a hoje não aparecem no painel: não têm mais como ser feitas.`;
   const rk = contar(ab, (v) => v.consultor).slice(0, 12);
