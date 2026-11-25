@@ -1,6 +1,6 @@
 /* Radar de Campo · endereço e chave pública do Supabase (Project Settings > API) */
 window.RC_CONFIG = {
-  SUPABASE_URL: "https://fgogfirhwovgcyseikhp.supabase.co",   // projeto Gestao-Log-Inov (desde 25/11/2026)
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnb2dmaXJod292Z2N5c2Vpa2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzODE4OTIsImV4cCI6MjEwODk1Nzg5Mn0.xs8urukTPWDMFxPr8FFUbDF9iYMY4lIpcFRJzaPQoMA",   // chave "anon public"
+  SUPABASE_URL: "https://hajteevwnliqykvlsucb.supabase.co",   // Araguaia MC · branch log-inov (desde 25/11/2026)
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhanRlZXZ3bmxpcXlrdmxzdWNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODIyMDMsImV4cCI6MjEwOTU1ODIwM30.Bi1Ooedz3kNPK7iw3h1_dQLKv1sA9zvlkRmSHM2C4Hs",   // chave "anon public"
   SSO: true,               // login só pela conta Microsoft da Araguaia
 };
